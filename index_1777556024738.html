@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<meta name="theme-color" content="#07071a"/>
+<title>Prompt Arena v1.01</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07071a;--surface:#0e0e2a;--card:#131330;--card2:#1a1a40;
+  --border:rgba(110,86,255,.18);--border2:rgba(255,255,255,.07);
+  --primary:#6e56ff;--primary-dim:rgba(110,86,255,.15);--primary-glow:rgba(110,86,255,.4);
+  --secondary:#00d4ff;--gold:#ffd600;--danger:#ff4060;--success:#00e676;--warning:#ff9800;
+  --text:#e8e8fc;--text2:#8888b8;--text3:#4a4a7a;
+  --font-d:'Syne',sans-serif;--font-b:'Plus Jakarta Sans',sans-serif;
+  --r:14px;--shadow:0 8px 32px rgba(0,0,0,.6);
+  --tr:.28s cubic-bezier(.4,0,.2,1);
+}
+[data-theme="light"]{--bg:#f0f0f8;--surface:#fff;--card:#fff;--card2:#f5f5fd;--border:rgba(110,86,255,.2);--border2:rgba(0,0,0,.08);--text:#1a1a2e;--text2:#5a5a8a;--text3:#9090b8}
+[data-theme="midnight"]{--bg:#000010;--surface:#070712;--card:#0d0d20;--card2:#131325;--primary:#00d4ff;--primary-dim:rgba(0,212,255,.12);--primary-glow:rgba(0,212,255,.35);--border:rgba(0,212,255,.15)}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;transition:background var(--tr),color var(--tr)}
+button{cursor:pointer;font-family:var(--font-b);border:none;outline:none;transition:all var(--tr)}
+input,textarea,select{font-family:var(--font-b);outline:none;border:none}
+a{text-decoration:none;color:inherit}
+img{max-width:100%;display:block}
+.view{display:none!important}
+.view.active{display:block!important}
+.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.5rem}.gap-2{gap:1rem}.gap-3{gap:1.5rem}
+.text-center{text-align:center}.w-full{width:100%}.h-full{height:100%}
+.hidden{display:none!important}
+
+/* ===== LOADING ===== */
+#vl{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.orbs-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.35;animation:orbFloat 8s ease-in-out infinite alternate}
+.orb1{width:400px;height:400px;background:var(--primary);top:-100px;left:-100px;animation-delay:0s}
+.orb2{width:300px;height:300px;background:var(--secondary);bottom:-50px;right:-50px;animation-delay:-4s}
+.orb3{width:200px;height:200px;background:#c084fc;top:50%;left:60%;animation-delay:-2s}
+@keyframes orbFloat{0%{transform:translate(0,0) scale(1)}100%{transform:translate(30px,20px) scale(1.1)}}
+.load-content{position:relative;z-index:1;text-align:center}
+.load-logo{font-family:var(--font-d);font-size:clamp(2.5rem,8vw,4.5rem);font-weight:800;background:linear-gradient(135deg,var(--primary),var(--secondary),#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:loadPulse 2s ease infinite;letter-spacing:-1px}
+.load-sub{font-size:.95rem;color:var(--text2);margin-top:.5rem;letter-spacing:3px;text-transform:uppercase}
+.load-dev{font-size:.8rem;color:var(--text3);margin-top:.3rem;letter-spacing:2px}
+.load-ver{display:inline-block;background:var(--primary-dim);border:1px solid var(--border);color:var(--primary);font-size:.75rem;padding:.25rem .75rem;border-radius:20px;margin-top:1rem;letter-spacing:1px}
+.load-bar-wrap{width:200px;height:3px;background:var(--border);border-radius:4px;margin:2rem auto 0;overflow:hidden}
+.load-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:4px;animation:loadBar 2.2s ease-in-out forwards}
+@keyframes loadBar{0%{width:0%}60%{width:70%}100%{width:100%}}
+@keyframes loadPulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+/* ===== AUTH ===== */
+#va{min-height:100vh;display:none;align-items:center;justify-content:center;padding:1rem;position:relative;overflow:hidden}
+#va.active{display:flex!important}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:2.5rem 2rem;width:100%;max-width:420px;position:relative;z-index:1;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+.auth-logo{font-family:var(--font-d);font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:.25rem}
+.auth-tagline{text-align:center;color:var(--text2);font-size:.85rem;margin-bottom:2rem}
+.auth-tabs{display:flex;gap:.5rem;margin-bottom:2rem;background:var(--bg);border-radius:10px;padding:.3rem}
+.auth-tab{flex:1;padding:.6rem;border-radius:8px;font-size:.9rem;font-weight:600;color:var(--text2);background:transparent;transition:all var(--tr);text-align:center;cursor:pointer;border:none}
+.auth-tab.active{background:var(--primary);color:#fff}
+.form-group{margin-bottom:1.2rem}
+.form-label{font-size:.82rem;color:var(--text2);margin-bottom:.4rem;display:block;font-weight:500}
+.form-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;color:var(--text);font-size:.95rem;transition:all var(--tr)}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim)}
+.form-input::placeholder{color:var(--text3)}
+.btn-primary{width:100%;padding:.85rem;background:linear-gradient(135deg,var(--primary),#9171ff);border-radius:10px;color:#fff;font-size:.95rem;font-weight:700;letter-spacing:.5px;transition:all var(--tr);position:relative;overflow:hidden}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--primary-glow)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.1);opacity:0;transition:opacity .2s}
+.btn-primary:active::after{opacity:1}
+.auth-err{background:rgba(255,64,96,.12);border:1px solid rgba(255,64,96,.3);border-radius:8px;padding:.6rem 1rem;color:#ff4060;font-size:.83rem;margin-bottom:1rem;display:none}
+.auth-err.show{display:block}
+
+/* ===== POPUP ===== */
+#popup-overlay{position:fixed;inset:0;z-index:8888;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px);animation:fadeIn .3s ease}
+.popup-box{background:var(--surface);border:1px solid var(--border);border-radius:24px;max-width:420px;width:100%;overflow:hidden;animation:popupIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popupIn{from{opacity:0;transform:scale(.8) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.popup-img{width:100%;max-height:220px;object-fit:cover}
+.popup-body{padding:1.5rem}
+.popup-title{font-family:var(--font-d);font-size:1.3rem;font-weight:700;margin-bottom:.5rem}
+.popup-context{color:var(--text2);font-size:.9rem;line-height:1.6;margin-bottom:1.2rem}
+.popup-btn{display:inline-block;background:linear-gradient(135deg,var(--primary),#9171ff);color:#fff;padding:.7rem 1.5rem;border-radius:10px;font-weight:600;font-size:.9rem;transition:all var(--tr);text-align:center;width:100%}
+.popup-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--primary-glow)}
+.popup-close{position:absolute;top:1rem;right:1rem;width:32px;height:32px;background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;color:var(--text2);font-size:.9rem;transition:all var(--tr)}
+.popup-close:hover{background:var(--danger);color:#fff}
+
+/* ===== LAYOUT ===== */
+#va-app{display:none}
+#va-app.active{display:block!important}
+.nav{position:fixed;top:0;left:0;right:0;z-index:500;height:56px;background:rgba(7,7,26,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:1rem}
+.nav-logo{font-family:var(--font-d);font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex:1}
+.nav-btn{width:38px;height:38px;border-radius:50%;background:var(--primary-dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:.95rem;transition:all var(--tr);position:relative}
+.nav-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.nav-btn .badge{position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid var(--bg)}
+.main-content{padding-top:56px;padding-bottom:70px;min-height:100vh}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(7,7,26,.92);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;align-items:center;height:60px;padding:0 .5rem}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;color:var(--text3);font-size:.6rem;font-weight:600;cursor:pointer;transition:all var(--tr);padding:.5rem;border-radius:10px;text-transform:uppercase;letter-spacing:.5px}
+.bnav-item i{font-size:1.2rem}
+.bnav-item.active,.bnav-item:hover{color:var(--primary)}
+.bnav-item.active{background:var(--primary-dim)}
+.bnav-post-btn{width:50px;height:50px;background:linear-gradient(135deg,var(--primary),#9171ff);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.4rem;box-shadow:0 4px 20px var(--primary-glow);transition:all var(--tr);flex-shrink:0}
+.bnav-post-btn:hover{transform:scale(1.1) translateY(-4px);box-shadow:0 8px 28px var(--primary-glow)}
+
+/* ===== PAGES ===== */
+.page{display:none;animation:fadeIn .3s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== TRENDING ===== */
+.trending-wrap{padding:1rem;padding-bottom:0;overflow:hidden}
+.trending-label{font-size:.7rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+.trending-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.trending-scroll{display:flex;gap:.8rem;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory}
+.trending-scroll::-webkit-scrollbar{display:none}
+.trending-item{flex-shrink:0;width:140px;height:100px;border-radius:12px;overflow:hidden;position:relative;scroll-snap-align:start;cursor:pointer;transition:all var(--tr)}
+.trending-item:hover{transform:scale(1.04);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.trending-item img{width:100%;height:100%;object-fit:cover}
+.trending-item-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 50%)}
+.trending-item-name{position:absolute;bottom:.4rem;left:.4rem;right:.4rem;font-size:.65rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trending-hot{position:absolute;top:.4rem;left:.4rem;background:var(--danger);color:#fff;font-size:.55rem;font-weight:700;padding:.15rem .4rem;border-radius:6px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ===== POSTS ===== */
+.feed-wrap{padding:1rem;display:flex;flex-direction:column;gap:1rem}
+.post-card{background:var(--card);border:1px solid var(--border2);border-radius:var(--r);overflow:hidden;transition:all var(--tr);animation:cardIn .4s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.post-card:hover{border-color:var(--border);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.post-img-wrap{width:100%;overflow:hidden;position:relative;cursor:pointer}
+.post-img-wrap img{width:100%;height:auto;display:block;transition:transform .4s ease}
+.post-img-wrap:hover img{transform:scale(1.02)}
+.post-meta{padding:.8rem .9rem .6rem}
+.post-user-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.post-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);flex-shrink:0;cursor:pointer}
+.post-username{font-size:.88rem;font-weight:700;cursor:pointer;transition:color var(--tr)}
+.post-username:hover{color:var(--primary)}
+.post-badge{font-size:.6rem;font-weight:700;padding:.15rem .5rem;border-radius:20px;letter-spacing:.5px;text-transform:uppercase}
+.badge-admin{background:linear-gradient(135deg,#ff6b35,#ff9a3c);color:#fff}
+.badge-expert{background:linear-gradient(135deg,#6e56ff,#c084fc);color:#fff}
+.follow-btn{margin-left:auto;font-size:.72rem;font-weight:700;padding:.3rem .8rem;border-radius:20px;background:var(--primary-dim);color:var(--primary);border:1px solid var(--border);transition:all var(--tr)}
+.follow-btn:hover,.follow-btn.following{background:var(--primary);color:#fff;border-color:var(--primary)}
+.follow-btn.following{background:transparent;border-color:var(--primary);color:var(--primary)}
+.post-time{font-size:.72rem;color:var(--text3);margin-left:auto}
+.post-actions{display:flex;align-items:center;gap:.5rem;padding:.4rem .9rem .6rem}
+.post-act-btn{display:flex;align-items:center;gap:.3rem;font-size:.8rem;color:var(--text2);background:none;border:none;padding:.3rem .5rem;border-radius:8px;transition:all var(--tr);cursor:pointer}
+.post-act-btn:hover{color:var(--primary);background:var(--primary-dim)}
+.post-act-btn.liked{color:var(--danger)}
+.post-act-btn.saved{color:var(--gold)}
+.prompt-btn{margin-left:auto;font-size:.75rem;color:var(--secondary);display:flex;align-items:center;gap:.3rem;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);border-radius:8px;padding:.3rem .7rem;cursor:pointer;transition:all var(--tr)}
+.prompt-btn:hover{background:rgba(0,212,255,.18)}
+
+/* ===== PROMPT MODAL ===== */
+.modal-overlay{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.8);display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(8px);animation:fadeIn .2s ease}
+.modal-sheet{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;padding:1.5rem;animation:slideUp .3s cubic-bezier(.4,0,.2,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--text3);border-radius:2px;margin:0 auto 1.2rem}
+.prompt-content{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;font-size:.88rem;color:var(--text);line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto}
+.copy-btn{margin-top:.8rem;display:flex;align-items:center;gap:.5rem;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:.7rem 1.2rem;font-size:.9rem;font-weight:600;cursor:pointer;transition:all var(--tr)}
+.copy-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--primary-glow)}
+.modal-close{position:absolute;top:1rem;right:1rem}
+
+/* ===== PROFILE ===== */
+.profile-hero{padding:1.5rem 1rem 1rem;text-align:center}
+.profile-av-wrap{position:relative;display:inline-block;margin-bottom:1rem}
+.profile-av{width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid var(--primary)}
+.profile-av-edit{position:absolute;bottom:0;right:0;width:26px;height:26px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.7rem;cursor:pointer;border:2px solid var(--bg)}
+.profile-name{font-family:var(--font-d);font-size:1.4rem;font-weight:700;margin-bottom:.25rem}
+.profile-role{font-size:.8rem;color:var(--text2)}
+.profile-stats{display:flex;justify-content:center;gap:2rem;margin:1rem 0;padding:1rem;background:var(--card);border-radius:12px;margin:1rem}
+.profile-stat{text-align:center}
+.profile-stat-val{font-family:var(--font-d);font-size:1.3rem;font-weight:700;color:var(--primary)}
+.profile-stat-lbl{font-size:.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.profile-info-card{margin:0 1rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem}
+.profile-info-row{display:flex;align-items:center;gap:.7rem;padding:.5rem 0;border-bottom:1px solid var(--border2);font-size:.88rem}
+.profile-info-row:last-child{border-bottom:none}
+.profile-info-row i{width:20px;color:var(--primary);font-size:.9rem}
+.profile-info-val{color:var(--text2)}
+.profile-link{color:var(--secondary)!important}
+.edit-profile-btn{margin:1rem;display:flex;align-items:center;justify-content:center;gap:.5rem;background:var(--primary-dim);border:1px solid var(--border);border-radius:12px;padding:.75rem;color:var(--primary);font-weight:600;cursor:pointer;transition:all var(--tr)}
+.edit-profile-btn:hover{background:var(--primary);color:#fff}
+.profile-posts-section{padding:1rem}
+.section-title{font-family:var(--font-d);font-size:1rem;font-weight:700;margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ===== SEARCH ===== */
+.search-bar-wrap{padding:.8rem 1rem;position:sticky;top:56px;z-index:100;background:var(--bg);border-bottom:1px solid var(--border2)}
+.search-bar{display:flex;align-items:center;gap:.6rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.6rem .9rem}
+.search-bar i{color:var(--text3);font-size:.95rem}
+.search-bar input{flex:1;background:none;color:var(--text);font-size:.95rem}
+.search-bar input::placeholder{color:var(--text3)}
+.search-filters{display:flex;gap:.5rem;overflow-x:auto;padding:.6rem 1rem;scrollbar-width:none}
+.search-filters::-webkit-scrollbar{display:none}
+.s-filter{flex-shrink:0;padding:.4rem .9rem;border-radius:20px;font-size:.78rem;font-weight:600;background:var(--card);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all var(--tr)}
+.s-filter.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.search-results{padding:1rem}
+
+/* ===== NOTIFICATIONS ===== */
+.notif-item{display:flex;align-items:flex-start;gap:.8rem;padding:.9rem;background:var(--card);border:1px solid var(--border2);border-radius:12px;margin-bottom:.6rem;animation:cardIn .3s ease both;transition:all var(--tr)}
+.notif-item.unread{border-color:var(--border);background:var(--card2)}
+.notif-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.notif-icon.approved{background:rgba(0,230,118,.12);color:var(--success)}
+.notif-icon.rejected{background:rgba(255,64,96,.12);color:var(--danger)}
+.notif-icon.like{background:rgba(255,64,96,.12);color:var(--danger)}
+.notif-icon.follow{background:var(--primary-dim);color:var(--primary)}
+.notif-icon.system{background:rgba(255,214,0,.12);color:var(--gold)}
+.notif-icon.announce{background:linear-gradient(135deg,#ff6b35,#ff9a3c);color:#fff}
+.notif-body{flex:1}
+.notif-msg{font-size:.85rem;color:var(--text);line-height:1.5}
+.notif-msg.announce{color:var(--gold);font-weight:600}
+.notif-time{font-size:.72rem;color:var(--text3);margin-top:.2rem}
+.notif-link-btn{display:inline-block;margin-top:.5rem;background:var(--primary);color:#fff;padding:.3rem .8rem;border-radius:8px;font-size:.78rem;font-weight:600}
+
+/* ===== LEADERBOARD ===== */
+.lb-tabs{display:flex;gap:.5rem;padding:1rem;background:var(--bg);position:sticky;top:56px;z-index:100;border-bottom:1px solid var(--border2)}
+.lb-tab{flex:1;padding:.6rem;border-radius:10px;font-size:.85rem;font-weight:600;background:var(--card);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all var(--tr);text-align:center}
+.lb-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.lb-podium{display:flex;justify-content:center;align-items:flex-end;gap:.5rem;padding:1.5rem 1rem;gap:1rem}
+.lb-pod{text-align:center;flex:1}
+.lb-pod-av{border-radius:50%;object-fit:cover;border:3px solid;margin:0 auto .5rem;display:block}
+.lb-pod.gold .lb-pod-av{border-color:var(--gold);width:72px;height:72px}
+.lb-pod.silver .lb-pod-av{border-color:#b0bec5;width:60px;height:60px}
+.lb-pod.bronze .lb-pod-av{border-color:#bf8c60;width:56px;height:56px}
+.lb-pod-rank{font-size:1.2rem;margin-bottom:.3rem}
+.lb-pod-name{font-size:.78rem;font-weight:700;margin-bottom:.2rem}
+.lb-pod-score{font-size:.8rem;color:var(--text2)}
+.lb-list{padding:0 1rem 1rem}
+.lb-row{display:flex;align-items:center;gap:.8rem;padding:.75rem;background:var(--card);border:1px solid var(--border2);border-radius:12px;margin-bottom:.5rem;transition:all var(--tr)}
+.lb-row:hover{border-color:var(--border)}
+.lb-rank-num{font-family:var(--font-d);font-size:1rem;font-weight:700;width:28px;text-align:center;color:var(--text2)}
+.lb-av{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
+.lb-info{flex:1}
+.lb-name{font-size:.88rem;font-weight:700}
+.lb-score{font-size:.78rem;color:var(--text2)}
+.lb-pts{font-family:var(--font-d);font-size:.95rem;font-weight:700;color:var(--primary)}
+
+/* ===== SETTINGS ===== */
+.settings-section{margin:1rem;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.settings-section-title{padding:.75rem 1rem;font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px;border-bottom:1px solid var(--border2)}
+.settings-row{display:flex;align-items:center;gap:.8rem;padding:.9rem 1rem;border-bottom:1px solid var(--border2);cursor:pointer;transition:all var(--tr)}
+.settings-row:last-child{border-bottom:none}
+.settings-row:hover{background:var(--card2)}
+.settings-row-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.settings-row-body{flex:1}
+.settings-row-title{font-size:.9rem;font-weight:600}
+.settings-row-sub{font-size:.75rem;color:var(--text2)}
+.settings-row i.fa-chevron-right{color:var(--text3);font-size:.8rem}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--text3);border-radius:12px;cursor:pointer;transition:all var(--tr)}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:all var(--tr)}
+.toggle input:checked + .toggle-slider{background:var(--primary)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(20px)}
+
+/* ===== POST FORM ===== */
+.post-form-modal{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.75);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);animation:fadeIn .2s ease}
+.post-form-sheet{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:1.5rem;animation:slideUp .3s ease}
+.form-section-label{font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:.4rem}
+.img-upload-area{border:2px dashed var(--border);border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:all var(--tr);margin-bottom:1rem}
+.img-upload-area:hover{border-color:var(--primary);background:var(--primary-dim)}
+.img-upload-area i{font-size:2rem;color:var(--text3);margin-bottom:.5rem}
+.img-upload-area p{color:var(--text2);font-size:.85rem}
+.preview-img{width:100%;border-radius:10px;margin-bottom:1rem;display:none}
+.form-textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.75rem;color:var(--text);font-size:.9rem;min-height:120px;resize:vertical;line-height:1.6}
+.form-textarea:focus{border-color:var(--primary)}
+.submit-post-btn{width:100%;margin-top:1rem;padding:.85rem;background:linear-gradient(135deg,var(--primary),#9171ff);border:none;border-radius:12px;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;transition:all var(--tr)}
+.submit-post-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--primary-glow)}
+.submit-post-btn:disabled{opacity:.5;transform:none!important}
+
+/* ===== EDIT PROFILE FORM ===== */
+.edit-form-wrap{padding:1rem}
+.avatar-upload-center{text-align:center;margin-bottom:1.5rem}
+.avatar-upload-center .profile-av{width:80px;height:80px;margin:0 auto .5rem;cursor:pointer}
+.avatar-upload-btn{background:var(--primary-dim);color:var(--primary);border:1px solid var(--border);border-radius:8px;padding:.4rem .9rem;font-size:.8rem;font-weight:600;cursor:pointer;transition:all var(--tr)}
+.avatar-upload-btn:hover{background:var(--primary);color:#fff}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;top:70px;right:1rem;z-index:9000;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.75rem 1rem;font-size:.85rem;color:var(--text);display:flex;align-items:center;gap:.6rem;box-shadow:var(--shadow);animation:toastIn .3s cubic-bezier(.34,1.56,.64,1);max-width:280px;pointer-events:all}
+.toast.success{border-color:rgba(0,230,118,.4)}
+.toast.error{border-color:rgba(255,64,96,.4)}
+.toast.info{border-color:var(--border)}
+@keyframes toastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(30px)}}
+.toast-out{animation:toastOut .3s ease forwards}
+
+/* ===== THEMES PANEL ===== */
+.theme-panel{padding:1rem}
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.5rem}
+.theme-card{border:2px solid var(--border);border-radius:12px;padding:.8rem;text-align:center;cursor:pointer;transition:all var(--tr)}
+.theme-card.active{border-color:var(--primary);background:var(--primary-dim)}
+.theme-card:hover{border-color:var(--primary)}
+.theme-preview{width:100%;height:40px;border-radius:8px;margin-bottom:.5rem}
+.theme-name{font-size:.75rem;font-weight:600}
+.lang-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
+.lang-card{border:2px solid var(--border);border-radius:12px;padding:.8rem;text-align:center;cursor:pointer;transition:all var(--tr)}
+.lang-card.active{border-color:var(--primary);background:var(--primary-dim)}
+.lang-flag{font-size:1.5rem;margin-bottom:.3rem}
+.lang-name{font-size:.78rem;font-weight:600}
+
+/* ===== UTILS ===== */
+.page-header{display:flex;align-items:center;gap:.8rem;padding:1rem;border-bottom:1px solid var(--border2)}
+.back-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);cursor:pointer;transition:all var(--tr);flex-shrink:0}
+.back-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.page-header-title{font-family:var(--font-d);font-size:1.1rem;font-weight:700}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text2)}
+.empty-state i{font-size:3rem;color:var(--text3);margin-bottom:1rem}
+.empty-state p{font-size:.9rem}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:2rem auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ripple-btn{position:relative;overflow:hidden}
+.ripple-btn::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,.1);opacity:0;transform:scale(0);border-radius:inherit;transition:.4s ease}
+.ripple-btn:active::before{opacity:1;transform:scale(2)}
+
+/* ===== SAVED ===== */
+.saved-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;padding:1rem}
+.saved-item{border-radius:10px;overflow:hidden;position:relative;cursor:pointer;aspect-ratio:1}
+.saved-item img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.saved-item:hover img{transform:scale(1.05)}
+.saved-item-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%);opacity:0;transition:opacity .3s}
+.saved-item:hover .saved-item-overlay{opacity:1}
+
+/* ===== FOLLOWERS ===== */
+.follow-list{padding:1rem}
+.follow-row{display:flex;align-items:center;gap:.8rem;padding:.7rem;border-bottom:1px solid var(--border2)}
+.follow-row:last-child{border-bottom:none}
+.follow-av{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
+.follow-info{flex:1}
+.follow-name{font-size:.9rem;font-weight:700}
+.follow-role{font-size:.75rem;color:var(--text2)}
+
+/* ===== FULLSCREEN IMG ===== */
+#img-viewer{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.95);display:none;align-items:center;justify-content:center;padding:1rem}
+#img-viewer.active{display:flex}
+#img-viewer img{max-width:100%;max-height:90vh;object-fit:contain;border-radius:12px}
+#img-viewer-close{position:absolute;top:1rem;right:1rem;width:40px;height:40px;background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:1.1rem;border:none;transition:all var(--tr)}
+#img-viewer-close:hover{background:var(--danger)}
+
+/* ===== CHANGE PW ===== */
+.change-pw-wrap{padding:1.5rem}
+
+/* ===== ADMIN TAG ===== */
+.page-admin-notice{background:linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,154,60,.1));border:1px solid rgba(255,107,53,.3);border-radius:12px;padding:.75rem 1rem;margin:1rem;display:flex;align-items:center;gap:.6rem;font-size:.85rem;font-weight:600}
+
+/* ===== SCROLL TOP ===== */
+#scroll-top{position:fixed;bottom:80px;right:1rem;width:40px;height:40px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;border:none;cursor:pointer;opacity:0;pointer-events:none;transition:all var(--tr);box-shadow:0 4px 16px var(--primary-glow);z-index:400}
+#scroll-top.visible{opacity:1;pointer-events:all}
+#scroll-top:hover{transform:translateY(-3px)}
+
+/* ===== RESPONSIVE ===== */
+@media(min-width:600px){
+  .main-content{max-width:600px;margin:0 auto}
+  .bottom-nav{max-width:600px;left:50%;transform:translateX(-50%)}
+  .nav{max-width:600px;left:50%;transform:translateX(-50%)}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="vl">
+  <div class="orbs-bg">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+  <div class="load-content">
+    <div class="load-logo">Prompt Arena</div>
+    <div class="load-sub">Where AI Creativity Lives</div>
+    <div class="load-dev">Developed by SP Team</div>
+    <div class="load-ver">Version 1.01</div>
+    <div class="load-bar-wrap"><div class="load-bar"></div></div>
+  </div>
+</div>
+
+<!-- AUTH PAGE -->
+<div id="va" class="view">
+  <div class="orbs-bg">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+  </div>
+  <div class="auth-box">
+    <div class="auth-logo">Prompt Arena</div>
+    <div class="auth-tagline">Share your AI prompt creativity</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuthTab('login')">Login</div>
+      <div class="auth-tab" onclick="switchAuthTab('register')">Register</div>
+    </div>
+    <div id="auth-err" class="auth-err"></div>
+    <!-- Login -->
+    <div id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="login-email" class="form-input" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="login-pass" class="form-input" placeholder="••••••••"/>
+      </div>
+      <button class="btn-primary ripple-btn" onclick="doLogin()">Sign In</button>
+      <p style="text-align:center;margin-top:1rem;font-size:.82rem;color:var(--text2)">
+        <span style="cursor:pointer;color:var(--secondary)" onclick="doForgotPw()">Forgot password?</span>
+      </p>
+    </div>
+    <!-- Register -->
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Display Name</label>
+        <input type="text" id="reg-name" class="form-input" placeholder="Your name"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="reg-email" class="form-input" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="reg-pass" class="form-input" placeholder="Min 6 characters"/>
+      </div>
+      <button class="btn-primary ripple-btn" onclick="doRegister()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- WELCOME POPUP -->
+<div id="popup-overlay" style="display:none">
+  <div class="popup-box" style="position:relative">
+    <button class="popup-close" onclick="closePopup()"><i class="fa fa-times"></i></button>
+    <img id="popup-img" src="" alt="" class="popup-img"/>
+    <div class="popup-body">
+      <div id="popup-title" class="popup-title"></div>
+      <div id="popup-context" class="popup-context"></div>
+      <a id="popup-link" href="#" target="_blank" class="popup-btn">Learn More</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="va-app">
+  <!-- TOP NAV -->
+  <nav class="nav">
+    <div class="nav-logo">Prompt Arena</div>
+    <button class="nav-btn" onclick="openSearch()" title="Search"><i class="fa fa-search"></i></button>
+    <button class="nav-btn" onclick="navTo('notifications')" title="Notifications" id="notif-nav-btn"><i class="fa fa-bell"></i></button>
+    <button class="nav-btn" onclick="navTo('profile')" title="Profile" id="prof-nav-btn">
+      <img id="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=6e56ff&color=fff" style="width:38px;height:38px;border-radius:50%;object-fit:cover" alt=""/>
+    </button>
+  </nav>
+
+  <div class="main-content">
+    <!-- FEED PAGE -->
+    <div id="page-feed" class="page active">
+      <div class="trending-wrap">
+        <div class="trending-label"><i class="fa fa-fire"></i> Trending</div>
+        <div class="trending-scroll" id="trending-scroll"></div>
+      </div>
+      <div class="feed-wrap" id="feed-list">
+        <div class="spinner"></div>
+      </div>
+    </div>
+
+    <!-- SEARCH PAGE -->
+    <div id="page-search" class="page">
+      <div class="search-bar-wrap">
+        <div class="search-bar">
+          <i class="fa fa-search"></i>
+          <input type="text" placeholder="Search prompts, users, tags..." id="search-input" oninput="doSearch()"/>
+          <i class="fa fa-times" style="cursor:pointer;color:var(--text3)" onclick="clearSearch()"></i>
+        </div>
+        <div class="search-filters">
+          <div class="s-filter active" onclick="setSearchFilter('all',this)">All</div>
+          <div class="s-filter" onclick="setSearchFilter('posts',this)">Posts</div>
+          <div class="s-filter" onclick="setSearchFilter('users',this)">Users</div>
+          <div class="s-filter" onclick="setSearchFilter('trending',this)">Trending</div>
+        </div>
+      </div>
+      <div class="search-results" id="search-results">
+        <div class="empty-state"><i class="fa fa-search"></i><p>Search for prompts or users</p></div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD PAGE -->
+    <div id="page-leaderboard" class="page">
+      <div class="lb-tabs">
+        <div class="lb-tab active" onclick="switchLbTab('daily',this)">Daily</div>
+        <div class="lb-tab" onclick="switchLbTab('weekly',this)">Weekly</div>
+      </div>
+      <div id="lb-podium" class="lb-podium"></div>
+      <div id="lb-list" class="lb-list"></div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="page-profile" class="page">
+      <div class="profile-hero">
+        <div class="profile-av-wrap">
+          <img id="profile-av" src="https://ui-avatars.com/api/?name=U&background=6e56ff&color=fff" class="profile-av" alt=""/>
+        </div>
+        <div class="profile-name" id="profile-name">Loading...</div>
+        <div id="profile-badge-wrap" style="margin:.3rem 0"></div>
+        <div class="profile-role" id="profile-role-text"></div>
+      </div>
+      <div class="profile-stats">
+        <div class="profile-stat"><div class="profile-stat-val" id="stat-posts">0</div><div class="profile-stat-lbl">Posts</div></div>
+        <div class="profile-stat" onclick="showFollowers('followers')" style="cursor:pointer"><div class="profile-stat-val" id="stat-followers">0</div><div class="profile-stat-lbl">Followers</div></div>
+        <div class="profile-stat" onclick="showFollowers('following')" style="cursor:pointer"><div class="profile-stat-val" id="stat-following">0</div><div class="profile-stat-lbl">Following</div></div>
+        <div class="profile-stat"><div class="profile-stat-val" id="stat-likes">0</div><div class="profile-stat-lbl">Likes</div></div>
+      </div>
+      <div class="profile-info-card" id="profile-info-card"></div>
+      <div class="edit-profile-btn ripple-btn" onclick="navTo('edit-profile')"><i class="fa fa-edit"></i> Edit Profile</div>
+      <div class="profile-posts-section">
+        <div class="section-title"><i class="fa fa-th" style="color:var(--primary)"></i> My Posts</div>
+        <div id="my-posts-grid"></div>
+      </div>
+      <div class="profile-posts-section">
+        <div class="section-title"><i class="fa fa-bookmark" style="color:var(--gold)"></i> Saved</div>
+        <div class="saved-grid" id="saved-grid"></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS PAGE -->
+    <div id="page-notifications" class="page">
+      <div class="page-header">
+        <div class="page-header-title">Notifications</div>
+        <button style="margin-left:auto;background:none;border:none;color:var(--text2);font-size:.8rem;cursor:pointer" onclick="markAllRead()">Mark all read</button>
+      </div>
+      <div style="padding:1rem" id="notif-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- EDIT PROFILE PAGE -->
+    <div id="page-edit-profile" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button>
+        <div class="page-header-title">Edit Profile</div>
+      </div>
+      <div class="edit-form-wrap">
+        <div class="avatar-upload-center">
+          <img id="edit-avatar-preview" src="" class="profile-av" alt="" onclick="document.getElementById('edit-avatar-file').click()"/>
+          <div class="avatar-upload-btn" onclick="document.getElementById('edit-avatar-file').click()"><i class="fa fa-camera"></i> Change Photo</div>
+          <input type="file" id="edit-avatar-file" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
+        </div>
+        <div class="form-group"><label class="form-label">Display Name</label><input type="text" id="edit-name" class="form-input"/></div>
+        <div class="form-group"><label class="form-label">Address</label><input type="text" id="edit-address" class="form-input" placeholder="Your city, country"/></div>
+        <div class="form-group"><label class="form-label">Mobile Number</label><input type="tel" id="edit-mobile" class="form-input" placeholder="+1 234 567 890"/></div>
+        <div class="form-group"><label class="form-label">Telegram Username</label><input type="text" id="edit-telegram" class="form-input" placeholder="@username"/></div>
+        <div class="form-group"><label class="form-label">Facebook Link</label><input type="url" id="edit-facebook" class="form-input" placeholder="https://facebook.com/..."/></div>
+        <div class="form-group"><label class="form-label">Bio</label><textarea id="edit-bio" class="form-textarea" rows="3" placeholder="Tell something about yourself..."></textarea></div>
+        <button class="submit-post-btn ripple-btn" onclick="saveProfile()">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div id="page-settings" class="page">
+      <div class="page-header">
+        <div class="page-header-title"><i class="fa fa-cog" style="color:var(--primary)"></i> Settings</div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">Appearance</div>
+        <div class="settings-row" onclick="navTo('themes')">
+          <div class="settings-row-icon" style="background:var(--primary-dim);color:var(--primary)"><i class="fa fa-palette"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title">Theme</div><div class="settings-row-sub" id="current-theme-label">Dark</div></div>
+          <i class="fa fa-chevron-right"></i>
+        </div>
+        <div class="settings-row" onclick="navTo('language')">
+          <div class="settings-row-icon" style="background:rgba(0,212,255,.12);color:var(--secondary)"><i class="fa fa-globe"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title">Language</div><div class="settings-row-sub" id="current-lang-label">English</div></div>
+          <i class="fa fa-chevron-right"></i>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">Account</div>
+        <div class="settings-row" onclick="navTo('change-password')">
+          <div class="settings-row-icon" style="background:rgba(255,152,0,.12);color:var(--warning)"><i class="fa fa-lock"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title">Change Password</div><div class="settings-row-sub">Update your password</div></div>
+          <i class="fa fa-chevron-right"></i>
+        </div>
+        <div class="settings-row" onclick="navTo('profile')">
+          <div class="settings-row-icon" style="background:var(--primary-dim);color:var(--primary)"><i class="fa fa-user"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title">Edit Profile</div><div class="settings-row-sub">Update your info</div></div>
+          <i class="fa fa-chevron-right"></i>
+        </div>
+        <div class="settings-row" onclick="doLogout()">
+          <div class="settings-row-icon" style="background:rgba(255,64,96,.12);color:var(--danger)"><i class="fa fa-sign-out-alt"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title" style="color:var(--danger)">Logout</div><div class="settings-row-sub">Sign out of your account</div></div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">Notifications</div>
+        <div class="settings-row">
+          <div class="settings-row-icon" style="background:rgba(0,230,118,.12);color:var(--success)"><i class="fa fa-bell"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title">Push Notifications</div></div>
+          <label class="toggle"><input type="checkbox" id="toggle-notif" checked onchange="saveTogglePref('notif',this.checked)"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text3);padding:1.5rem">Prompt Arena v1.01 — SP Team</p>
+    </div>
+
+    <!-- THEMES PAGE -->
+    <div id="page-themes" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button>
+        <div class="page-header-title">Choose Theme</div>
+      </div>
+      <div class="theme-panel">
+        <div class="theme-grid">
+          <div class="theme-card active" id="theme-dark" onclick="setTheme('dark',this)">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#07071a,#0e0e2a)"></div>
+            <div class="theme-name">Dark</div>
+          </div>
+          <div class="theme-card" id="theme-light" onclick="setTheme('light',this)">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f0f0f8,#fff)"></div>
+            <div class="theme-name">Light</div>
+          </div>
+          <div class="theme-card" id="theme-midnight" onclick="setTheme('midnight',this)">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#000,#001020)"></div>
+            <div class="theme-name">Midnight</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LANGUAGE PAGE -->
+    <div id="page-language" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button>
+        <div class="page-header-title">Language</div>
+      </div>
+      <div class="theme-panel">
+        <div class="lang-grid">
+          <div class="lang-card active" onclick="setLang('en',this)"><div class="lang-flag">🇺🇸</div><div class="lang-name">English</div></div>
+          <div class="lang-card" onclick="setLang('bn',this)"><div class="lang-flag">🇧🇩</div><div class="lang-name">বাংলা</div></div>
+          <div class="lang-card" onclick="setLang('ar',this)"><div class="lang-flag">🇸🇦</div><div class="lang-name">العربية</div></div>
+          <div class="lang-card" onclick="setLang('hi',this)"><div class="lang-flag">🇮🇳</div><div class="lang-name">हिंदी</div></div>
+          <div class="lang-card" onclick="setLang('fr',this)"><div class="lang-flag">🇫🇷</div><div class="lang-name">Français</div></div>
+          <div class="lang-card" onclick="setLang('es',this)"><div class="lang-flag">🇪🇸</div><div class="lang-name">Español</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHANGE PASSWORD PAGE -->
+    <div id="page-change-password" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button>
+        <div class="page-header-title">Change Password</div>
+      </div>
+      <div class="change-pw-wrap">
+        <div class="form-group"><label class="form-label">Current Password</label><input type="password" id="pw-current" class="form-input" placeholder="••••••••"/></div>
+        <div class="form-group"><label class="form-label">New Password</label><input type="password" id="pw-new" class="form-input" placeholder="Min 6 characters"/></div>
+        <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" id="pw-confirm" class="form-input" placeholder="Repeat new password"/></div>
+        <button class="submit-post-btn ripple-btn" onclick="changePassword()">Update Password</button>
+      </div>
+    </div>
+
+    <!-- USER PROFILE PAGE (others) -->
+    <div id="page-user-profile" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button>
+        <div class="page-header-title" id="user-profile-name">Profile</div>
+      </div>
+      <div class="profile-hero">
+        <div class="profile-av-wrap">
+          <img id="up-avatar" src="" class="profile-av" alt=""/>
+        </div>
+        <div class="profile-name" id="up-name"></div>
+        <div id="up-badge-wrap" style="margin:.3rem 0"></div>
+        <div class="profile-role" id="up-bio"></div>
+      </div>
+      <div class="profile-stats">
+        <div class="profile-stat"><div class="profile-stat-val" id="up-posts">0</div><div class="profile-stat-lbl">Posts</div></div>
+        <div class="profile-stat"><div class="profile-stat-val" id="up-followers">0</div><div class="profile-stat-lbl">Followers</div></div>
+        <div class="profile-stat"><div class="profile-stat-val" id="up-following">0</div><div class="profile-stat-lbl">Following</div></div>
+      </div>
+      <div id="up-follow-btn-wrap" style="padding:0 1rem 1rem">
+        <button id="up-follow-btn" class="btn-primary ripple-btn" onclick="toggleFollowUser()">Follow</button>
+      </div>
+      <div class="profile-info-card" id="up-info-card"></div>
+      <div style="padding:1rem">
+        <div class="section-title"><i class="fa fa-th" style="color:var(--primary)"></i> Posts</div>
+        <div id="up-posts-grid"></div>
+      </div>
+    </div>
+
+    <!-- FOLLOWERS PAGE -->
+    <div id="page-followers" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button>
+        <div class="page-header-title" id="followers-page-title">Followers</div>
+      </div>
+      <div class="follow-list" id="follow-list-items"></div>
+    </div>
+
+  </div><!-- end main-content -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="bnav-item active" id="bnav-feed" onclick="navTo('feed')"><i class="fa fa-home"></i><span>Home</span></div>
+    <div class="bnav-item" id="bnav-search" onclick="openSearch()"><i class="fa fa-search"></i><span>Search</span></div>
+    <div class="bnav-post-btn ripple-btn" onclick="openPostForm()" title="Post"><i class="fa fa-plus"></i></div>
+    <div class="bnav-item" id="bnav-leaderboard" onclick="navTo('leaderboard')"><i class="fa fa-trophy"></i><span>Board</span></div>
+    <div class="bnav-item" id="bnav-settings" onclick="navTo('settings')"><i class="fa fa-cog"></i><span>Settings</span></div>
+  </nav>
+</div><!-- end va-app -->
+
+<!-- POST FORM MODAL -->
+<div id="post-form-modal" style="display:none" class="post-form-modal">
+  <div class="post-form-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+      <span style="font-family:var(--font-d);font-size:1.1rem;font-weight:700">New Post</span>
+      <button onclick="closePostForm()" style="background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="form-section-label">Image</div>
+    <div class="img-upload-area" onclick="document.getElementById('post-img-file').click()">
+      <i class="fa fa-image"></i>
+      <p>Tap to upload your AI-generated image</p>
+      <p style="font-size:.75rem;color:var(--text3);margin-top:.3rem">JPG, PNG, WEBP supported</p>
+    </div>
+    <input type="file" id="post-img-file" accept="image/*" style="display:none" onchange="handlePostImage(this)"/>
+    <img id="post-img-preview" class="preview-img" alt=""/>
+    <div class="form-section-label">Prompt Used</div>
+    <textarea id="post-prompt" class="form-textarea" placeholder="Paste the full prompt you used to generate this image..."></textarea>
+    <div class="form-section-label" style="margin-top:.8rem">Tags (optional)</div>
+    <input type="text" id="post-tags" class="form-input" placeholder="e.g. portrait, cyberpunk, fantasy"/>
+    <p style="font-size:.75rem;color:var(--text3);margin-top:.5rem"><i class="fa fa-info-circle"></i> Your post will be reviewed by admin before appearing in the feed.</p>
+    <button class="submit-post-btn ripple-btn" id="submit-post-btn" onclick="submitPost()">Submit Post</button>
+  </div>
+</div>
+
+<!-- PROMPT MODAL -->
+<div id="prompt-modal" style="display:none" class="modal-overlay" onclick="closePromptModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <span style="font-family:var(--font-d);font-size:1rem;font-weight:700"><i class="fa fa-magic" style="color:var(--primary)"></i> Full Prompt</span>
+      <button onclick="closePromptModal()" style="background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer"><i class="fa fa-times"></i></button>
+    </div>
+    <div id="prompt-modal-text" class="prompt-content"></div>
+    <button class="copy-btn ripple-btn" onclick="copyPrompt()"><i class="fa fa-copy"></i> Copy Prompt</button>
+  </div>
+</div>
+
+<!-- IMAGE VIEWER -->
+<div id="img-viewer">
+  <button id="img-viewer-close" onclick="closeImgViewer()"><i class="fa fa-times"></i></button>
+  <img id="img-viewer-src" src="" alt=""/>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- SCROLL TO TOP -->
+<button id="scroll-top" onclick="scrollToTop()"><i class="fa fa-chevron-up"></i></button>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp, increment, arrayUnion, arrayRemove, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAri3Vg5_R5HwUX5psQhCUGxOY3t9OwVSI",
+  authDomain: "prompt-8153d.firebaseapp.com",
+  projectId: "prompt-8153d",
+  storageBucket: "prompt-8153d.firebasestorage.app",
+  messagingSenderId: "103433330213",
+  appId: "1:103433330213:web:b9fd5842575ea3a53c69cc",
+  measurementId: "G-PRK8HXGJS5"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const IMGBB = "ae035fee1535172e50bab0ad8d417031";
+
+let currentUser = null;
+let currentUserData = null;
+let pageHistory = ['feed'];
+let currentPage = 'feed';
+let searchFilter = 'all';
+let lbTab = 'daily';
+let viewingUserId = null;
+let feedUnsubscribe = null;
+let notifUnsubscribe = null;
+
+// ===== INIT =====
+window.addEventListener('DOMContentLoaded', () => {
+  applyStoredTheme();
+  applyStoredLang();
+  setTimeout(() => {
+    document.getElementById('vl').style.transition = 'opacity .5s ease';
+    document.getElementById('vl').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('vl').style.display = 'none';
+      checkAuth();
+    }, 500);
+  }, 2400);
+});
+
+function checkAuth() {
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      await loadUserData(user.uid);
+      showApp();
+    } else {
+      showAuth();
+    }
+  });
+}
+
+async function loadUserData(uid) {
+  const snap = await getDoc(doc(db, 'users', uid));
+  if (snap.exists()) {
+    currentUserData = { id: uid, ...snap.data() };
+  } else {
+    currentUserData = { id: uid, displayName: currentUser.displayName || 'User', role: 'user', photoURL: '', bio: '', address: '', mobile: '', telegram: '', facebook: '', followers: [], following: [], totalLikes: 0 };
+    await setDoc(doc(db, 'users', uid), currentUserData);
+  }
+  updateNavAvatar();
+}
+
+function updateNavAvatar() {
+  const av = document.getElementById('nav-avatar');
+  if (av) av.src = currentUserData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUserData.displayName||'U')}&background=6e56ff&color=fff&size=80`;
+}
+
+function showAuth() {
+  document.getElementById('va').classList.add('active');
+  document.getElementById('va-app').classList.remove('active');
+}
+
+function showApp() {
+  document.getElementById('va').classList.remove('active');
+  document.getElementById('va-app').classList.add('active');
+  navTo('feed');
+  loadPopup();
+  loadNotifCount();
+}
+
+// ===== AUTH FUNCTIONS =====
+window.switchAuthTab = (tab) => {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('login-form').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('auth-err').classList.remove('show');
+};
+
+window.doLogin = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!email||!pass) { showAuthErr('Please fill all fields'); return; }
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    showAuthErr(e.message.replace('Firebase: ','').replace(/\(auth.*\)/,''));
+  }
+};
+
+window.doRegister = async () => {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  if (!name||!email||!pass) { showAuthErr('Please fill all fields'); return; }
+  if (pass.length < 6) { showAuthErr('Password must be at least 6 characters'); return; }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      displayName: name, email, role: 'user', photoURL: '', bio: '', address: '', mobile: '', telegram: '', facebook: '', followers: [], following: [], totalLikes: 0, createdAt: serverTimestamp()
+    });
+    await logActivity(`New user registered: ${name}`);
+  } catch(e) {
+    showAuthErr(e.message.replace('Firebase: ','').replace(/\(auth.*\)/,''));
+  }
+};
+
+window.doForgotPw = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showAuthErr('Enter your email first'); return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showToast('Reset email sent! Check your inbox.','success');
+  } catch(e) { showAuthErr(e.message); }
+};
+
+window.doLogout = async () => {
+  if (feedUnsubscribe) feedUnsubscribe();
+  if (notifUnsubscribe) notifUnsubscribe();
+  await signOut(auth);
+  currentUser = null; currentUserData = null;
+  document.getElementById('va-app').classList.remove('active');
+  document.getElementById('va').classList.add('active');
+  window.switchAuthTab('login');
+};
+
+function showAuthErr(msg) {
+  const el = document.getElementById('auth-err');
+  el.textContent = msg; el.classList.add('show');
+}
+
+// ===== POPUP =====
+async function loadPopup() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'popup'));
+    if (snap.exists() && snap.data().active) {
+      const d = snap.data();
+      document.getElementById('popup-img').src = d.image || '';
+      document.getElementById('popup-img').style.display = d.image ? 'block' : 'none';
+      document.getElementById('popup-title').textContent = d.title || '';
+      document.getElementById('popup-context').textContent = d.context || '';
+      const lnk = document.getElementById('popup-link');
+      lnk.href = d.link || '#';
+      lnk.textContent = d.btnText || 'Learn More';
+      document.getElementById('popup-overlay').style.display = 'flex';
+    }
+  } catch(e) {}
+}
+window.closePopup = () => { document.getElementById('popup-overlay').style.display = 'none'; };
+
+// ===== NAVIGATION =====
+window.navTo = (page) => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-' + page);
+  if (el) { el.classList.add('active'); }
+  if (currentPage !== page) { pageHistory.push(page); }
+  currentPage = page;
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  const bmap = {feed:'bnav-feed',search:'bnav-search',leaderboard:'bnav-leaderboard',settings:'bnav-settings'};
+  if (bmap[page]) document.getElementById(bmap[page]).classList.add('active');
+  if (page==='feed') { loadFeed(); scrollTo(0,0); }
+  if (page==='notifications') loadNotifications();
+  if (page==='leaderboard') loadLeaderboard();
+  if (page==='profile') loadMyProfile();
+  if (page==='edit-profile') loadEditProfile();
+};
+
+window.navBack = () => {
+  if (pageHistory.length > 1) { pageHistory.pop(); const prev = pageHistory[pageHistory.length-1]; navTo(prev); }
+  else navTo('feed');
+};
+
+window.openSearch = () => { navTo('search'); document.getElementById('search-input').focus(); };
+window.closeSearch = () => navTo('feed');
+
+// Back button support
+window.addEventListener('popstate', () => { navBack(); });
+window.history.pushState({}, '', window.location.href);
+
+// ===== FEED =====
+async function loadFeed() {
+  const el = document.getElementById('feed-list');
+  el.innerHTML = '<div class="spinner"></div>';
+  if (feedUnsubscribe) feedUnsubscribe();
+  const q = query(collection(db,'posts'), where('status','==','approved'), orderBy('createdAt','desc'), limit(30));
+  feedUnsubscribe = onSnapshot(q, (snap) => {
+    if (snap.empty) { el.innerHTML = '<div class="empty-state"><i class="fa fa-image"></i><p>No posts yet. Be the first!</p></div>'; return; }
+    el.innerHTML = '';
+    snap.docs.forEach((d,i) => { el.appendChild(buildPostCard(d.id, d.data(), i)); });
+    loadTrending(snap.docs);
+  });
+}
+
+function buildPostCard(id, data, idx) {
+  const div = document.createElement('div');
+  div.className = 'post-card';
+  div.style.animationDelay = (idx * 0.06) + 's';
+  const isLiked = data.likes && data.likes.includes(currentUser?.uid);
+  const isSaved = data.saves && data.saves.includes(currentUser?.uid);
+  const isOwn = data.userId === currentUser?.uid;
+  const isFollowing = currentUserData?.following && currentUserData.following.includes(data.userId);
+  const badge = getBadgeHTML(data.userRole);
+  const ago = timeAgo(data.createdAt?.toDate());
+  div.innerHTML = `
+    <div class="post-img-wrap" onclick="openImgViewer('${data.imageUrl}')">
+      <img src="${data.imageUrl}" alt="AI Image" loading="lazy" style="width:100%;height:auto"/>
+    </div>
+    <div class="post-meta">
+      <div class="post-user-row">
+        <img class="post-avatar" src="${data.userPhoto||'https://ui-avatars.com/api/?name='+encodeURIComponent(data.userName||'U')+'&background=6e56ff&color=fff&size=64'}" alt="" onclick="openUserProfile('${data.userId}')"/>
+        <span class="post-username" onclick="openUserProfile('${data.userId}')">${escHtml(data.userName||'User')}</span>
+        ${badge}
+        ${!isOwn ? `<button class="follow-btn ${isFollowing?'following':''}" id="follow-${id}" onclick="toggleFollow('${data.userId}','${id}')">${isFollowing?'Following':'Follow'}</button>` : ''}
+        <span class="post-time">${ago}</span>
+      </div>
+    </div>
+    <div class="post-actions">
+      <button class="post-act-btn ${isLiked?'liked':''}" id="like-btn-${id}" onclick="toggleLike('${id}','${data.userId}')">
+        <i class="fa${isLiked?'s':' far'} fa-heart"></i> <span id="like-count-${id}">${(data.likes||[]).length}</span>
+      </button>
+      <button class="post-act-btn ${isSaved?'saved':''}" id="save-btn-${id}" onclick="toggleSave('${id}')">
+        <i class="fa${isSaved?'s':' far'} fa-bookmark"></i>
+      </button>
+      ${isOwn ? `<button class="post-act-btn" onclick="deletePost('${id}')" style="color:var(--danger)"><i class="fa fa-trash"></i></button>` : ''}
+      <button class="prompt-btn" onclick="showPrompt('${id}')"><i class="fa fa-magic"></i> See Prompt</button>
+    </div>`;
+  return div;
+}
+
+function getBadgeHTML(role) {
+  if (role==='admin') return '<span class="post-badge badge-admin"><i class="fa fa-shield-alt"></i> Admin</span>';
+  if (role==='expert') return '<span class="post-badge badge-expert"><i class="fa fa-star"></i> Expert</span>';
+  return '';
+}
+
+function loadTrending(docs) {
+  const wrap = document.getElementById('trending-scroll');
+  wrap.innerHTML = '';
+  const sorted = [...docs].sort((a,b) => ((b.data().likes||[]).length) - ((a.data().likes||[]).length)).slice(0,10);
+  sorted.forEach((d,i) => {
+    const data = d.data();
+    const div = document.createElement('div');
+    div.className = 'trending-item';
+    div.innerHTML = `
+      ${i<3?'<div class="trending-hot">🔥 Hot</div>':''}
+      <img src="${data.imageUrl}" alt="" loading="lazy"/>
+      <div class="trending-item-overlay"></div>
+      <div class="trending-item-name">${escHtml(data.userName||'User')}</div>`;
+    div.onclick = () => openImgViewer(data.imageUrl);
+    wrap.appendChild(div);
+  });
+}
+
+// ===== LIKE / SAVE / FOLLOW =====
+window.toggleLike = async (postId, postUserId) => {
+  if (!currentUser) return;
+  const ref = doc(db,'posts',postId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const likes = snap.data().likes || [];
+  const isLiked = likes.includes(currentUser.uid);
+  await updateDoc(ref, { likes: isLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+  if (!isLiked && postUserId !== currentUser.uid) {
+    await addNotif(postUserId, 'like', `${currentUserData.displayName} liked your post`, '');
+    await updateDoc(doc(db,'users',postUserId), { totalLikes: increment(1) });
+  }
+  const btn = document.getElementById('like-btn-'+postId);
+  const cnt = document.getElementById('like-count-'+postId);
+  if (btn) { btn.classList.toggle('liked',!isLiked); btn.querySelector('i').className = (!isLiked?'fas':'far') + ' fa-heart'; }
+  if (cnt) cnt.textContent = likes.length + (isLiked?-1:1);
+};
+
+window.toggleSave = async (postId) => {
+  if (!currentUser) return;
+  const ref = doc(db,'users',currentUser.uid);
+  const snap = await getDoc(ref);
+  const saves = snap.data().savedPosts || [];
+  const isSaved = saves.includes(postId);
+  await updateDoc(ref, { savedPosts: isSaved ? arrayRemove(postId) : arrayUnion(postId) });
+  const btn = document.getElementById('save-btn-'+postId);
+  if (btn) { btn.classList.toggle('saved',!isSaved); btn.querySelector('i').className = (!isSaved?'fas':'far') + ' fa-bookmark'; }
+  showToast(isSaved?'Removed from saved':'Saved to collection', isSaved?'info':'success');
+};
+
+window.toggleFollow = async (userId, postId) => {
+  if (!currentUser || userId === currentUser.uid) return;
+  const myRef = doc(db,'users',currentUser.uid);
+  const mySnap = await getDoc(myRef);
+  const following = mySnap.data().following || [];
+  const isF = following.includes(userId);
+  await updateDoc(myRef, { following: isF ? arrayRemove(userId) : arrayUnion(userId) });
+  await updateDoc(doc(db,'users',userId), { followers: isF ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+  if (!isF) await addNotif(userId, 'follow', `${currentUserData.displayName} started following you`, '');
+  currentUserData.following = isF ? following.filter(x=>x!==userId) : [...following, userId];
+  const btn = document.getElementById('follow-'+postId);
+  if (btn) { btn.textContent = isF?'Follow':'Following'; btn.classList.toggle('following',!isF); }
+  showToast(isF?'Unfollowed':'Following!', 'success');
+};
+
+window.toggleFollowUser = async () => {
+  if (!viewingUserId) return;
+  await toggleFollowById(viewingUserId);
+};
+
+async function toggleFollowById(userId) {
+  if (!currentUser || userId === currentUser.uid) return;
+  const myRef = doc(db,'users',currentUser.uid);
+  const mySnap = await getDoc(myRef);
+  const following = mySnap.data().following || [];
+  const isF = following.includes(userId);
+  await updateDoc(myRef, { following: isF ? arrayRemove(userId) : arrayUnion(userId) });
+  await updateDoc(doc(db,'users',userId), { followers: isF ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+  if (!isF) await addNotif(userId, 'follow', `${currentUserData.displayName} started following you`, '');
+  currentUserData.following = isF ? following.filter(x=>x!==userId) : [...following, userId];
+  const btn = document.getElementById('up-follow-btn');
+  if (btn) { btn.textContent = isF?'Follow':'Following'; }
+  showToast(isF?'Unfollowed':'Following!', 'success');
+}
+
+// ===== DELETE POST =====
+window.deletePost = async (postId) => {
+  if (!confirm('Delete this post?')) return;
+  await deleteDoc(doc(db,'posts',postId));
+  await logActivity(`Post deleted: ${postId} by ${currentUserData.displayName}`);
+  showToast('Post deleted','success');
+};
+
+// ===== PROMPT MODAL =====
+let currentPromptText = '';
+window.showPrompt = async (postId) => {
+  const snap = await getDoc(doc(db,'posts',postId));
+  if (!snap.exists()) return;
+  currentPromptText = snap.data().prompt || 'No prompt available.';
+  document.getElementById('prompt-modal-text').textContent = currentPromptText;
+  document.getElementById('prompt-modal').style.display = 'flex';
+};
+window.closePromptModal = (e) => {
+  if (!e || e.target===document.getElementById('prompt-modal')) document.getElementById('prompt-modal').style.display = 'none';
+};
+window.copyPrompt = () => {
+  navigator.clipboard.writeText(currentPromptText).then(() => showToast('Prompt copied!','success'));
+};
+
+// ===== IMAGE VIEWER =====
+window.openImgViewer = (url) => {
+  document.getElementById('img-viewer-src').src = url;
+  document.getElementById('img-viewer').classList.add('active');
+};
+window.closeImgViewer = () => { document.getElementById('img-viewer').classList.remove('active'); };
+
+// ===== POST FORM =====
+let postImgBase64 = null;
+let postImgUrl = null;
+window.openPostForm = () => { document.getElementById('post-form-modal').style.display = 'flex'; };
+window.closePostForm = () => {
+  document.getElementById('post-form-modal').style.display = 'none';
+  document.getElementById('post-img-preview').style.display='none';
+  document.getElementById('post-prompt').value='';
+  document.getElementById('post-tags').value='';
+  postImgBase64=null; postImgUrl=null;
+};
+
+window.handlePostImage = (input) => {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    postImgBase64 = e.target.result.split(',')[1];
+    document.getElementById('post-img-preview').src = e.target.result;
+    document.getElementById('post-img-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+};
+
+window.submitPost = async () => {
+  if (!postImgBase64) { showToast('Please select an image','error'); return; }
+  const prompt = document.getElementById('post-prompt').value.trim();
+  if (!prompt) { showToast('Please add your prompt','error'); return; }
+  const btn = document.getElementById('submit-post-btn');
+  btn.disabled = true; btn.textContent = 'Uploading...';
+  try {
+    const fd = new FormData();
+    fd.append('image', postImgBase64);
+    fd.append('key', IMGBB);
+    const res = await fetch('https://api.imgbb.com/1/upload', { method:'POST', body:fd });
+    const json = await res.json();
+    if (!json.success) throw new Error('Image upload failed');
+    postImgUrl = json.data.url;
+    const tags = document.getElementById('post-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+    const isExpert = currentUserData.role === 'expert' || currentUserData.role === 'admin';
+    await addDoc(collection(db,'posts'), {
+      userId: currentUser.uid, userName: currentUserData.displayName,
+      userPhoto: currentUserData.photoURL||'', userRole: currentUserData.role||'user',
+      imageUrl: postImgUrl, prompt, tags, status: isExpert?'approved':'pending',
+      likes:[], saves:[], createdAt: serverTimestamp()
+    });
+    await addNotif(currentUser.uid, isExpert?'approved':'system',
+      isExpert?'Your post has been published!':'Your post is under review. Admin will approve it soon.', '');
+    await logActivity(`Post submitted by ${currentUserData.displayName}`);
+    closePostForm();
+    showToast(isExpert?'Post published!':'Post submitted for review!','success');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+  btn.disabled=false; btn.textContent='Submit Post';
+};
+
+// ===== NOTIFICATIONS =====
+async function loadNotifications() {
+  const el = document.getElementById('notif-list');
+  el.innerHTML='<div class="spinner"></div>';
+  if (notifUnsubscribe) notifUnsubscribe();
+  const q = query(collection(db,'notifications'), where('userId','==',currentUser.uid), orderBy('createdAt','desc'), limit(50));
+  notifUnsubscribe = onSnapshot(q, (snap) => {
+    if (snap.empty) { el.innerHTML='<div class="empty-state"><i class="fa fa-bell-slash"></i><p>No notifications yet</p></div>'; return; }
+    el.innerHTML='';
+    snap.docs.forEach(d => {
+      const data = d.data();
+      const div = document.createElement('div');
+      div.className='notif-item'+(data.read?'':' unread');
+      const iconMap = {approved:'approved',rejected:'rejected',like:'like',follow:'follow',system:'system',announce:'announce'};
+      const iconClass = iconMap[data.type]||'system';
+      const iconSym = {approved:'✓',rejected:'✗',like:'♥',follow:'👤',system:'ℹ',announce:'📢'}[data.type]||'ℹ';
+      div.innerHTML=`
+        <div class="notif-icon ${iconClass}">${iconSym}</div>
+        <div class="notif-body">
+          <div class="notif-msg ${data.type==='announce'?'announce':''}">${escHtml(data.message)}</div>
+          ${data.type==='rejected'&&data.reason?`<div style="font-size:.78rem;color:var(--danger);margin-top:.2rem">Reason: ${escHtml(data.reason)}</div>`:''}
+          ${data.link?`<a href="${data.link}" target="_blank" class="notif-link-btn">${data.btnText||'View'}</a>`:''}
+          <div class="notif-time">${timeAgo(data.createdAt?.toDate())}</div>
+        </div>`;
+      el.appendChild(div);
+      if (!data.read) updateDoc(doc(db,'notifications',d.id),{read:true});
+    });
+  });
+}
+
+function loadNotifCount() {
+  const q = query(collection(db,'notifications'), where('userId','==',currentUser.uid), where('read','==',false));
+  onSnapshot(q, (snap) => {
+    const btn = document.getElementById('notif-nav-btn');
+    if (!btn) return;
+    let badge = btn.querySelector('.badge');
+    if (snap.size > 0) {
+      if (!badge) { badge=document.createElement('span'); badge.className='badge'; btn.appendChild(badge); }
+    } else { if (badge) badge.remove(); }
+  });
+}
+
+async function addNotif(userId, type, message, reason, link, btnText) {
+  await addDoc(collection(db,'notifications'), { userId, type, message, reason:reason||'', link:link||'', btnText:btnText||'', read:false, createdAt:serverTimestamp() });
+}
+
+window.markAllRead = async () => {
+  const q = query(collection(db,'notifications'), where('userId','==',currentUser.uid), where('read','==',false));
+  const snap = await getDocs(q);
+  snap.docs.forEach(d => updateDoc(doc(db,'notifications',d.id),{read:true}));
+  showToast('All marked as read','success');
+};
+
+// ===== LEADERBOARD =====
+async function loadLeaderboard() {
+  document.getElementById('lb-podium').innerHTML='<div class="spinner"></div>';
+  document.getElementById('lb-list').innerHTML='';
+  const q = query(collection(db,'users'), orderBy('totalLikes','desc'), limit(20));
+  const snap = await getDocs(q);
+  const users = snap.docs.map(d => ({id:d.id,...d.data()}));
+  renderLeaderboard(users);
+}
+
+function renderLeaderboard(users) {
+  const podium = document.getElementById('lb-podium');
+  const list = document.getElementById('lb-list');
+  const order = [users[1], users[0], users[2]].filter(Boolean);
+  const podClasses = ['silver','gold','bronze'];
+  const sizes = ['60px','72px','56px'];
+  const medals = ['🥈','🥇','🥉'];
+  podium.innerHTML='';
+  order.forEach((u,i) => {
+    if (!u) return;
+    const div=document.createElement('div');
+    div.className=`lb-pod ${podClasses[i]}`;
+    div.innerHTML=`
+      <div class="lb-pod-rank">${medals[i]}</div>
+      <img class="lb-pod-av" src="${u.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(u.displayName||'U')+'&background=6e56ff&color=fff&size=80'}" style="width:${sizes[i]};height:${sizes[i]}" alt="" onclick="openUserProfile('${u.id}')"/>
+      <div class="lb-pod-name">${escHtml(u.displayName||'User')}</div>
+      ${getBadgeHTML(u.role)}
+      <div class="lb-pod-score">${u.totalLikes||0} pts</div>`;
+    podium.appendChild(div);
+  });
+  list.innerHTML='';
+  users.slice(3).forEach((u,i) => {
+    const div=document.createElement('div');
+    div.className='lb-row';
+    div.innerHTML=`
+      <div class="lb-rank-num">#${i+4}</div>
+      <img class="lb-av" src="${u.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(u.displayName||'U')+'&background=6e56ff&color=fff&size=60'}" alt="" onclick="openUserProfile('${u.id}')"/>
+      <div class="lb-info"><div class="lb-name">${escHtml(u.displayName||'User')} ${getBadgeHTML(u.role)}</div><div class="lb-score">${u.totalLikes||0} points</div></div>
+      <div class="lb-pts">${u.totalLikes||0}</div>`;
+    list.appendChild(div);
+  });
+}
+
+window.switchLbTab = (tab, el) => {
+  lbTab = tab;
+  document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  loadLeaderboard();
+};
+
+// ===== PROFILE =====
+async function loadMyProfile() {
+  const snap = await getDoc(doc(db,'users',currentUser.uid));
+  const data = snap.exists() ? snap.data() : currentUserData;
+  currentUserData = {...currentUserData,...data};
+  document.getElementById('profile-av').src = data.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(data.displayName||'U')}&background=6e56ff&color=fff&size=160`;
+  document.getElementById('profile-name').textContent = data.displayName||'User';
+  document.getElementById('profile-badge-wrap').innerHTML = getBadgeHTML(data.role);
+  document.getElementById('profile-role-text').textContent = data.bio||'';
+  document.getElementById('stat-followers').textContent = (data.followers||[]).length;
+  document.getElementById('stat-following').textContent = (data.following||[]).length;
+  document.getElementById('stat-likes').textContent = data.totalLikes||0;
+  // Count posts
+  const pq = query(collection(db,'posts'), where('userId','==',currentUser.uid), where('status','==','approved'));
+  const ps = await getDocs(pq);
+  document.getElementById('stat-posts').textContent = ps.size;
+  // Info card
+  const info = document.getElementById('profile-info-card');
+  info.innerHTML = '';
+  if (data.address) info.innerHTML += `<div class="profile-info-row"><i class="fa fa-map-marker-alt"></i><span class="profile-info-val">${escHtml(data.address)}</span></div>`;
+  if (data.mobile) info.innerHTML += `<div class="profile-info-row"><i class="fa fa-phone"></i><span class="profile-info-val">${escHtml(data.mobile)}</span></div>`;
+  if (data.telegram) info.innerHTML += `<div class="profile-info-row"><i class="fab fa-telegram"></i><a href="https://t.me/${data.telegram.replace('@','')}" target="_blank" class="profile-info-val profile-link">${escHtml(data.telegram)}</a></div>`;
+  if (data.facebook) info.innerHTML += `<div class="profile-info-row"><i class="fab fa-facebook"></i><a href="${data.facebook}" target="_blank" class="profile-info-val profile-link">Facebook</a></div>`;
+  if (!info.innerHTML) info.innerHTML = '<div style="text-align:center;padding:.5rem;font-size:.85rem;color:var(--text3)">No info added yet</div>';
+  loadMyPosts();
+  loadSavedPosts();
+}
+
+async function loadMyPosts() {
+  const el = document.getElementById('my-posts-grid');
+  el.innerHTML='<div class="spinner"></div>';
+  const q = query(collection(db,'posts'), where('userId','==',currentUser.uid), orderBy('createdAt','desc'));
+  const snap = await getDocs(q);
+  if (snap.empty) { el.innerHTML='<div class="empty-state"><i class="fa fa-image"></i><p>No posts yet</p></div>'; return; }
+  el.innerHTML='';
+  snap.docs.forEach(d => { el.appendChild(buildPostCard(d.id,d.data(),0)); });
+}
+
+async function loadSavedPosts() {
+  const el = document.getElementById('saved-grid');
+  el.innerHTML='<div class="spinner"></div>';
+  const snap = await getDoc(doc(db,'users',currentUser.uid));
+  const saves = snap.data()?.savedPosts || [];
+  if (!saves.length) { el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><i class="fa fa-bookmark"></i><p>No saved posts</p></div>'; return; }
+  el.innerHTML='';
+  for (const pid of saves.slice(0,12)) {
+    const ps = await getDoc(doc(db,'posts',pid));
+    if (ps.exists()) {
+      const d=ps.data();
+      const item=document.createElement('div');
+      item.className='saved-item';
+      item.innerHTML=`<img src="${d.imageUrl}" alt="" loading="lazy"/><div class="saved-item-overlay"></div>`;
+      item.onclick=()=>openImgViewer(d.imageUrl);
+      el.appendChild(item);
+    }
+  }
+}
+
+// ===== EDIT PROFILE =====
+function loadEditProfile() {
+  document.getElementById('edit-avatar-preview').src = currentUserData.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUserData.displayName||'U')}&background=6e56ff&color=fff&size=160`;
+  document.getElementById('edit-name').value = currentUserData.displayName||'';
+  document.getElementById('edit-address').value = currentUserData.address||'';
+  document.getElementById('edit-mobile').value = currentUserData.mobile||'';
+  document.getElementById('edit-telegram').value = currentUserData.telegram||'';
+  document.getElementById('edit-facebook').value = currentUserData.facebook||'';
+  document.getElementById('edit-bio').value = currentUserData.bio||'';
+}
+
+let newAvatarBase64 = null;
+window.handleAvatarUpload = (input) => {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    newAvatarBase64 = e.target.result.split(',')[1];
+    document.getElementById('edit-avatar-preview').src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+window.saveProfile = async () => {
+  const name = document.getElementById('edit-name').value.trim();
+  if (!name) { showToast('Name cannot be empty','error'); return; }
+  let photoURL = currentUserData.photoURL||'';
+  if (newAvatarBase64) {
+    const fd = new FormData();
+    fd.append('image', newAvatarBase64);
+    fd.append('key', IMGBB);
+    const res = await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:fd});
+    const json = await res.json();
+    if (json.success) photoURL = json.data.url;
+  }
+  const updates = {
+    displayName: name,
+    address: document.getElementById('edit-address').value.trim(),
+    mobile: document.getElementById('edit-mobile').value.trim(),
+    telegram: document.getElementById('edit-telegram').value.trim(),
+    facebook: document.getElementById('edit-facebook').value.trim(),
+    bio: document.getElementById('edit-bio').value.trim(),
+    photoURL
+  };
+  await updateDoc(doc(db,'users',currentUser.uid), updates);
+  await updateProfile(currentUser, {displayName:name, photoURL});
+  currentUserData = {...currentUserData,...updates};
+  updateNavAvatar();
+  newAvatarBase64 = null;
+  showToast('Profile updated!','success');
+  navBack();
+};
+
+// ===== USER PROFILE =====
+window.openUserProfile = async (uid) => {
+  if (uid === currentUser.uid) { navTo('profile'); return; }
+  viewingUserId = uid;
+  pageHistory.push('user-profile');
+  currentPage = 'user-profile';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-user-profile').classList.add('active');
+  document.getElementById('up-avatar').src='https://ui-avatars.com/api/?name=U&background=6e56ff&color=fff&size=160';
+  document.getElementById('up-name').textContent='Loading...';
+  const snap = await getDoc(doc(db,'users',uid));
+  if (!snap.exists()) return;
+  const data = snap.data();
+  document.getElementById('up-avatar').src = data.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(data.displayName||'U')}&background=6e56ff&color=fff&size=160`;
+  document.getElementById('up-name').textContent = data.displayName||'User';
+  document.getElementById('user-profile-name').textContent = data.displayName||'User';
+  document.getElementById('up-badge-wrap').innerHTML = getBadgeHTML(data.role);
+  document.getElementById('up-bio').textContent = data.bio||'';
+  document.getElementById('up-followers').textContent = (data.followers||[]).length;
+  document.getElementById('up-following').textContent = (data.following||[]).length;
+  const isF = currentUserData.following && currentUserData.following.includes(uid);
+  document.getElementById('up-follow-btn').textContent = isF?'Following':'Follow';
+  // Info card
+  const ic = document.getElementById('up-info-card');
+  ic.innerHTML='';
+  if (data.telegram) ic.innerHTML+=`<div class="profile-info-row"><i class="fab fa-telegram"></i><a href="https://t.me/${data.telegram.replace('@','')}" target="_blank" class="profile-info-val profile-link">${escHtml(data.telegram)}</a></div>`;
+  if (data.facebook) ic.innerHTML+=`<div class="profile-info-row"><i class="fab fa-facebook"></i><a href="${data.facebook}" target="_blank" class="profile-info-val profile-link">Facebook</a></div>`;
+  // Posts
+  const pg = document.getElementById('up-posts-grid');
+  pg.innerHTML='<div class="spinner"></div>';
+  const q = query(collection(db,'posts'), where('userId','==',uid), where('status','==','approved'), orderBy('createdAt','desc'));
+  const psnap = await getDocs(q);
+  document.getElementById('up-posts').textContent = psnap.size;
+  if (psnap.empty) { pg.innerHTML='<div class="empty-state"><i class="fa fa-image"></i><p>No posts yet</p></div>'; return; }
+  pg.innerHTML='';
+  psnap.docs.forEach(d=>pg.appendChild(buildPostCard(d.id,d.data(),0)));
+};
+
+// ===== FOLLOWERS PAGE =====
+window.showFollowers = async (type) => {
+  pageHistory.push('followers');
+  currentPage='followers';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-followers').classList.add('active');
+  document.getElementById('followers-page-title').textContent = type==='followers'?'Followers':'Following';
+  const el = document.getElementById('follow-list-items');
+  el.innerHTML='<div class="spinner"></div>';
+  const mySnap = await getDoc(doc(db,'users',currentUser.uid));
+  const ids = mySnap.data()[type]||[];
+  if (!ids.length) { el.innerHTML='<div class="empty-state"><i class="fa fa-users"></i><p>None yet</p></div>'; return; }
+  el.innerHTML='';
+  for (const uid of ids) {
+    const us = await getDoc(doc(db,'users',uid));
+    if (us.exists()) {
+      const d=us.data();
+      const row=document.createElement('div');
+      row.className='follow-row';
+      row.innerHTML=`<img class="follow-av" src="${d.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(d.displayName||'U')+'&background=6e56ff&color=fff&size=80'}" alt=""/><div class="follow-info"><div class="follow-name">${escHtml(d.displayName||'User')} ${getBadgeHTML(d.role)}</div><div class="follow-role">${d.bio||''}</div></div>`;
+      row.onclick=()=>openUserProfile(uid);
+      el.appendChild(row);
+    }
+  }
+};
+
+// ===== SEARCH =====
+window.setSearchFilter = (f, el) => {
+  searchFilter = f;
+  document.querySelectorAll('.s-filter').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  doSearch();
+};
+
+window.doSearch = async () => {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  const el = document.getElementById('search-results');
+  if (!q) { el.innerHTML='<div class="empty-state"><i class="fa fa-search"></i><p>Search for prompts or users</p></div>'; return; }
+  el.innerHTML='<div class="spinner"></div>';
+  let html='';
+  if (searchFilter==='all'||searchFilter==='posts') {
+    const snap = await getDocs(query(collection(db,'posts'), where('status','==','approved'), orderBy('createdAt','desc'), limit(50)));
+    const posts = snap.docs.filter(d => {
+      const data=d.data();
+      return (data.prompt||'').toLowerCase().includes(q)||(data.userName||'').toLowerCase().includes(q)||(data.tags||[]).some(t=>t.toLowerCase().includes(q));
+    });
+    if (posts.length) {
+      html+=`<div class="section-title" style="padding:0 0 .5rem"><i class="fa fa-image" style="color:var(--primary)"></i> Posts</div>`;
+      html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem">`;
+      posts.slice(0,12).forEach(d => { html+=`<div style="border-radius:10px;overflow:hidden;aspect-ratio:1;cursor:pointer" onclick="openImgViewer('${d.data().imageUrl}')"><img src="${d.data().imageUrl}" style="width:100%;height:100%;object-fit:cover"/></div>`; });
+      html+=`</div>`;
+    }
+  }
+  if (searchFilter==='all'||searchFilter==='users') {
+    const snap = await getDocs(collection(db,'users'));
+    const users = snap.docs.filter(d => (d.data().displayName||'').toLowerCase().includes(q));
+    if (users.length) {
+      html+=`<div class="section-title" style="padding:.5rem 0"><i class="fa fa-user" style="color:var(--primary)"></i> Users</div>`;
+      users.slice(0,10).forEach(d => {
+        const u=d.data();
+        html+=`<div class="follow-row" style="cursor:pointer" onclick="openUserProfile('${d.id}')"><img class="follow-av" src="${u.photoURL||'https://ui-avatars.com/api/?name='+encodeURIComponent(u.displayName||'U')+'&background=6e56ff&color=fff&size=80'}" alt=""/><div class="follow-info"><div class="follow-name">${escHtml(u.displayName||'User')} ${getBadgeHTML(u.role)}</div><div class="follow-role">${u.bio||''}</div></div></div>`;
+      });
+    }
+  }
+  el.innerHTML = html || '<div class="empty-state"><i class="fa fa-search"></i><p>No results found</p></div>';
+};
+
+window.clearSearch = () => {
+  document.getElementById('search-input').value='';
+  document.getElementById('search-results').innerHTML='<div class="empty-state"><i class="fa fa-search"></i><p>Search for prompts or users</p></div>';
+};
+
+// ===== SETTINGS =====
+window.setTheme = (theme, el) => {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('pa-theme', theme);
+  document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const labels = {dark:'Dark',light:'Light',midnight:'Midnight'};
+  document.getElementById('current-theme-label').textContent = labels[theme]||theme;
+};
+function applyStoredTheme() {
+  const t = localStorage.getItem('pa-theme')||'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const labels = {dark:'Dark',light:'Light',midnight:'Midnight'};
+  const lbl = document.getElementById('current-theme-label');
+  if (lbl) lbl.textContent = labels[t]||t;
+  const card = document.getElementById('theme-'+t);
+  if (card) { document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('active')); card.classList.add('active'); }
+}
+
+window.setLang = (lang, el) => {
+  localStorage.setItem('pa-lang', lang);
+  document.querySelectorAll('.lang-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  showToast('Language updated','success');
+};
+function applyStoredLang() { }
+
+window.changePassword = async () => {
+  const cur = document.getElementById('pw-current').value;
+  const nw = document.getElementById('pw-new').value;
+  const conf = document.getElementById('pw-confirm').value;
+  if (!cur||!nw||!conf) { showToast('Fill all fields','error'); return; }
+  if (nw !== conf) { showToast('New passwords do not match','error'); return; }
+  if (nw.length<6) { showToast('Password must be 6+ characters','error'); return; }
+  try {
+    const cred = EmailAuthProvider.credential(currentUser.email, cur);
+    await reauthenticateWithCredential(currentUser, cred);
+    await updatePassword(currentUser, nw);
+    showToast('Password updated!','success');
+    document.getElementById('pw-current').value='';
+    document.getElementById('pw-new').value='';
+    document.getElementById('pw-confirm').value='';
+    navBack();
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+};
+
+window.saveTogglePref = (key, val) => { localStorage.setItem('pa-pref-'+key, val); };
+
+// ===== ACTIVITY LOG =====
+async function logActivity(action) {
+  try { await addDoc(collection(db,'activityLog'), { action, userId:currentUser?.uid||'system', timestamp:serverTimestamp() }); } catch(e) {}
+}
+
+// ===== UTILS =====
+function timeAgo(date) {
+  if (!date) return 'just now';
+  const diff = Date.now() - date.getTime();
+  const mins = Math.floor(diff/60000);
+  if (mins<1) return 'just now';
+  if (mins<60) return `${mins}m ago`;
+  const hrs = Math.floor(mins/60);
+  if (hrs<24) return `${hrs}h ago`;
+  const days = Math.floor(hrs/24);
+  if (days<7) return `${days}d ago`;
+  return date.toLocaleDateString();
+}
+
+function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+window.showToast = (msg, type='info') => {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  const icons = {success:'✓',error:'✗',info:'ℹ'};
+  t.className=`toast ${type}`;
+  t.innerHTML=`<span style="font-size:1rem">${icons[type]||'ℹ'}</span> ${msg}`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.classList.add('toast-out'); setTimeout(()=>t.remove(),300); }, 3000);
+};
+
+window.scrollToTop = () => window.scrollTo({top:0,behavior:'smooth'});
+window.addEventListener('scroll',()=>{
+  const btn=document.getElementById('scroll-top');
+  if (btn) btn.classList.toggle('visible', window.scrollY>300);
+});
+</script>
+</body>
+</html>
