@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<meta name="theme-color" content="#07071a"/>
+<title>Prompt Arena v1.02</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07071a;--surface:#0d0d26;--card:#111130;--card2:#181840;
+  --border:rgba(110,86,255,.22);--border2:rgba(255,255,255,.06);
+  --primary:#6e56ff;--primary-dim:rgba(110,86,255,.14);--primary-glow:rgba(110,86,255,.45);
+  --secondary:#00d4ff;--secondary-dim:rgba(0,212,255,.12);--secondary-glow:rgba(0,212,255,.4);
+  --gold:#ffd600;--danger:#ff4060;--success:#00e676;--warning:#ff9800;
+  --text:#eaeaff;--text2:#8888bb;--text3:#45456a;
+  --font-d:'Syne',sans-serif;--font-b:'Plus Jakarta Sans',sans-serif;
+  --r:18px;--tr:.28s cubic-bezier(.4,0,.2,1);
+  --shadow:0 10px 40px rgba(0,0,0,.65);
+}
+[data-theme="light"]{
+  --bg:#f0f0fa;--surface:#fff;--card:#fff;--card2:#f5f5fd;
+  --border:rgba(110,86,255,.18);--border2:rgba(0,0,0,.07);
+  --text:#1a1a32;--text2:#5a5a8a;--text3:#9898b8;
+}
+[data-lang="bn"] .font-body,[data-lang="bn"] body{font-family:'Noto Sans Bengali','Plus Jakarta Sans',sans-serif}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;transition:background .4s,color .4s}
+button{cursor:pointer;font-family:var(--font-b);border:none;outline:none;transition:all var(--tr)}
+input,textarea,select{font-family:var(--font-b);outline:none;border:none}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+.hidden{display:none!important}
+.view{display:none!important}
+.view.active{display:block!important}
+
+/* Optimized animations - GPU accelerated */
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes popIn{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes orbFloat{0%{transform:translate(0,0) scale(1)}100%{transform:translate(30px,22px) scale(1.12)}}
+@keyframes loadBar{0%{width:0}65%{width:68%}100%{width:100%}}
+@keyframes loadPulse{0%,100%{opacity:1;filter:brightness(1)}50%{opacity:.75;filter:brightness(1.35)}}
+@keyframes gradBorder{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes shimmer{0%{left:-60%}100%{left:140%}}
+@keyframes likeHeart{0%{transform:scale(1)}30%{transform:scale(1.5)}60%{transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes saveAnim{0%{transform:scale(1) rotate(0)}40%{transform:scale(1.35) rotate(-10deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes toastIn{from{opacity:0;transform:translateX(32px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(32px)}}
+@keyframes trendScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* Simplified animations for mobile performance */
+@media (max-width: 768px) {
+  .post-card-outer, .prompt-btn, .like-btn, .save-btn, .follow-btn {
+    transition: all 0.18s ease !important;
+  }
+  .prompt-btn {
+    animation: none !important;
+  }
+  .post-card-outer {
+    animation: cardIn 0.2s ease both !important;
+  }
+  .trending-item:hover {
+    transform: scale(1.03) translateY(-2px) !important;
+  }
+}
+
+/* Hardware acceleration */
+.post-card-outer, .trending-item, .modal-sheet, .post-form-sheet, .post-img-wrap img {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* LOADING */
+#vl{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.orbs-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.32;animation:orbFloat 9s ease-in-out infinite alternate}
+.orb1{width:420px;height:420px;background:radial-gradient(circle,#6e56ff,#4a38dd);top:-120px;left:-100px}
+.orb2{width:320px;height:320px;background:radial-gradient(circle,#00d4ff,#0099cc);bottom:-80px;right:-60px;animation-delay:-4.5s}
+.orb3{width:220px;height:220px;background:radial-gradient(circle,#c084fc,#8b44ff);top:55%;left:58%;animation-delay:-2.5s}
+.load-content{position:relative;z-index:1;text-align:center;padding:1rem}
+.load-logo{font-family:var(--font-d);font-size:clamp(2.8rem,9vw,5rem);font-weight:800;background:linear-gradient(135deg,#6e56ff 0%,#00d4ff 50%,#c084fc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:loadPulse 2.4s ease infinite;letter-spacing:-2px;line-height:1}
+.load-sub{font-size:.9rem;color:var(--text2);margin-top:.6rem;letter-spacing:3.5px;text-transform:uppercase;font-weight:500}
+.load-dev{font-size:.78rem;color:var(--text3);margin-top:.4rem;letter-spacing:2px}
+.load-ver{display:inline-block;background:linear-gradient(135deg,var(--primary-dim),var(--secondary-dim));border:1px solid var(--border);color:var(--secondary);font-size:.72rem;padding:.3rem .9rem;border-radius:20px;margin-top:1rem;letter-spacing:1.5px;font-weight:600}
+.load-bar-wrap{width:220px;height:3px;background:var(--border);border-radius:4px;margin:2rem auto 0;overflow:hidden}
+.load-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary),var(--primary));border-radius:4px;animation:loadBar 2.5s ease-in-out forwards;background-size:200%}
+.load-dots{display:flex;gap:.5rem;justify-content:center;margin-top:1.2rem}
+.load-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);animation:loadPulse 1.2s ease infinite}
+.load-dot:nth-child(2){background:var(--secondary);animation-delay:.22s}
+.load-dot:nth-child(3){background:#c084fc;animation-delay:.44s}
+
+/* AUTH */
+#va{min-height:100vh;display:none;align-items:center;justify-content:center;padding:1rem;position:relative;overflow:hidden}
+#va.active{display:flex!important}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:26px;padding:2.5rem 2rem;width:100%;max-width:430px;position:relative;z-index:1;box-shadow:0 30px 80px rgba(0,0,0,.55);animation:popIn .5s cubic-bezier(.34,1.56,.64,1)}
+.auth-box::before{content:'';position:absolute;inset:-1px;border-radius:27px;background:linear-gradient(135deg,var(--primary),var(--secondary),#c084fc,var(--primary));background-size:300%;animation:gradBorder 5s linear infinite;z-index:-1;opacity:.3}
+.auth-logo{font-family:var(--font-d);font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:.25rem}
+.auth-tagline{text-align:center;color:var(--text2);font-size:.85rem;margin-bottom:2rem;letter-spacing:.5px}
+.auth-tabs{display:flex;gap:.4rem;margin-bottom:2rem;background:var(--bg);border-radius:12px;padding:.3rem}
+.auth-tab{flex:1;padding:.65rem;border-radius:10px;font-size:.88rem;font-weight:700;color:var(--text2);background:transparent;transition:all var(--tr);text-align:center;cursor:pointer;border:none;letter-spacing:.3px}
+.auth-tab.active{background:linear-gradient(135deg,var(--primary),#9171ff);color:#fff;box-shadow:0 4px 14px var(--primary-glow)}
+.form-group{margin-bottom:1.1rem}
+.form-label{font-size:.78rem;color:var(--text2);margin-bottom:.4rem;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:.78rem 1rem;color:var(--text);font-size:.95rem;transition:all var(--tr)}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-dim);background:var(--card2)}
+.form-input::placeholder{color:var(--text3)}
+.btn-primary{width:100%;padding:.9rem;background:linear-gradient(135deg,var(--primary),#9171ff);border-radius:12px;color:#fff;font-size:.95rem;font-weight:700;letter-spacing:.5px;position:relative;overflow:hidden;box-shadow:0 4px 16px var(--primary-glow)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px var(--primary-glow)}
+.btn-primary:active{transform:scale(.98)}
+.auth-err{background:rgba(255,64,96,.1);border:1px solid rgba(255,64,96,.3);border-radius:10px;padding:.65rem 1rem;color:var(--danger);font-size:.82rem;margin-bottom:1rem;display:none;animation:fadeIn .2s ease}
+.auth-err.show{display:block}
+
+/* POPUP */
+#popup-overlay{position:fixed;inset:0;z-index:8888;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);animation:fadeIn .3s ease}
+.popup-box{background:var(--surface);border:1px solid var(--border);border-radius:24px;max-width:420px;width:100%;overflow:hidden;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);position:relative;box-shadow:0 0 0 1px rgba(110,86,255,.15),0 30px 60px rgba(0,0,0,.6)}
+.popup-img{width:100%;max-height:220px;object-fit:cover}
+.popup-body{padding:1.5rem}
+.popup-title{font-family:var(--font-d);font-size:1.35rem;font-weight:700;margin-bottom:.5rem}
+.popup-context{color:var(--text2);font-size:.9rem;line-height:1.7;margin-bottom:1.2rem}
+.popup-btn{display:block;text-align:center;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;padding:.75rem 1.5rem;border-radius:12px;font-weight:700;font-size:.92rem;box-shadow:0 4px 18px var(--primary-glow);transition:all var(--tr)}
+.popup-btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px var(--primary-glow)}
+.popup-close{position:absolute;top:.85rem;right:.85rem;width:30px;height:30px;background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;color:var(--text2);font-size:.85rem;transition:all var(--tr)}
+.popup-close:hover{background:var(--danger);color:#fff;transform:rotate(90deg)}
+
+/* NAV */
+#va-app{display:none}
+#va-app.active{display:block!important}
+.nav{position:fixed;top:0;left:0;right:0;z-index:500;height:58px;background:rgba(7,7,26,.9);backdrop-filter:blur(20px) saturate(1.5);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:.7rem}
+.nav-logo{font-family:var(--font-d);font-size:1.25rem;font-weight:800;flex:1;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-btn{width:40px;height:40px;border-radius:12px;background:var(--primary-dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:.95rem;transition:all var(--tr);position:relative;overflow:hidden}
+.nav-btn:hover{background:linear-gradient(135deg,var(--primary),#9171ff);color:#fff;border-color:var(--primary);box-shadow:0 4px 14px var(--primary-glow);transform:translateY(-1px)}
+.nav-btn:active{transform:scale(.95)}
+.nav-btn .badge{position:absolute;top:3px;right:3px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid var(--bg)}
+.nav-av-btn{width:40px;height:40px;border-radius:12px;overflow:hidden;border:2px solid var(--primary);transition:all var(--tr);cursor:pointer}
+.nav-av-btn:hover{border-color:var(--secondary);box-shadow:0 0 0 3px var(--primary-dim);transform:scale(1.06)}
+.nav-av-btn img{width:100%;height:100%;object-fit:cover}
+
+/* LAYOUT */
+.main-content{padding-top:58px;padding-bottom:72px;min-height:100vh}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(7,7,26,.95);backdrop-filter:blur(20px) saturate(1.5);border-top:1px solid var(--border);display:flex;align-items:center;height:62px;padding:0 .4rem}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;color:var(--text3);font-size:.58rem;font-weight:700;cursor:pointer;transition:all var(--tr);padding:.5rem;border-radius:12px;text-transform:uppercase;letter-spacing:.7px;position:relative;overflow:hidden}
+.bnav-item::before{content:'';position:absolute;inset:0;background:var(--primary-dim);border-radius:12px;opacity:0;transition:.3s}
+.bnav-item:hover::before,.bnav-item.active::before{opacity:1}
+.bnav-item i{font-size:1.25rem;position:relative;z-index:1}
+.bnav-item span{position:relative;z-index:1}
+.bnav-item.active,.bnav-item:hover{color:var(--primary)}
+.bnav-post-btn{width:52px;height:52px;flex-shrink:0;background:linear-gradient(135deg,var(--primary),#9171ff);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;box-shadow:0 4px 20px var(--primary-glow);transition:all var(--tr);position:relative;overflow:hidden}
+.bnav-post-btn:hover{transform:scale(1.1) translateY(-4px);box-shadow:0 10px 30px var(--primary-glow)}
+.bnav-post-btn:active{transform:scale(.95)}
+
+/* PAGES */
+.page{display:none;animation:fadeIn .35s ease both}
+.page.active{display:block}
+
+/* TRENDING AUTO-SCROLL */
+.trending-wrap{padding:.9rem 0 .6rem;overflow:hidden}
+.trending-label{padding:0 1rem;font-size:.68rem;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem}
+.trending-label i{animation:none}
+.trending-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+.trending-ticker{overflow:hidden;width:100%;-webkit-mask:linear-gradient(90deg,transparent,#000 10%,#000 10%,#000 90%,transparent);mask:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+.trending-track{display:flex;gap:.85rem;animation:trendScroll 26s linear infinite;width:max-content;padding:0 .5rem}
+.trending-track:hover{animation-play-state:paused}
+.trending-item{flex-shrink:0;width:138px;height:100px;border-radius:14px;overflow:hidden;position:relative;cursor:pointer;transition:all var(--tr)}
+.trending-item-inner{position:relative;width:100%;height:100%;border-radius:12px;overflow:hidden}
+.trending-item-border{position:absolute;inset:-2px;border-radius:15px;background:linear-gradient(135deg,var(--primary),var(--secondary),#c084fc,var(--primary));background-size:300%;animation:gradBorder 3.5s linear infinite;z-index:-1}
+.trending-item:hover{transform:scale(1.07) translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.5)}
+.trending-item img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.trending-item:hover img{transform:scale(1.1)}
+.trending-item-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 55%)}
+.trending-item-name{position:absolute;bottom:.4rem;left:.5rem;right:.5rem;font-size:.62rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trending-hot{position:absolute;top:.4rem;left:.4rem;background:linear-gradient(135deg,var(--danger),#ff6b35);color:#fff;font-size:.52rem;font-weight:800;padding:.15rem .4rem;border-radius:6px;text-transform:uppercase;letter-spacing:.8px}
+
+/* FEED */
+.feed-wrap{padding:.8rem 1rem;display:flex;flex-direction:column;gap:1.6rem}
+
+/* POST CARD BORDER — animated gradient */
+.post-card-outer{position:relative;border-radius:22px;padding:2.5px;background:linear-gradient(135deg,#6e56ff,#00d4ff,#c084fc,#6e56ff);background-size:300%;animation:gradBorder 5s linear infinite;transition:all var(--tr)}
+.post-card-outer:hover{transform:translateY(-3px)}
+.post-card{background:var(--card);border-radius:20px;overflow:hidden;animation:cardIn .45s ease both}
+
+/* POST IMAGE */
+.post-img-wrap{width:100%;overflow:hidden;position:relative;cursor:pointer;min-height:160px;background:var(--card2)}
+.post-img-wrap img{width:100%;height:auto;display:block;transition:transform .45s cubic-bezier(.4,0,.2,1)}
+.post-img-wrap:hover img{transform:scale(1.04)}
+.post-img-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(7,7,26,.65) 0%,transparent 45%);opacity:0;transition:opacity .35s;pointer-events:none}
+.post-img-wrap:hover .post-img-overlay{opacity:1}
+.post-img-zoom{position:absolute;top:.75rem;right:.75rem;width:34px;height:34px;border-radius:10px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;opacity:0;transition:opacity .3s,transform .3s;cursor:pointer;transform:scale(.8)}
+.post-img-wrap:hover .post-img-zoom{opacity:1;transform:scale(1)}
+.post-img-zoom:hover{background:var(--primary);border-color:var(--primary)}
+
+/* POST META */
+.post-meta{padding:1rem 1.1rem .5rem}
+.post-user-row{display:flex;align-items:center;gap:.6rem;flex-wrap:nowrap;overflow:hidden}
+.post-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2.5px solid var(--primary);flex-shrink:0;cursor:pointer;transition:all var(--tr)}
+.post-avatar:hover{border-color:var(--secondary);box-shadow:0 0 0 4px var(--secondary-dim);transform:scale(1.1)}
+.post-user-info{flex:1;min-width:0;overflow:hidden}
+.post-username{font-size:.9rem;font-weight:700;cursor:pointer;transition:color var(--tr);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.post-username:hover{color:var(--primary)}
+.post-time{font-size:.68rem;color:var(--text3);white-space:nowrap}
+.post-badge{font-size:.58rem;font-weight:800;padding:.2rem .55rem;border-radius:20px;letter-spacing:.8px;text-transform:uppercase;flex-shrink:0;display:inline-flex;align-items:center;gap:.25rem;white-space:nowrap}
+.badge-admin{background:linear-gradient(135deg,#ff6b35,#ff9a3c);color:#fff}
+.badge-expert{background:linear-gradient(135deg,#6e56ff,#c084fc);color:#fff}
+.follow-btn{flex-shrink:0;font-size:.7rem;font-weight:700;padding:.32rem .88rem;border-radius:20px;background:var(--primary-dim);color:var(--primary);border:1.5px solid var(--primary);transition:all var(--tr);letter-spacing:.3px}
+.follow-btn:hover{background:var(--primary);color:#fff;box-shadow:0 3px 12px var(--primary-glow);transform:scale(1.06)}
+.follow-btn.following{background:transparent;border-color:var(--text3);color:var(--text2)}
+.follow-btn.following:hover{background:rgba(255,64,96,.1);border-color:var(--danger);color:var(--danger)}
+
+/* ACTIONS ROW */
+.post-actions{display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem .4rem}
+
+/* LIKE BUTTON */
+.like-btn{display:flex;align-items:center;gap:.45rem;background:linear-gradient(135deg,rgba(255,64,96,.1),rgba(255,100,80,.07));border:1.5px solid rgba(255,64,96,.25);border-radius:12px;padding:.52rem .95rem;color:#ff7090;font-size:.8rem;font-weight:700;cursor:pointer;transition:all var(--tr);letter-spacing:.3px;position:relative;overflow:hidden}
+.like-btn::after{content:'';position:absolute;inset:0;background:rgba(255,64,96,.08);opacity:0;transition:.2s}
+.like-btn:hover{background:linear-gradient(135deg,rgba(255,64,96,.2),rgba(255,100,80,.14));border-color:rgba(255,64,96,.55);color:var(--danger);box-shadow:0 4px 14px rgba(255,64,96,.25);transform:translateY(-1px)}
+.like-btn:active{transform:scale(.95)}
+.like-btn.liked{background:linear-gradient(135deg,rgba(255,64,96,.22),rgba(255,80,60,.16));border-color:var(--danger);color:var(--danger);box-shadow:0 4px 16px rgba(255,64,96,.3)}
+.like-btn.liked .like-icon{animation:likeHeart .35s ease}
+.like-btn i{font-size:1rem;transition:all .25s}
+
+/* SAVE BUTTON */
+.save-btn{display:flex;align-items:center;gap:.45rem;background:linear-gradient(135deg,rgba(255,214,0,.1),rgba(255,180,0,.07));border:1.5px solid rgba(255,214,0,.25);border-radius:12px;padding:.52rem .95rem;color:#e6c200;font-size:.8rem;font-weight:700;cursor:pointer;transition:all var(--tr);letter-spacing:.3px;position:relative;overflow:hidden}
+.save-btn:hover{background:linear-gradient(135deg,rgba(255,214,0,.2),rgba(255,180,0,.13));border-color:rgba(255,214,0,.55);color:var(--gold);box-shadow:0 4px 14px rgba(255,214,0,.2);transform:translateY(-1px)}
+.save-btn:active{transform:scale(.95)}
+.save-btn.saved{background:linear-gradient(135deg,rgba(255,214,0,.22),rgba(255,180,0,.15));border-color:var(--gold);color:var(--gold);box-shadow:0 4px 16px rgba(255,214,0,.25)}
+.save-btn.saved .save-icon{animation:saveAnim .35s ease}
+.save-btn i{font-size:1rem;transition:all .25s}
+
+/* DELETE BUTTON */
+.del-btn{display:flex;align-items:center;gap:.4rem;background:rgba(255,64,96,.07);border:1.5px solid rgba(255,64,96,.14);border-radius:12px;padding:.52rem .75rem;color:rgba(255,64,96,.55);font-size:.78rem;font-weight:600;cursor:pointer;transition:all var(--tr)}
+.del-btn:hover{background:rgba(255,64,96,.15);border-color:var(--danger);color:var(--danger);transform:translateY(-1px)}
+
+/* SEE FULL PROMPT BUTTON */
+.prompt-btn-wrap{padding:.2rem 1rem 1.1rem}
+.prompt-btn{display:flex;align-items:center;justify-content:center;gap:.65rem;width:100%;padding:.9rem 1rem;background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(0,180,220,.05));border:2px solid var(--secondary);border-radius:14px;color:var(--secondary);font-size:.88rem;font-weight:800;cursor:pointer;transition:all var(--tr);letter-spacing:.9px;text-transform:uppercase;position:relative;overflow:hidden;animation:promptPulse 2.8s ease infinite}
+@media (max-width: 768px) {
+  .prompt-btn { animation: none !important; }
+}
+@keyframes promptPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.5),inset 0 0 0 0 rgba(0,212,255,.1)}50%{box-shadow:0 0 0 4px rgba(0,212,255,.0),inset 0 0 8px rgba(0,212,255,.08)}}
+.prompt-btn::before{content:'';position:absolute;top:-50%;left:-60%;width:36%;height:200%;background:linear-gradient(105deg,transparent,rgba(0,212,255,.22),transparent);transform:skewX(-18deg);animation:shimmer 2.6s ease infinite}
+.prompt-btn i.fa-magic{font-size:1.05rem}
+.prompt-btn i.fa-chevron-right{margin-left:auto;font-size:.78rem;opacity:.7}
+.prompt-btn:hover{background:linear-gradient(135deg,rgba(0,212,255,.18),rgba(0,180,220,.12));box-shadow:0 0 28px rgba(0,212,255,.35),0 4px 18px rgba(0,212,255,.2);transform:translateY(-2px);letter-spacing:1.3px}
+.prompt-btn:active{transform:scale(.98)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.82);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(10px);animation:fadeIn .2s ease}
+.modal-sheet{background:var(--surface);border-radius:26px 26px 0 0;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;padding:1.5rem;animation:slideUp .32s cubic-bezier(.4,0,.2,1);border-top:1px solid var(--border);box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.modal-handle{width:44px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 1.3rem}
+.prompt-content{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem;font-size:.88rem;color:var(--text);line-height:1.8;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow-y:auto}
+.copy-btn{margin-top:.9rem;display:flex;align-items:center;gap:.55rem;background:linear-gradient(135deg,var(--primary),#9171ff);color:#fff;border:none;border-radius:12px;padding:.78rem 1.3rem;font-size:.9rem;font-weight:700;cursor:pointer;transition:all var(--tr);box-shadow:0 4px 16px var(--primary-glow)}
+.copy-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--primary-glow)}
+.copy-btn:active{transform:scale(.97)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.modal-header-title{font-family:var(--font-d);font-size:1.05rem;font-weight:700;display:flex;align-items:center;gap:.5rem}
+.modal-header-title i{color:var(--secondary)}
+.modal-x-btn{background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer;padding:.2rem;transition:color .2s}
+.modal-x-btn:hover{color:var(--danger)}
+
+/* POST FORM */
+.post-form-modal{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.78);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(10px);animation:fadeIn .2s ease}
+.post-form-sheet{background:var(--surface);border-radius:26px 26px 0 0;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;padding:1.5rem;animation:slideUp .32s ease;border-top:1px solid var(--border)}
+.form-section-label{font-size:.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:.5rem}
+.img-upload-area{border:2px dashed var(--border);border-radius:14px;padding:2rem;text-align:center;cursor:pointer;transition:all var(--tr);margin-bottom:1rem}
+.img-upload-area:hover{border-color:var(--primary);background:var(--primary-dim);border-style:solid}
+.img-upload-area i{font-size:2.2rem;color:var(--text3);margin-bottom:.6rem;display:block}
+.img-upload-area p{color:var(--text2);font-size:.85rem}
+.img-upload-area small{color:var(--text3);font-size:.75rem}
+.preview-img{width:100%;border-radius:12px;margin-bottom:1rem;display:none}
+.form-textarea{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:.78rem 1rem;color:var(--text);font-size:.9rem;min-height:120px;resize:vertical;line-height:1.7;transition:all var(--tr)}
+.form-textarea:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-dim)}
+.form-textarea::placeholder{color:var(--text3)}
+.submit-post-btn{width:100%;margin-top:1rem;padding:.9rem;background:linear-gradient(135deg,var(--primary),#9171ff);border:none;border-radius:14px;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;transition:all var(--tr);letter-spacing:.4px;box-shadow:0 4px 18px var(--primary-glow)}
+.submit-post-btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px var(--primary-glow)}
+.submit-post-btn:active{transform:scale(.98)}
+.submit-post-btn:disabled{opacity:.5;transform:none!important;box-shadow:none}
+
+/* PROFILE */
+.profile-hero{padding:1.6rem 1rem .8rem;text-align:center}
+.profile-av-wrap{position:relative;display:inline-block;margin-bottom:1rem}
+.profile-av{width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--primary);box-shadow:0 0 0 4px var(--primary-dim),0 0 24px var(--primary-glow);transition:all var(--tr)}
+.profile-av:hover{border-color:var(--secondary);box-shadow:0 0 0 5px var(--secondary-dim),0 0 32px var(--secondary-glow)}
+.profile-av-edit{position:absolute;bottom:0;right:0;width:28px;height:28px;background:linear-gradient(135deg,var(--primary),#9171ff);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem;cursor:pointer;border:2.5px solid var(--bg);box-shadow:0 2px 8px var(--primary-glow);transition:all var(--tr)}
+.profile-av-edit:hover{transform:scale(1.15)}
+.profile-name{font-family:var(--font-d);font-size:1.45rem;font-weight:700;margin-bottom:.3rem}
+.profile-stats{display:flex;justify-content:center;gap:0;margin:1rem;background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden}
+.profile-stat{flex:1;text-align:center;padding:.9rem .5rem;cursor:pointer;transition:all var(--tr);border-right:1px solid var(--border2)}
+.profile-stat:last-child{border-right:none}
+.profile-stat:hover{background:var(--primary-dim)}
+.profile-stat-val{font-family:var(--font-d);font-size:1.35rem;font-weight:800;color:var(--primary)}
+.profile-stat-lbl{font-size:.65rem;color:var(--text2);text-transform:uppercase;letter-spacing:.7px;margin-top:.1rem}
+.profile-info-card{margin:0 1rem;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.profile-info-row{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;border-bottom:1px solid var(--border2);font-size:.88rem}
+.profile-info-row:last-child{border-bottom:none}
+.profile-info-row i{width:20px;color:var(--primary);font-size:.9rem;flex-shrink:0}
+.profile-info-val{color:var(--text2)}
+.profile-link{color:var(--secondary)!important;font-weight:500}
+.edit-profile-btn{margin:1rem;display:flex;align-items:center;justify-content:center;gap:.6rem;background:var(--primary-dim);border:1.5px solid var(--primary);border-radius:14px;padding:.8rem;color:var(--primary);font-weight:700;cursor:pointer;transition:all var(--tr);font-size:.9rem}
+.edit-profile-btn:hover{background:var(--primary);color:#fff;box-shadow:0 4px 18px var(--primary-glow);transform:translateY(-1px)}
+.section-title{font-family:var(--font-d);font-size:.95rem;font-weight:700;margin-bottom:.9rem;display:flex;align-items:center;gap:.6rem}
+.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+.profile-posts-section{padding:1rem}
+
+/* SEARCH */
+.search-bar-wrap{padding:.8rem 1rem;position:sticky;top:58px;z-index:100;background:var(--bg);border-bottom:1px solid var(--border2)}
+.search-bar{display:flex;align-items:center;gap:.6rem;background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:.65rem 1rem;transition:all var(--tr)}
+.search-bar:focus-within{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-dim)}
+.search-bar i{color:var(--text3);font-size:.95rem}
+.search-bar input{flex:1;background:none;color:var(--text);font-size:.95rem}
+.search-bar input::placeholder{color:var(--text3)}
+.search-filters{display:flex;gap:.5rem;overflow-x:auto;padding:.6rem 1rem;scrollbar-width:none}
+.search-filters::-webkit-scrollbar{display:none}
+.s-filter{flex-shrink:0;padding:.4rem 1rem;border-radius:20px;font-size:.78rem;font-weight:700;background:var(--card);border:1.5px solid var(--border);color:var(--text2);cursor:pointer;transition:all var(--tr)}
+.s-filter.active{background:linear-gradient(135deg,var(--primary),#9171ff);color:#fff;border-color:var(--primary);box-shadow:0 3px 12px var(--primary-glow)}
+.s-filter:hover:not(.active){border-color:var(--primary);color:var(--primary)}
+.search-results{padding:1rem}
+
+/* NOTIFICATIONS */
+.notif-item{display:flex;align-items:flex-start;gap:.8rem;padding:.9rem;background:var(--card);border:1px solid var(--border2);border-radius:14px;margin-bottom:.6rem;animation:cardIn .3s ease both;transition:all var(--tr)}
+.notif-item.unread{border-color:var(--border);background:var(--card2)}
+.notif-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.notif-icon.approved{background:rgba(0,230,118,.12);color:var(--success)}
+.notif-icon.rejected{background:rgba(255,64,96,.12);color:var(--danger)}
+.notif-icon.like{background:rgba(255,64,96,.12);color:var(--danger)}
+.notif-icon.follow{background:var(--primary-dim);color:var(--primary)}
+.notif-icon.system{background:rgba(0,212,255,.1);color:var(--secondary)}
+.notif-icon.announce{background:linear-gradient(135deg,#ff6b35,#ff9a3c);color:#fff}
+.notif-body{flex:1}
+.notif-msg{font-size:.85rem;line-height:1.5}
+.notif-msg.announce{color:var(--gold);font-weight:600}
+.notif-time{font-size:.7rem;color:var(--text3);margin-top:.25rem}
+.notif-link-btn{display:inline-block;margin-top:.5rem;background:linear-gradient(135deg,var(--primary),#9171ff);color:#fff;padding:.32rem .85rem;border-radius:8px;font-size:.78rem;font-weight:700}
+
+/* LEADERBOARD */
+.lb-tabs{display:flex;gap:.5rem;padding:1rem;background:var(--bg);position:sticky;top:58px;z-index:100;border-bottom:1px solid var(--border2)}
+.lb-tab{flex:1;padding:.65rem;border-radius:12px;font-size:.86rem;font-weight:700;background:var(--card);border:1.5px solid var(--border);color:var(--text2);cursor:pointer;transition:all var(--tr);text-align:center}
+.lb-tab.active{background:linear-gradient(135deg,var(--primary),#9171ff);color:#fff;border-color:var(--primary);box-shadow:0 4px 14px var(--primary-glow)}
+.lb-podium{display:flex;justify-content:center;align-items:flex-end;padding:1.5rem 1rem;gap:.8rem}
+.lb-pod{text-align:center;flex:1;max-width:120px}
+.lb-pod-av{border-radius:50%;object-fit:cover;border:3px solid;margin:0 auto .5rem;display:block;transition:all var(--tr);cursor:pointer}
+.lb-pod-av:hover{transform:scale(1.08)}
+.lb-pod.gold .lb-pod-av{border-color:var(--gold);width:74px;height:74px;box-shadow:0 0 20px rgba(255,214,0,.4)}
+.lb-pod.silver .lb-pod-av{border-color:#b0bec5;width:62px;height:62px}
+.lb-pod.bronze .lb-pod-av{border-color:#bf8c60;width:56px;height:56px}
+.lb-pod-rank{font-size:1.4rem;margin-bottom:.3rem}
+.lb-pod-name{font-size:.78rem;font-weight:700;margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-pod-score{font-size:.78rem;color:var(--text2)}
+.lb-list{padding:0 1rem 1rem}
+.lb-row{display:flex;align-items:center;gap:.8rem;padding:.75rem;background:var(--card);border:1px solid var(--border2);border-radius:14px;margin-bottom:.5rem;transition:all var(--tr)}
+.lb-row:hover{border-color:var(--border);transform:translateX(3px);box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.lb-rank-num{font-family:var(--font-d);font-size:1.1rem;font-weight:700;width:30px;text-align:center;color:var(--text2)}
+.lb-av{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--border);cursor:pointer}
+.lb-info{flex:1}
+.lb-name{font-size:.88rem;font-weight:700}
+.lb-score{font-size:.75rem;color:var(--text2)}
+.lb-pts{font-family:var(--font-d);font-size:.95rem;font-weight:700;color:var(--primary)}
+
+/* SETTINGS */
+.settings-section{margin:1rem;background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden}
+.settings-section-title{padding:.7rem 1rem;font-size:.68rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px;border-bottom:1px solid var(--border2)}
+.settings-row{display:flex;align-items:center;gap:.8rem;padding:.9rem 1rem;border-bottom:1px solid var(--border2);cursor:pointer;transition:all var(--tr)}
+.settings-row:last-child{border-bottom:none}
+.settings-row:hover{background:var(--card2)}
+.settings-row:active{background:var(--primary-dim)}
+.settings-row-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.settings-row-body{flex:1}
+.settings-row-title{font-size:.9rem;font-weight:600}
+.settings-row-sub{font-size:.73rem;color:var(--text2);margin-top:.1rem}
+.settings-row i.fa-chevron-right{color:var(--text3);font-size:.78rem}
+.toggle{position:relative;width:46px;height:25px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:var(--text3);border-radius:13px;cursor:pointer;transition:all var(--tr)}
+.toggle-slider::before{content:'';position:absolute;width:19px;height:19px;left:3px;top:3px;background:#fff;border-radius:50%;transition:all var(--tr);box-shadow:0 2px 5px rgba(0,0,0,.3)}
+.toggle input:checked + .toggle-slider{background:linear-gradient(135deg,var(--primary),#9171ff)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(21px)}
+
+/* THEME / LANGUAGE */
+.theme-panel{padding:1rem}
+.theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-bottom:1.5rem}
+.theme-card{border:2px solid var(--border);border-radius:14px;padding:.9rem;text-align:center;cursor:pointer;transition:all var(--tr)}
+.theme-card.active{border-color:var(--primary);background:var(--primary-dim);box-shadow:0 0 16px var(--primary-glow)}
+.theme-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+.theme-preview{width:100%;height:44px;border-radius:10px;margin-bottom:.6rem}
+.theme-name{font-size:.78rem;font-weight:700}
+.lang-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
+.lang-card{border:2px solid var(--border);border-radius:14px;padding:.9rem;text-align:center;cursor:pointer;transition:all var(--tr)}
+.lang-card.active{border-color:var(--primary);background:var(--primary-dim);box-shadow:0 0 12px var(--primary-glow)}
+.lang-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+.lang-flag{font-size:1.8rem;margin-bottom:.4rem}
+.lang-name{font-size:.8rem;font-weight:700}
+
+/* PAGE HEADER / BACK BTN */
+.page-header{display:flex;align-items:center;gap:.8rem;padding:1rem;border-bottom:1px solid var(--border2)}
+.back-btn{width:38px;height:38px;border-radius:12px;background:var(--card);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);cursor:pointer;transition:all var(--tr);flex-shrink:0}
+.back-btn:hover{background:linear-gradient(135deg,var(--primary),#9171ff);color:#fff;border-color:var(--primary);box-shadow:0 3px 12px var(--primary-glow)}
+.page-header-title{font-family:var(--font-d);font-size:1.1rem;font-weight:700}
+
+/* FOLLOWERS */
+.follow-list{padding:.5rem 1rem}
+.follow-row{display:flex;align-items:center;gap:.8rem;padding:.75rem;border-bottom:1px solid var(--border2);cursor:pointer;transition:all var(--tr);border-radius:12px}
+.follow-row:hover{background:var(--card2)}
+.follow-av{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid var(--border);flex-shrink:0}
+.follow-info{flex:1}
+.follow-name{font-size:.9rem;font-weight:700}
+.follow-role{font-size:.74rem;color:var(--text2)}
+
+/* SAVED GRID */
+.saved-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.saved-item{border-radius:12px;overflow:hidden;position:relative;cursor:pointer;aspect-ratio:1}
+.saved-item img{width:100%;height:100%;object-fit:cover;transition:transform .35s}
+.saved-item:hover img{transform:scale(1.07)}
+.saved-item-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent 55%);opacity:0;transition:opacity .3s}
+.saved-item:hover .saved-item-overlay{opacity:1}
+
+/* EDIT PROFILE */
+.edit-form-wrap{padding:1.2rem}
+.avatar-upload-center{text-align:center;margin-bottom:1.5rem}
+.avatar-upload-center .profile-av{width:82px;height:82px;margin:0 auto .6rem;cursor:pointer}
+.avatar-upload-btn{background:var(--primary-dim);color:var(--primary);border:1.5px solid var(--primary);border-radius:10px;padding:.45rem 1rem;font-size:.8rem;font-weight:700;cursor:pointer;transition:all var(--tr);display:inline-flex;align-items:center;gap:.4rem}
+.avatar-upload-btn:hover{background:var(--primary);color:#fff;box-shadow:0 3px 12px var(--primary-glow)}
+
+/* IMAGE VIEWER */
+#img-viewer{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.96);display:none;align-items:center;justify-content:center;padding:1rem}
+#img-viewer.active{display:flex;animation:fadeIn .2s ease}
+#img-viewer img{max-width:100%;max-height:90vh;object-fit:contain;border-radius:12px}
+#img-viewer-close{position:absolute;top:1rem;right:1rem;width:42px;height:42px;background:rgba(255,255,255,.1);backdrop-filter:blur(6px);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:1.1rem;border:1px solid rgba(255,255,255,.12);transition:all var(--tr)}
+#img-viewer-close:hover{background:var(--danger);border-color:var(--danger)}
+
+/* TOAST */
+.toast-container{position:fixed;top:68px;right:.8rem;z-index:9000;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:.75rem 1rem;font-size:.84rem;color:var(--text);display:flex;align-items:center;gap:.65rem;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:toastIn .3s cubic-bezier(.34,1.56,.64,1);max-width:260px;pointer-events:all;backdrop-filter:blur(12px)}
+.toast.success{border-color:rgba(0,230,118,.4)}
+.toast.error{border-color:rgba(255,64,96,.4)}
+.toast-out{animation:toastOut .25s ease forwards}
+
+/* MISC */
+.spinner{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .75s linear infinite;margin:2.5rem auto}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text2)}
+.empty-state i{font-size:3rem;color:var(--text3);margin-bottom:1rem;display:block}
+.empty-state p{font-size:.9rem}
+#scroll-top{position:fixed;bottom:80px;right:1rem;width:42px;height:42px;background:linear-gradient(135deg,var(--primary),#9171ff);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;border:none;cursor:pointer;opacity:0;pointer-events:none;transition:all var(--tr);box-shadow:0 4px 18px var(--primary-glow);z-index:400;font-size:.95rem}
+#scroll-top.visible{opacity:1;pointer-events:all}
+#scroll-top:hover{transform:translateY(-3px);box-shadow:0 8px 24px var(--primary-glow)}
+.change-pw-wrap{padding:1.5rem}
+
+@media(min-width:600px){
+  .main-content,.bottom-nav,.nav{max-width:600px;margin-left:auto;margin-right:auto}
+  .bottom-nav,.nav{left:50%;right:auto;transform:translateX(-50%);width:100%;max-width:600px}
+}
+</style>
+</head>
+<body>
+
+<div id="vl">
+  <div class="orbs-bg"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
+  <div class="load-content">
+    <div class="load-logo" data-en="Prompt Arena" data-bn="প্রম্পট এরেনা">Prompt Arena</div>
+    <div class="load-sub" data-en="Where AI Creativity Lives" data-bn="যেখানে AI সৃজনশীলতা বাস করে">Where AI Creativity Lives</div>
+    <div class="load-dev" data-en="Developed by SP Team" data-bn="SP Team কর্তৃক তৈরি">Developed by SP Team</div>
+    <div class="load-ver">Version 1.02</div>
+    <div class="load-bar-wrap"><div class="load-bar"></div></div>
+    <div class="load-dots"><div class="load-dot"></div><div class="load-dot"></div><div class="load-dot"></div></div>
+  </div>
+</div>
+
+<div id="va" class="view">
+  <div class="orbs-bg"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+  <div class="auth-box">
+    <div class="auth-logo">Prompt Arena</div>
+    <div class="auth-tagline" data-en="Share your AI prompt creativity" data-bn="আপনার AI প্রম্পট শেয়ার করুন">Share your AI prompt creativity</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuthTab('login')" data-en="Login" data-bn="লগইন">Login</div>
+      <div class="auth-tab" onclick="switchAuthTab('register')" data-en="Register" data-bn="নিবন্ধন">Register</div>
+    </div>
+    <div id="auth-err" class="auth-err"></div>
+    <div id="login-form">
+      <div class="form-group"><label class="form-label" data-en="Email" data-bn="ইমেইল">Email</label><input type="email" id="login-email" class="form-input" placeholder="you@example.com"/></div>
+      <div class="form-group"><label class="form-label" data-en="Password" data-bn="পাসওয়ার্ড">Password</label><input type="password" id="login-pass" class="form-input" placeholder="••••••••"/></div>
+      <button class="btn-primary" onclick="doLogin()" data-en="Sign In" data-bn="সাইন ইন">Sign In</button>
+      <p style="text-align:center;margin-top:1rem;font-size:.82rem;color:var(--text2)"><span style="cursor:pointer;color:var(--secondary)" onclick="doForgotPw()" data-en="Forgot password?" data-bn="পাসওয়ার্ড ভুলে গেছেন?">Forgot password?</span></p>
+    </div>
+    <div id="register-form" style="display:none">
+      <div class="form-group"><label class="form-label" data-en="Display Name" data-bn="নাম">Display Name</label><input type="text" id="reg-name" class="form-input" placeholder="Your name"/></div>
+      <div class="form-group"><label class="form-label" data-en="Email" data-bn="ইমেইল">Email</label><input type="email" id="reg-email" class="form-input" placeholder="you@example.com"/></div>
+      <div class="form-group"><label class="form-label" data-en="Password" data-bn="পাসওয়ার্ড">Password</label><input type="password" id="reg-pass" class="form-input" placeholder="Min 6 characters"/></div>
+      <button class="btn-primary" onclick="doRegister()" data-en="Create Account" data-bn="অ্যাকাউন্ট তৈরি করুন">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<div id="popup-overlay" style="display:none">
+  <div class="popup-box">
+    <button class="popup-close" onclick="closePopup()"><i class="fa fa-times"></i></button>
+    <img id="popup-img" src="" alt="" class="popup-img" style="display:none"/>
+    <div class="popup-body">
+      <div id="popup-title" class="popup-title"></div>
+      <div id="popup-context" class="popup-context"></div>
+      <a id="popup-link" href="#" target="_blank" class="popup-btn">Learn More</a>
+    </div>
+  </div>
+</div>
+
+<div id="va-app">
+  <nav class="nav">
+    <div class="nav-logo">Prompt Arena</div>
+    <button class="nav-btn" onclick="openSearch()"><i class="fa fa-search"></i></button>
+    <button class="nav-btn" onclick="navTo('notifications')" id="notif-nav-btn"><i class="fa fa-bell"></i></button>
+    <div class="nav-av-btn" onclick="navTo('profile')"><img id="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=6e56ff&color=fff" alt=""/></div>
+  </nav>
+
+  <div class="main-content">
+
+    <div id="page-feed" class="page active">
+      <div class="trending-wrap">
+        <div class="trending-label"><i class="fa fa-fire"></i> <span data-en="Trending" data-bn="ট্রেন্ডিং">Trending</span></div>
+        <div class="trending-ticker"><div class="trending-track" id="trending-track"></div></div>
+      </div>
+      <div class="feed-wrap" id="feed-list"><div class="spinner"></div></div>
+    </div>
+
+    <div id="page-search" class="page">
+      <div class="search-bar-wrap">
+        <div class="search-bar">
+          <i class="fa fa-search"></i>
+          <input type="text" id="search-input" placeholder="Search prompts, users, tags..." oninput="doSearch()"/>
+          <i class="fa fa-times" style="cursor:pointer;color:var(--text3)" onclick="clearSearch()"></i>
+        </div>
+        <div class="search-filters">
+          <div class="s-filter active" onclick="setSearchFilter('all',this)" data-en="All" data-bn="সব">All</div>
+          <div class="s-filter" onclick="setSearchFilter('posts',this)" data-en="Posts" data-bn="পোস্ট">Posts</div>
+          <div class="s-filter" onclick="setSearchFilter('users',this)" data-en="Users" data-bn="ব্যবহারকারী">Users</div>
+        </div>
+      </div>
+      <div class="search-results" id="search-results"><div class="empty-state"><i class="fa fa-search"></i><p data-en="Search for prompts or users" data-bn="প্রম্পট বা ব্যবহারকারী খুঁজুন">Search for prompts or users</p></div></div>
+    </div>
+
+    <div id="page-leaderboard" class="page">
+      <div class="lb-tabs">
+        <div class="lb-tab active" onclick="switchLbTab('daily',this)" data-en="Daily" data-bn="দৈনিক">Daily</div>
+        <div class="lb-tab" onclick="switchLbTab('weekly',this)" data-en="Weekly" data-bn="সাপ্তাহিক">Weekly</div>
+      </div>
+      <div id="lb-podium" class="lb-podium"></div>
+      <div id="lb-list" class="lb-list"></div>
+    </div>
+
+    <div id="page-profile" class="page">
+      <div class="profile-hero">
+        <div class="profile-av-wrap">
+          <img id="profile-av" src="https://ui-avatars.com/api/?name=U&background=6e56ff&color=fff" class="profile-av" alt=""/>
+          <div class="profile-av-edit" onclick="navTo('edit-profile')"><i class="fa fa-camera"></i></div>
+        </div>
+        <div class="profile-name" id="profile-name">Loading...</div>
+        <div id="profile-badge-wrap" style="margin:.4rem 0;min-height:22px"></div>
+        <div style="font-size:.85rem;color:var(--text2)" id="profile-bio-text"></div>
+      </div>
+      <div class="profile-stats">
+        <div class="profile-stat"><div class="profile-stat-val" id="stat-posts">0</div><div class="profile-stat-lbl" data-en="Posts" data-bn="পোস্ট">Posts</div></div>
+        <div class="profile-stat" onclick="showFollowers('followers')"><div class="profile-stat-val" id="stat-followers">0</div><div class="profile-stat-lbl" data-en="Followers" data-bn="ফলোয়ার">Followers</div></div>
+        <div class="profile-stat" onclick="showFollowers('following')"><div class="profile-stat-val" id="stat-following">0</div><div class="profile-stat-lbl" data-en="Following" data-bn="ফলো করছেন">Following</div></div>
+        <div class="profile-stat"><div class="profile-stat-val" id="stat-likes">0</div><div class="profile-stat-lbl" data-en="Likes" data-bn="লাইক">Likes</div></div>
+      </div>
+      <div class="profile-info-card" id="profile-info-card"></div>
+      <div class="edit-profile-btn" onclick="navTo('edit-profile')"><i class="fa fa-edit"></i> <span data-en="Edit Profile" data-bn="প্রোফাইল সম্পাদনা">Edit Profile</span></div>
+      <div class="profile-posts-section">
+        <div class="section-title"><i class="fa fa-th" style="color:var(--primary)"></i> <span data-en="My Posts" data-bn="আমার পোস্ট">My Posts</span></div>
+        <div id="my-posts-list"></div>
+      </div>
+      <div class="profile-posts-section">
+        <div class="section-title"><i class="fa fa-bookmark" style="color:var(--gold)"></i> <span data-en="Saved" data-bn="সেভ করা">Saved</span></div>
+        <div class="saved-grid" id="saved-grid"></div>
+      </div>
+    </div>
+
+    <div id="page-notifications" class="page">
+      <div class="page-header">
+        <div class="page-header-title" data-en="Notifications" data-bn="বিজ্ঞপ্তি">Notifications</div>
+        <button style="margin-left:auto;background:none;border:none;color:var(--text2);font-size:.8rem;cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text2)'" onclick="markAllRead()" data-en="Mark all read" data-bn="সব পড়া হিসেবে চিহ্নিত">Mark all read</button>
+      </div>
+      <div style="padding:1rem" id="notif-list"><div class="spinner"></div></div>
+    </div>
+
+    <div id="page-edit-profile" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button>
+        <div class="page-header-title" data-en="Edit Profile" data-bn="প্রোফাইল সম্পাদনা">Edit Profile</div>
+      </div>
+      <div class="edit-form-wrap">
+        <div class="avatar-upload-center">
+          <img id="edit-avatar-preview" src="" class="profile-av" alt="" onclick="document.getElementById('edit-avatar-file').click()" style="cursor:pointer"/>
+          <br/>
+          <div class="avatar-upload-btn" onclick="document.getElementById('edit-avatar-file').click()"><i class="fa fa-camera"></i> <span data-en="Change Photo" data-bn="ছবি পরিবর্তন">Change Photo</span></div>
+          <input type="file" id="edit-avatar-file" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
+        </div>
+        <div class="form-group"><label class="form-label" data-en="Display Name" data-bn="প্রদর্শনী নাম">Display Name</label><input type="text" id="edit-name" class="form-input"/></div>
+        <div class="form-group"><label class="form-label" data-en="Bio" data-bn="জীবনী">Bio</label><textarea id="edit-bio" class="form-textarea" rows="2" placeholder="Something about you..."></textarea></div>
+        <div class="form-group"><label class="form-label" data-en="Address" data-bn="ঠিকানা">Address</label><input type="text" id="edit-address" class="form-input" placeholder="City, Country"/></div>
+        <div class="form-group"><label class="form-label" data-en="Mobile" data-bn="মোবাইল">Mobile</label><input type="tel" id="edit-mobile" class="form-input" placeholder="+880..."/></div>
+        <div class="form-group"><label class="form-label" data-en="Telegram" data-bn="টেলিগ্রাম">Telegram</label><input type="text" id="edit-telegram" class="form-input" placeholder="@username"/></div>
+        <div class="form-group"><label class="form-label" data-en="Facebook Link" data-bn="ফেসবুক লিংক">Facebook Link</label><input type="url" id="edit-facebook" class="form-input" placeholder="https://facebook.com/..."/></div>
+        <button class="submit-post-btn" onclick="saveProfile()" data-en="Save Changes" data-bn="পরিবর্তন সংরক্ষণ">Save Changes</button>
+      </div>
+    </div>
+
+    <div id="page-settings" class="page">
+      <div class="page-header"><div class="page-header-title"><i class="fa fa-cog" style="color:var(--primary)"></i> <span data-en="Settings" data-bn="সেটিংস">Settings</span></div></div>
+      <div class="settings-section">
+        <div class="settings-section-title" data-en="Appearance" data-bn="চেহারা">Appearance</div>
+        <div class="settings-row" onclick="navTo('themes')">
+          <div class="settings-row-icon" style="background:var(--primary-dim);color:var(--primary)"><i class="fa fa-palette"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title" data-en="Theme" data-bn="থিম">Theme</div><div class="settings-row-sub" id="current-theme-label">Dark</div></div>
+          <i class="fa fa-chevron-right"></i>
+        </div>
+        <div class="settings-row" onclick="navTo('language')">
+          <div class="settings-row-icon" style="background:rgba(0,212,255,.12);color:var(--secondary)"><i class="fa fa-globe"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title" data-en="Language" data-bn="ভাষা">Language</div><div class="settings-row-sub" id="current-lang-label">English</div></div>
+          <i class="fa fa-chevron-right"></i>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title" data-en="Account" data-bn="অ্যাকাউন্ট">Account</div>
+        <div class="settings-row" onclick="navTo('change-password')">
+          <div class="settings-row-icon" style="background:rgba(255,152,0,.12);color:var(--warning)"><i class="fa fa-lock"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title" data-en="Change Password" data-bn="পাসওয়ার্ড পরিবর্তন">Change Password</div><div class="settings-row-sub" data-en="Update your password" data-bn="পাসওয়ার্ড আপডেট করুন">Update your password</div></div>
+          <i class="fa fa-chevron-right"></i>
+        </div>
+        <div class="settings-row" onclick="navTo('edit-profile')">
+          <div class="settings-row-icon" style="background:var(--primary-dim);color:var(--primary)"><i class="fa fa-user-edit"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title" data-en="Edit Profile" data-bn="প্রোফাইল সম্পাদনা">Edit Profile</div></div>
+          <i class="fa fa-chevron-right"></i>
+        </div>
+        <div class="settings-row" onclick="doLogout()">
+          <div class="settings-row-icon" style="background:rgba(255,64,96,.12);color:var(--danger)"><i class="fa fa-sign-out-alt"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title" style="color:var(--danger)" data-en="Logout" data-bn="লগআউট">Logout</div></div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title" data-en="Notifications" data-bn="বিজ্ঞপ্তি">Notifications</div>
+        <div class="settings-row">
+          <div class="settings-row-icon" style="background:rgba(0,230,118,.12);color:var(--success)"><i class="fa fa-bell"></i></div>
+          <div class="settings-row-body"><div class="settings-row-title" data-en="Push Notifications" data-bn="পুশ বিজ্ঞপ্তি">Push Notifications</div></div>
+          <label class="toggle"><input type="checkbox" id="toggle-notif" checked onchange="localStorage.setItem('pa-notif',this.checked)"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:.72rem;color:var(--text3);padding:1.5rem">Prompt Arena v1.02 — SP Team</p>
+    </div>
+
+    <div id="page-themes" class="page">
+      <div class="page-header"><button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button><div class="page-header-title" data-en="Theme" data-bn="থিম">Theme</div></div>
+      <div class="theme-panel">
+        <div class="theme-grid">
+          <div class="theme-card active" id="theme-dark" onclick="setTheme('dark',this)">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#07071a,#0e0e2a,rgba(110,86,255,.2))"></div>
+            <div class="theme-name" data-en="Dark" data-bn="অন্ধকার">Dark</div>
+          </div>
+          <div class="theme-card" id="theme-light" onclick="setTheme('light',this)">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#f0f0f8,#fff,rgba(110,86,255,.1))"></div>
+            <div class="theme-name" data-en="Light" data-bn="আলো">Light</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-language" class="page">
+      <div class="page-header"><button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button><div class="page-header-title" data-en="Language" data-bn="ভাষা">Language</div></div>
+      <div class="theme-panel">
+        <div class="lang-grid">
+          <div class="lang-card active" id="lang-en" onclick="setLang('en',this)"><div class="lang-flag">🇺🇸</div><div class="lang-name">English</div></div>
+          <div class="lang-card" id="lang-bn" onclick="setLang('bn',this)"><div class="lang-flag">🇧🇩</div><div class="lang-name">বাংলা</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-change-password" class="page">
+      <div class="page-header"><button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button><div class="page-header-title" data-en="Change Password" data-bn="পাসওয়ার্ড পরিবর্তন">Change Password</div></div>
+      <div class="change-pw-wrap">
+        <div class="form-group"><label class="form-label" data-en="Current Password" data-bn="বর্তমান পাসওয়ার্ড">Current Password</label><input type="password" id="pw-current" class="form-input" placeholder="••••••••"/></div>
+        <div class="form-group"><label class="form-label" data-en="New Password" data-bn="নতুন পাসওয়ার্ড">New Password</label><input type="password" id="pw-new" class="form-input" placeholder="Min 6 characters"/></div>
+        <div class="form-group"><label class="form-label" data-en="Confirm Password" data-bn="পাসওয়ার্ড নিশ্চিত করুন">Confirm Password</label><input type="password" id="pw-confirm" class="form-input" placeholder="Repeat new password"/></div>
+        <button class="submit-post-btn" onclick="changePassword()" data-en="Update Password" data-bn="পাসওয়ার্ড আপডেট করুন">Update Password</button>
+      </div>
+    </div>
+
+    <div id="page-user-profile" class="page">
+      <div class="page-header"><button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button><div class="page-header-title" id="user-profile-name">Profile</div></div>
+      <div class="profile-hero">
+        <div class="profile-av-wrap"><img id="up-avatar" src="" class="profile-av" alt=""/></div>
+        <div class="profile-name" id="up-name"></div>
+        <div id="up-badge-wrap" style="margin:.4rem 0;min-height:22px"></div>
+        <div style="font-size:.85rem;color:var(--text2)" id="up-bio"></div>
+      </div>
+      <div class="profile-stats">
+        <div class="profile-stat"><div class="profile-stat-val" id="up-posts">0</div><div class="profile-stat-lbl">Posts</div></div>
+        <div class="profile-stat"><div class="profile-stat-val" id="up-followers">0</div><div class="profile-stat-lbl">Followers</div></div>
+        <div class="profile-stat"><div class="profile-stat-val" id="up-following">0</div><div class="profile-stat-lbl">Following</div></div>
+      </div>
+      <div style="padding:0 1rem .8rem"><button id="up-follow-btn" class="btn-primary" onclick="toggleFollowUser()" style="padding:.75rem">Follow</button></div>
+      <div class="profile-info-card" id="up-info-card" style="margin:0 1rem 1rem"></div>
+      <div style="padding:0 1rem">
+        <div class="section-title"><i class="fa fa-th" style="color:var(--primary)"></i> Posts</div>
+        <div id="up-posts-grid"></div>
+      </div>
+    </div>
+
+    <div id="page-followers" class="page">
+      <div class="page-header"><button class="back-btn" onclick="navBack()"><i class="fa fa-arrow-left"></i></button><div class="page-header-title" id="followers-page-title">Followers</div></div>
+      <div class="follow-list" id="follow-list-items"></div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="bnav-item active" id="bnav-feed" onclick="navTo('feed')"><i class="fa fa-home"></i><span data-en="Home" data-bn="হোম">Home</span></div>
+    <div class="bnav-item" id="bnav-search" onclick="openSearch()"><i class="fa fa-search"></i><span data-en="Search" data-bn="খুঁজুন">Search</span></div>
+    <div class="bnav-post-btn" onclick="openPostForm()"><i class="fa fa-plus"></i></div>
+    <div class="bnav-item" id="bnav-leaderboard" onclick="navTo('leaderboard')"><i class="fa fa-trophy"></i><span data-en="Board" data-bn="বোর্ড">Board</span></div>
+    <div class="bnav-item" id="bnav-settings" onclick="navTo('settings')"><i class="fa fa-cog"></i><span data-en="Settings" data-bn="সেটিংস">Settings</span></div>
+  </nav>
+</div>
+
+<div id="post-form-modal" style="display:none" class="post-form-modal">
+  <div class="post-form-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+      <span style="font-family:var(--font-d);font-size:1.1rem;font-weight:700" data-en="New Post" data-bn="নতুন পোস্ট">New Post</span>
+      <button onclick="closePostForm()" style="background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer;transition:color .2s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text2)'"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="form-section-label" data-en="Image" data-bn="ছবি">Image</div>
+    <div class="img-upload-area" onclick="document.getElementById('post-img-file').click()">
+      <i class="fa fa-cloud-upload-alt"></i>
+      <p data-en="Tap to upload your AI-generated image" data-bn="AI-তৈরি ছবি আপলোড করুন">Tap to upload your AI-generated image</p>
+      <small>JPG, PNG, WEBP</small>
+    </div>
+    <input type="file" id="post-img-file" accept="image/*" style="display:none" onchange="handlePostImage(this)"/>
+    <img id="post-img-preview" class="preview-img" alt=""/>
+    <div class="form-section-label" style="margin-top:.2rem" data-en="Prompt Used" data-bn="ব্যবহৃত প্রম্পট">Prompt Used</div>
+    <textarea id="post-prompt" class="form-textarea" placeholder="Paste the full prompt you used to generate this image..."></textarea>
+    <div class="form-section-label" style="margin-top:.8rem" data-en="Tags (optional)" data-bn="ট্যাগ (ঐচ্ছিক)">Tags (optional)</div>
+    <input type="text" id="post-tags" class="form-input" placeholder="portrait, cyberpunk, fantasy"/>
+    <p style="font-size:.74rem;color:var(--text3);margin-top:.6rem;line-height:1.5"><i class="fa fa-info-circle" style="color:var(--secondary)"></i> <span data-en="Post will be reviewed by admin before going live." data-bn="পোস্ট অ্যাডমিন অনুমোদনের পরে প্রকাশিত হবে।">Post will be reviewed by admin before going live.</span></p>
+    <button class="submit-post-btn" id="submit-post-btn" onclick="submitPost()"><span data-en="Submit Post" data-bn="পোস্ট জমা দিন">Submit Post</span></button>
+  </div>
+</div>
+
+<div id="prompt-modal" style="display:none" class="modal-overlay" onclick="closePromptModalOuter(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-header-title"><i class="fa fa-magic"></i> <span data-en="Full Prompt" data-bn="সম্পূর্ণ প্রম্পট">Full Prompt</span></div>
+      <button class="modal-x-btn" onclick="closePromptModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div id="prompt-modal-text" class="prompt-content"></div>
+    <button class="copy-btn" onclick="copyPrompt()"><i class="fa fa-copy"></i> <span data-en="Copy Prompt" data-bn="প্রম্পট কপি করুন">Copy Prompt</span></button>
+  </div>
+</div>
+
+<div id="img-viewer" onclick="closeImgViewer()">
+  <button id="img-viewer-close" onclick="closeImgViewer()"><i class="fa fa-times"></i></button>
+  <img id="img-viewer-src" src="" alt="" onclick="event.stopPropagation()"/>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<button id="scroll-top" onclick="scrollToTop()"><i class="fa fa-chevron-up"></i></button>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp, arrayUnion, arrayRemove, setDoc, increment, startAfter } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const FB={apiKey:"AIzaSyAri3Vg5_R5HwUX5psQhCUGxOY3t9OwVSI",authDomain:"prompt-8153d.firebaseapp.com",projectId:"prompt-8153d",storageBucket:"prompt-8153d.firebasestorage.app",messagingSenderId:"103433330213",appId:"1:103433330213:web:b9fd5842575ea3a53c69cc",measurementId:"G-PRK8HXGJS5"};
+const app=initializeApp(FB);
+const auth=getAuth(app);
+const db=getFirestore(app);
+const IMGBB="ae035fee1535172e50bab0ad8d417031";
+
+let CU=null,CUD=null;
+let pageHistory=['feed'],curPage='feed';
+let searchFilter='all';
+let viewUID=null;
+let feedUnsub=null,notifUnsub=null;
+let curPrompt='';
+let postImgB64=null,avatarB64=null;
+let curLang=localStorage.getItem('pa-lang')||'en';
+
+// Pagination variables
+let lastVisiblePost = null;
+let isFetchingPosts = false;
+let hasMorePosts = true;
+
+/* ── INIT ── */
+window.addEventListener('DOMContentLoaded',()=>{
+  applyStoredTheme();
+  applyLang(curLang);
+  setTimeout(()=>{
+    const vl=document.getElementById('vl');
+    vl.style.transition='opacity .55s ease';vl.style.opacity='0';
+    setTimeout(()=>{vl.style.display='none';checkAuth();},560);
+  },2700);
+  
+  // scroll listener optimized
+  window.addEventListener('scroll', () => {
+    if (window.requestAnimationFrame) {
+      requestAnimationFrame(() => {
+        const btn = document.getElementById('scroll-top');
+        if(btn) btn.classList.toggle('visible', window.scrollY > 280);
+      });
+    }
+  }, { passive: true });
+});
+
+function checkAuth(){
+  onAuthStateChanged(auth,async u=>{
+    if(u){CU=u;await loadUD(u.uid);showApp();}
+    else showAuth();
+  });
+}
+async function loadUD(uid){
+  const s=await getDoc(doc(db,'users',uid));
+  if(s.exists()){CUD={id:uid,...s.data()};}
+  else{
+    CUD={id:uid,displayName:CU.displayName||'User',role:'user',photoURL:'',bio:'',address:'',mobile:'',telegram:'',facebook:'',followers:[],following:[],totalLikes:0};
+    await setDoc(doc(db,'users',uid),{...CUD,createdAt:serverTimestamp()});
+  }
+  updateNavAv();
+}
+const avURL=n=>`https://ui-avatars.com/api/?name=${encodeURIComponent(n||'U')}&background=6e56ff&color=fff&size=80`;
+function updateNavAv(){const a=document.getElementById('nav-avatar');if(a)a.src=CUD.photoURL||avURL(CUD.displayName);}
+function showAuth(){document.getElementById('va').classList.add('active');document.getElementById('va-app').classList.remove('active');}
+function showApp(){document.getElementById('va').classList.remove('active');document.getElementById('va-app').classList.add('active');navTo('feed');loadPopup();loadNotifCount();}
+
+/* ── AUTH ── */
+window.switchAuthTab=t=>{
+  document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));
+  document.getElementById('login-form').style.display=t==='login'?'block':'none';
+  document.getElementById('register-form').style.display=t==='register'?'block':'none';
+  document.getElementById('auth-err').classList.remove('show');
+};
+window.doLogin=async()=>{
+  const e=document.getElementById('login-email').value.trim(),p=document.getElementById('login-pass').value;
+  if(!e||!p){showAErr('Please fill all fields');return;}
+  try{await signInWithEmailAndPassword(auth,e,p);}
+  catch(err){showAErr(err.message.replace('Firebase: ','').replace(/\(auth.*\)/,''));}
+};
+window.doRegister=async()=>{
+  const n=document.getElementById('reg-name').value.trim(),e=document.getElementById('reg-email').value.trim(),p=document.getElementById('reg-pass').value;
+  if(!n||!e||!p){showAErr('Please fill all fields');return;}
+  if(p.length<6){showAErr('Password must be at least 6 characters');return;}
+  try{
+    const cr=await createUserWithEmailAndPassword(auth,e,p);
+    await updateProfile(cr.user,{displayName:n});
+    await setDoc(doc(db,'users',cr.user.uid),{displayName:n,email:e,role:'user',photoURL:'',bio:'',address:'',mobile:'',telegram:'',facebook:'',followers:[],following:[],totalLikes:0,createdAt:serverTimestamp()});
+    await logAct('New user: '+n);
+  }catch(err){showAErr(err.message.replace('Firebase: ','').replace(/\(auth.*\)/,''));}
+};
+window.doForgotPw=async()=>{
+  const e=document.getElementById('login-email').value.trim();
+  if(!e){showAErr('Enter your email first');return;}
+  try{await sendPasswordResetEmail(auth,e);showToast('Reset email sent!','success');}
+  catch(err){showAErr(err.message);}
+};
+window.doLogout=async()=>{
+  window.removeEventListener('scroll', handleFeedScroll);
+  if(feedUnsub)feedUnsub();if(notifUnsub)notifUnsub();
+  await signOut(auth);CU=null;CUD=null;
+  document.getElementById('va-app').classList.remove('active');
+  document.getElementById('va').classList.add('active');
+  window.switchAuthTab('login');
+};
+function showAErr(m){const el=document.getElementById('auth-err');el.textContent=m;el.classList.add('show');}
+
+/* ── POPUP ── */
+async function loadPopup(){
+  try{
+    const s=await getDoc(doc(db,'config','popup'));
+    if(s.exists()&&s.data().active){
+      const d=s.data();
+      const pi=document.getElementById('popup-img');
+      if(d.image){pi.src=d.image;pi.style.display='block';}else pi.style.display='none';
+      document.getElementById('popup-title').textContent=d.title||'';
+      document.getElementById('popup-context').textContent=d.context||'';
+      const lnk=document.getElementById('popup-link');
+      lnk.href=d.link||'#';lnk.textContent=d.btnText||'Learn More';
+      document.getElementById('popup-overlay').style.display='flex';
+    }
+  }catch(e){}
+}
+window.closePopup=()=>{document.getElementById('popup-overlay').style.display='none';};
+
+/* ── NAVIGATION ── */
+window.navTo=page=>{
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+page);
+  if(el)el.classList.add('active');
+  if(curPage!==page)pageHistory.push(page);
+  curPage=page;
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  const bmap={feed:'bnav-feed',search:'bnav-search',leaderboard:'bnav-leaderboard',settings:'bnav-settings'};
+  if(bmap[page])document.getElementById(bmap[page]).classList.add('active');
+  window.scrollTo(0,0);
+  const acts={feed:loadFeed,notifications:loadNotifications,leaderboard:loadLB,profile:loadMyProfile,'edit-profile':loadEditProfile};
+  if(acts[page])acts[page]();
+};
+window.navBack=()=>{if(pageHistory.length>1){pageHistory.pop();navTo(pageHistory[pageHistory.length-1]);}else navTo('feed');};
+window.openSearch=()=>{navTo('search');setTimeout(()=>document.getElementById('search-input').focus(),200);};
+window.history.pushState({},'',window.location.href);
+window.addEventListener('popstate',()=>navBack());
+
+/* ── FEED (Infinite Scroll Version) ── */
+async function loadFeed(){
+  const el=document.getElementById('feed-list');
+  el.innerHTML='<div class="spinner"></div>';
+  
+  lastVisiblePost = null;
+  hasMorePosts = true;
+  isFetchingPosts = true;
+
+  try {
+    const q = query(
+      collection(db, 'posts'),
+      where('status', '==', 'approved'),
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    );
+    
+    const snap = await getDocs(q);
+    el.innerHTML = '';
+    
+    if (snap.empty) {
+      el.innerHTML = '<div class="empty-state"><i class="fa fa-image"></i><p>No posts yet. Be the first!</p></div>';
+      hasMorePosts = false;
+      isFetchingPosts = false;
+      return;
+    }
+
+    lastVisiblePost = snap.docs[snap.docs.length - 1];
+    
+    const fragment = document.createDocumentFragment();
+    snap.docs.forEach((d, i) => {
+      const outer = document.createElement('div');
+      outer.className = 'post-card-outer';
+      outer.style.animationDelay = (i * .07) + 's';
+      outer.appendChild(buildCard(d.id, d.data(), i));
+      fragment.appendChild(outer);
+    });
+    el.appendChild(fragment);
+    
+    buildTrending(snap.docs);
+
+    window.removeEventListener('scroll', handleFeedScroll);
+    window.addEventListener('scroll', handleFeedScroll, { passive: true });
+
+  } catch (err) {
+    el.innerHTML = `<div class="empty-state"><p>Error loading posts: ${err.message}</p></div>`;
+  }
+  isFetchingPosts = false;
+}
+
+async function loadMorePosts() {
+  if (isFetchingPosts || !hasMorePosts) return;
+  isFetchingPosts = true;
+
+  const el = document.getElementById('feed-list');
+  const spinner = document.createElement('div');
+  spinner.className = 'spinner';
+  spinner.id = 'load-more-spinner';
+  el.appendChild(spinner);
+
+  try {
+    const q = query(
+      collection(db, 'posts'),
+      where('status', '==', 'approved'),
+      orderBy('createdAt', 'desc'),
+      startAfter(lastVisiblePost),
+      limit(20)
+    );
+
+    const snap = await getDocs(q);
+    const spEl = document.getElementById('load-more-spinner');
+    if (spEl) spEl.remove();
+
+    if (snap.empty) {
+      hasMorePosts = false;
+      isFetchingPosts = false;
+      return;
+    }
+
+    lastVisiblePost = snap.docs[snap.docs.length - 1];
+    
+    const fragment = document.createDocumentFragment();
+    snap.docs.forEach((d, i) => {
+      const outer = document.createElement('div');
+      outer.className = 'post-card-outer';
+      outer.appendChild(buildCard(d.id, d.data(), i));
+      fragment.appendChild(outer);
+    });
+    el.appendChild(fragment);
+
+  } catch (err) {
+    console.error("Error loading extra posts: ", err);
+    const spEl = document.getElementById('load-more-spinner');
+    if (spEl) spEl.remove();
+  }
+  isFetchingPosts = false;
+}
+
+function handleFeedScroll() {
+  if (curPage !== 'feed') return;
+  if ((window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 150) {
+    loadMorePosts();
+  }
+}
+
+function buildCard(id,data,idx){
+  const card=document.createElement('div');
+  card.className='post-card';
+  card.style.animationDelay=(idx*.07)+'s';
+  const isLiked=(data.likes||[]).includes(CU?.uid);
+  const isSaved=(data.saves||[]).includes(CU?.uid);
+  const isOwn=data.userId===CU?.uid;
+  const isF=CUD?.following&&CUD.following.includes(data.userId);
+  const badge=badgeHTML(data.userRole);
+  const ago=timeAgo(data.createdAt?.toDate());
+  const safeImg=esc(data.imageUrl);
+  const safeUID=esc(data.userId);
+  card.innerHTML=`
+    <div class="post-img-wrap" onclick="openImgV('${safeImg}')">
+      <img src="${safeImg}" alt="AI Image" loading="lazy" decoding="async"/>
+      <div class="post-img-overlay"></div>
+      <div class="post-img-zoom" onclick="event.stopPropagation();openImgV('${safeImg}')"><i class="fa fa-expand"></i></div>
+    </div>
+    <div class="post-meta">
+      <div class="post-user-row">
+        <img class="post-avatar" src="${data.userPhoto||avURL(data.userName)}" alt="" onclick="openUP('${safeUID}')"/>
+        <div class="post-user-info">
+          <span class="post-username" onclick="openUP('${safeUID}')">${escH(data.userName||'User')}</span>
+          <div class="post-time">${ago}</div>
+        </div>
+        ${badge}
+        ${!isOwn?`<button class="follow-btn${isF?' following':''}" id="flw-${id}" onclick="doFollow('${safeUID}','${id}')">${isF?'Following':'Follow'}</button>`:''}
+      </div>
+    </div>
+    <div class="post-actions">
+      <button class="like-btn${isLiked?' liked':''}" id="like-${id}" onclick="doLike('${id}','${safeUID}')">
+        <i class="like-icon fa${isLiked?'s':' far'} fa-heart"></i>
+        <span>${isLiked?'Liked':'Like'}</span>
+        <span style="opacity:.65;font-size:.75rem">${(data.likes||[]).length}</span>
+      </button>
+      <button class="save-btn${isSaved?' saved':''}" id="save-${id}" onclick="doSave('${id}')">
+        <i class="save-icon fa${isSaved?'s':' far'} fa-bookmark"></i>
+        <span>${isSaved?'Saved':'Save'}</span>
+      </button>
+      ${isOwn?`<button class="del-btn" onclick="delPost('${id}')"><i class="fa fa-trash"></i></button>`:''}
+    </div>
+    <div class="prompt-btn-wrap">
+      <button class="prompt-btn" onclick="showPrompt('${id}')">
+        <i class="fa fa-magic"></i>
+        <span data-en="See Full Prompt" data-bn="সম্পূর্ণ প্রম্পট দেখুন">See Full Prompt</span>
+        <i class="fa fa-chevron-right"></i>
+      </button>
+    </div>`;
+  card.querySelectorAll('[data-en][data-bn]').forEach(el=>{
+    const t=el.getAttribute('data-'+curLang);if(t)el.textContent=t;
+  });
+  return card;
+}
+
+function badgeHTML(role){
+  if(role==='admin')return'<span class="post-badge badge-admin"><i class="fa fa-shield-alt"></i> Admin</span>';
+  if(role==='expert')return'<span class="post-badge badge-expert"><i class="fa fa-star"></i> Expert</span>';
+  return'';
+}
+
+/* ── TRENDING ── */
+function buildTrending(docs){
+  const track=document.getElementById('trending-track');
+  if(!track)return;
+  const sorted=[...docs].sort((a,b)=>((b.data().likes||[]).length)-((a.data().likes||[]).length)).slice(0,8);
+  if(!sorted.length){const tw=document.querySelector('.trending-wrap');if(tw)tw.style.display='none';return;}
+  const tw=document.querySelector('.trending-wrap');if(tw)tw.style.display='block';
+  const makeItems=()=>sorted.map((d,i)=>{
+    const data=d.data();
+    const el=document.createElement('div');
+    el.className='trending-item';
+    el.innerHTML=`<div class="trending-item-border"></div>
+      <div class="trending-item-inner">
+        ${i<3?'<div class="trending-hot">🔥 Hot</div>':''}
+        <img src="${esc(data.imageUrl)}" alt="" loading="lazy" decoding="async"/>
+        <div class="trending-item-overlay"></div>
+        <div class="trending-item-name">${escH(data.userName||'User')}</div>
+      </div>`;
+    el.addEventListener('click',()=>openImgV(data.imageUrl));
+    return el;
+  });
+  track.innerHTML='';
+  makeItems().forEach(el=>track.appendChild(el));
+  makeItems().forEach(el=>track.appendChild(el));
+}
+
+/* ── LIKE ── */
+window.doLike=async(postId,postUID)=>{
+  if(!CU)return;
+  const ref=doc(db,'posts',postId);
+  const s=await getDoc(ref);if(!s.exists())return;
+  const likes=s.data().likes||[];
+  const isL=likes.includes(CU.uid);
+  await updateDoc(ref,{likes:isL?arrayRemove(CU.uid):arrayUnion(CU.uid)});
+  if(!isL&&postUID!==CU.uid){
+    await addNotif(postUID,'like',`${CUD.displayName} liked your post`,'','','');
+    await updateDoc(doc(db,'users',postUID),{totalLikes:increment(1)});
+  }
+  const btn=document.getElementById('like-'+postId);
+  if(!btn)return;
+  btn.classList.toggle('liked',!isL);
+  btn.querySelector('i').className=(!isL?'fas':'far')+' fa-heart like-icon';
+  const spans=btn.querySelectorAll('span');
+  if(spans[0])spans[0].textContent=!isL?(curLang==='bn'?'লাইক করা':'Liked'):(curLang==='bn'?'লাইক':'Like');
+  if(spans[1])spans[1].textContent=likes.length+(!isL?1:-1);
+};
+
+/* ── SAVE ── */
+window.doSave=async postId=>{
+  if(!CU)return;
+  const ref=doc(db,'users',CU.uid);
+  const s=await getDoc(ref);
+  const saves=s.data().savedPosts||[];
+  const isS=saves.includes(postId);
+  await updateDoc(ref,{savedPosts:isS?arrayRemove(postId):arrayUnion(postId)});
+  const btn=document.getElementById('save-'+postId);
+  if(!btn)return;
+  btn.classList.toggle('saved',!isS);
+  btn.querySelector('i').className=(!isS?'fas':'far')+' fa-bookmark save-icon';
+  const span=btn.querySelector('span');
+  if(span)span.textContent=!isS?(curLang==='bn'?'সেভ হয়েছে':'Saved'):(curLang==='bn'?'সেভ':'Save');
+  showToast(isS?'Removed from saved':'Saved to collection!',isS?'info':'success');
+};
+
+/* ── FOLLOW ── */
+window.doFollow=async(uid,postId)=>{
+  if(!CU||uid===CU.uid)return;
+  const myRef=doc(db,'users',CU.uid);
+  const s=await getDoc(myRef);
+  const following=s.data().following||[];
+  const isF=following.includes(uid);
+  await updateDoc(myRef,{following:isF?arrayRemove(uid):arrayUnion(uid)});
+  await updateDoc(doc(db,'users',uid),{followers:isF?arrayRemove(CU.uid):arrayUnion(CU.uid)});
+  if(!isF)await addNotif(uid,'follow',`${CUD.displayName} started following you`,'','','');
+  CUD.following=isF?following.filter(x=>x!==uid):[...following,uid];
+  const btn=document.getElementById('flw-'+postId);
+  if(btn){btn.textContent=isF?'Follow':'Following';btn.classList.toggle('following',!isF);}
+  showToast(isF?'Unfollowed':'Following!','success');
+};
+
+window.toggleFollowUser=async()=>{
+  if(!viewUID)return;
+  const myRef=doc(db,'users',CU.uid);
+  const s=await getDoc(myRef);const following=s.data().following||[];const isF=following.includes(viewUID);
+  await updateDoc(myRef,{following:isF?arrayRemove(viewUID):arrayUnion(viewUID)});
+  await updateDoc(doc(db,'users',viewUID),{followers:isF?arrayRemove(CU.uid):arrayUnion(CU.uid)});
+  if(!isF)await addNotif(viewUID,'follow',`${CUD.displayName} started following you`,'','','');
+  CUD.following=isF?following.filter(x=>x!==viewUID):[...following,viewUID];
+  const btn=document.getElementById('up-follow-btn');if(btn)btn.textContent=isF?'Follow':'Following';
+  showToast(isF?'Unfollowed':'Following!','success');
+};
+
+/* ── DELETE POST ── */
+window.delPost=async postId=>{
+  if(!confirm('Delete this post?'))return;
+  await deleteDoc(doc(db,'posts',postId));
+  showToast('Post deleted','success');
+  loadFeed();
+};
+
+/* ── PROMPT MODAL ── */
+window.showPrompt=async postId=>{
+  const s=await getDoc(doc(db,'posts',postId));
+  if(!s.exists())return;
+  curPrompt=s.data().prompt||'No prompt available.';
+  const modalTextDiv = document.getElementById('prompt-modal-text');
+  if(modalTextDiv) modalTextDiv.textContent = curPrompt;
+  document.getElementById('prompt-modal').style.display='flex';
+};
+window.closePromptModal=()=>{document.getElementById('prompt-modal').style.display='none';};
+window.closePromptModalOuter=e=>{if(e.target===document.getElementById('prompt-modal'))closePromptModal();};
+window.copyPrompt=()=>{
+  const promptText = document.getElementById('prompt-modal-text')?.textContent || curPrompt;
+  if(!promptText || promptText === '') {
+    showToast('Nothing to copy', 'error');
+    return;
+  }
+  navigator.clipboard.writeText(promptText).then(() => {
+    showToast(curLang==='bn'?'প্রম্পট কপি হয়েছে!':'Prompt copied!','success');
+  }).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = promptText;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    showToast(curLang==='bn'?'প্রম্পট কপি হয়েছে!':'Prompt copied!','success');
+  });
+};
+
+/* ── IMAGE VIEWER ── */
+window.openImgV=url=>{document.getElementById('img-viewer-src').src=url;document.getElementById('img-viewer').classList.add('active');};
+window.closeImgViewer=()=>{document.getElementById('img-viewer').classList.remove('active');};
+
+/* ── POST FORM ── */
+window.openPostForm=()=>{document.getElementById('post-form-modal').style.display='flex';};
+window.closePostForm=()=>{
+  document.getElementById('post-form-modal').style.display='none';
+  document.getElementById('post-img-preview').style.display='none';
+  document.getElementById('post-prompt').value='';
+  document.getElementById('post-tags').value='';
+  postImgB64=null;
+};
+window.handlePostImage=input=>{
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    postImgB64=e.target.result.split(',')[1];
+    const pv=document.getElementById('post-img-preview');
+    pv.src=e.target.result;pv.style.display='block';
+  };
+  r.readAsDataURL(file);
+};
+window.submitPost=async()=>{
+  if(!postImgB64){showToast('Please select an image','error');return;}
+  const prompt=document.getElementById('post-prompt').value.trim();
+  if(!prompt){showToast('Please add your prompt','error');return;}
+  const btn=document.getElementById('submit-post-btn');
+  btn.disabled=true;
+  const sp=btn.querySelector('span');if(sp)sp.textContent=curLang==='bn'?'আপলোড হচ্ছে...':'Uploading...';
+  try{
+    const fd=new FormData();fd.append('image',postImgB64);fd.append('key',IMGBB);
+    const res=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:fd});
+    const json=await res.json();
+    if(!json.success)throw new Error('Image upload failed');
+    const imgUrl=json.data.url;
+    const tags=document.getElementById('post-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+    const isExpert=CUD.role==='expert'||CUD.role==='admin';
+    await addDoc(collection(db,'posts'),{
+      userId:CU.uid,userName:CUD.displayName,userPhoto:CUD.photoURL||'',userRole:CUD.role||'user',
+      imageUrl:imgUrl,prompt,tags,
+      status:isExpert?'approved':'pending',
+      likes:[],saves:[],createdAt:serverTimestamp()
+    });
+    await addNotif(CU.uid,isExpert?'approved':'system',
+      isExpert?'🎉 Your post is now live!':'⏳ Post submitted! Awaiting admin approval.','','','');
+    await logAct(`Post submitted by ${CUD.displayName}`);
+    closePostForm();
+    showToast(isExpert?'Post published!':'Submitted for review!','success');
+  }catch(e){showToast('Error: '+e.message,'error');}
+  btn.disabled=false;
+  if(sp)sp.textContent=curLang==='bn'?'পোস্ট জমা দিন':'Submit Post';
+};
+
+/* ── NOTIFICATIONS ── */
+async function loadNotifications(){
+  const el=document.getElementById('notif-list');
+  el.innerHTML='<div class="spinner"></div>';
+  if(notifUnsub)notifUnsub();
+  const q=query(collection(db,'notifications'),where('userId','==',CU.uid),orderBy('createdAt','desc'),limit(50));
+  notifUnsub=onSnapshot(q,snap=>{
+    if(snap.empty){el.innerHTML='<div class="empty-state"><i class="fa fa-bell-slash"></i><p>No notifications yet</p></div>';return;}
+    el.innerHTML='';
+    snap.docs.forEach(d=>{
+      const data=d.data();
+      const div=document.createElement('div');
+      div.className='notif-item'+(data.read?'':' unread');
+      const icons={approved:'✓',rejected:'✗',like:'♥',follow:'👤',system:'ℹ',announce:'📢'};
+      div.innerHTML=`
+        <div class="notif-icon ${data.type||'system'}">${icons[data.type]||'ℹ'}</div>
+        <div class="notif-body">
+          <div class="notif-msg ${data.type==='announce'?'announce':''}">${escH(data.message||'')}</div>
+          ${data.type==='rejected'&&data.reason?`<div style="font-size:.78rem;color:var(--danger);margin-top:.2rem">Reason: ${escH(data.reason)}</div>`:''}
+          ${data.link?`<a href="${esc(data.link)}" target="_blank" class="notif-link-btn">${escH(data.btnText||'View')}</a>`:''}
+          <div class="notif-time">${timeAgo(data.createdAt?.toDate())}</div>
+        </div>`;
+      el.appendChild(div);
+      if(!data.read)updateDoc(doc(db,'notifications',d.id),{read:true});
+    });
+  });
+}
+function loadNotifCount(){
+  const q=query(collection(db,'notifications'),where('userId','==',CU.uid),where('read','==',false));
+  onSnapshot(q,snap=>{
+    const btn=document.getElementById('notif-nav-btn');if(!btn)return;
+    let badge=btn.querySelector('.badge');
+    if(snap.size>0){if(!badge){badge=document.createElement('span');badge.className='badge';btn.appendChild(badge);}}
+    else{if(badge)badge.remove();}
+  });
+}
+async function addNotif(userId,type,message,reason,link,btnText){
+  await addDoc(collection(db,'notifications'),{userId,type,message,reason:reason||'',link:link||'',btnText:btnText||'',read:false,createdAt:serverTimestamp()});
+}
+window.markAllRead=async()=>{
+  const q=query(collection(db,'notifications'),where('userId','==',CU.uid),where('read','==',false));
+  const snap=await getDocs(q);
+  snap.docs.forEach(d=>updateDoc(doc(db,'notifications',d.id),{read:true}));
+  showToast(curLang==='bn'?'সব পড়া হয়েছে':'All marked as read','success');
+};
+
+/* ── LEADERBOARD ── */
+async function loadLB(){
+  document.getElementById('lb-podium').innerHTML='<div class="spinner"></div>';
+  document.getElementById('lb-list').innerHTML='';
+  const snap=await getDocs(query(collection(db,'users'),orderBy('totalLikes','desc'),limit(20)));
+  renderLB(snap.docs.map(d=>({id:d.id,...d.data()})));
+}
+function renderLB(users){
+  const pod=document.getElementById('lb-podium'),list=document.getElementById('lb-list');
+  const order=[users[1],users[0],users[2]].filter(Boolean);
+  const cls=['silver','gold','bronze'],medals=['🥈','🥇','🥉'],sizes=['62px','76px','56px'];
+  pod.innerHTML='';
+  order.forEach((u,i)=>{
+    const div=document.createElement('div');div.className=`lb-pod ${cls[i]}`;
+    div.innerHTML=`<div class="lb-pod-rank">${medals[i]}</div>
+      <img class="lb-pod-av" src="${u.photoURL||avURL(u.displayName)}" style="width:${sizes[i]};height:${sizes[i]}" alt="" onclick="openUP('${u.id}')"/>
+      <div class="lb-pod-name">${escH(u.displayName||'User')}</div>
+      ${badgeHTML(u.role)}
+      <div class="lb-pod-score">${u.totalLikes||0} pts</div>`;
+    pod.appendChild(div);
+  });
+  list.innerHTML='';
+  users.slice(3).forEach((u,i)=>{
+    const div=document.createElement('div');div.className='lb-row';
+    div.innerHTML=`<div class="lb-rank-num">#${i+4}</div>
+      <img class="lb-av" src="${u.photoURL||avURL(u.displayName)}" alt="" onclick="openUP('${u.id}')"/>
+      <div class="lb-info"><div class="lb-name">${escH(u.displayName||'User')} ${badgeHTML(u.role)}</div><div class="lb-score">${u.totalLikes||0} pts</div></div>
+      <div class="lb-pts">${u.totalLikes||0}</div>`;
+    list.appendChild(div);
+  });
+}
+window.switchLbTab=(tab,el)=>{document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');loadLB();};
+
+/* ── MY PROFILE ── */
+async function loadMyProfile(){
+  const snap=await getDoc(doc(db,'users',CU.uid));
+  const data=snap.exists()?snap.data():CUD;
+  CUD={...CUD,...data};
+  document.getElementById('profile-av').src=data.photoURL||avURL(data.displayName);
+  document.getElementById('profile-name').textContent=data.displayName||'User';
+  document.getElementById('profile-badge-wrap').innerHTML=badgeHTML(data.role);
+  document.getElementById('profile-bio-text').textContent=data.bio||'';
+  document.getElementById('stat-followers').textContent=(data.followers||[]).length;
+  document.getElementById('stat-following').textContent=(data.following||[]).length;
+  document.getElementById('stat-likes').textContent=data.totalLikes||0;
+  const pq=query(collection(db,'posts'),where('userId','==',CU.uid),where('status','==','approved'));
+  const ps=await getDocs(pq);
+  document.getElementById('stat-posts').textContent=ps.size;
+  const info=document.getElementById('profile-info-card');info.innerHTML='';
+  if(data.address)info.innerHTML+=`<div class="profile-info-row"><i class="fa fa-map-marker-alt"></i><span class="profile-info-val">${escH(data.address)}</span></div>`;
+  if(data.mobile)info.innerHTML+=`<div class="profile-info-row"><i class="fa fa-phone"></i><span class="profile-info-val">${escH(data.mobile)}</span></div>`;
+  if(data.telegram)info.innerHTML+=`<div class="profile-info-row"><i class="fab fa-telegram"></i><a href="https://t.me/${escH(data.telegram.replace('@',''))}" target="_blank" class="profile-info-val profile-link">${escH(data.telegram)}</a></div>`;
+  if(data.facebook)info.innerHTML+=`<div class="profile-info-row"><i class="fab fa-facebook"></i><a href="${esc(data.facebook)}" target="_blank" class="profile-info-val profile-link">Facebook</a></div>`;
+  if(!info.innerHTML)info.innerHTML='<div style="text-align:center;padding:.6rem;font-size:.85rem;color:var(--text3)">No info added yet</div>';
+  loadMyPosts();loadSaved();
+}
+async function loadMyPosts(){
+  const el=document.getElementById('my-posts-list');el.innerHTML='<div class="spinner"></div>';
+  const q=query(collection(db,'posts'),where('userId','==',CU.uid),orderBy('createdAt','desc'));
+  const snap=await getDocs(q);
+  if(snap.empty){el.innerHTML='<div class="empty-state"><i class="fa fa-image"></i><p>No posts yet</p></div>';return;}
+  el.innerHTML='';
+  snap.docs.forEach(d=>{
+    const outer=document.createElement('div');outer.className='post-card-outer';outer.style.marginBottom='.5rem';
+    outer.appendChild(buildCard(d.id,d.data(),0));
+    el.appendChild(outer);
+  });
+}
+async function loadSaved(){
+  const el=document.getElementById('saved-grid');el.innerHTML='<div class="spinner" style="grid-column:1/-1"></div>';
+  const snap=await getDoc(doc(db,'users',CU.uid));
+  const saves=snap.data()?.savedPosts||[];
+  if(!saves.length){el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><i class="fa fa-bookmark"></i><p>No saved posts</p></div>';return;}
+  el.innerHTML='';
+  for(const pid of saves.slice(0,12)){
+    const ps=await getDoc(doc(db,'posts',pid));
+    if(ps.exists()){
+      const d=ps.data();
+      const item=document.createElement('div');item.className='saved-item';
+      item.innerHTML=`<img src="${esc(d.imageUrl)}" alt="" loading="lazy" decoding="async"/><div class="saved-item-overlay"></div>`;
+      item.onclick=()=>openImgV(d.imageUrl);
+      el.appendChild(item);
+    }
+  }
+}
+
+/* ── EDIT PROFILE ── */
+function loadEditProfile(){
+  document.getElementById('edit-avatar-preview').src=CUD.photoURL||avURL(CUD.displayName);
+  document.getElementById('edit-name').value=CUD.displayName||'';
+  document.getElementById('edit-bio').value=CUD.bio||'';
+  document.getElementById('edit-address').value=CUD.address||'';
+  document.getElementById('edit-mobile').value=CUD.mobile||'';
+  document.getElementById('edit-telegram').value=CUD.telegram||'';
+  document.getElementById('edit-facebook').value=CUD.facebook||'';
+}
+window.handleAvatarUpload=input=>{
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{avatarB64=e.target.result.split(',')[1];document.getElementById('edit-avatar-preview').src=e.target.result;};
+  r.readAsDataURL(file);
+};
+window.saveProfile=async()=>{
+  const name=document.getElementById('edit-name').value.trim();
+  if(!name){showToast('Name cannot be empty','error');return;}
+  let photoURL=CUD.photoURL||'';
+  if(avatarB64){
+    const fd=new FormData();fd.append('image',avatarB64);fd.append('key',IMGBB);
+    const res=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:fd});
+    const json=await res.json();
+    if(json.success)photoURL=json.data.url;
+  }
+  const upd={displayName:name,bio:document.getElementById('edit-bio').value.trim(),address:document.getElementById('edit-address').value.trim(),mobile:document.getElementById('edit-mobile').value.trim(),telegram:document.getElementById('edit-telegram').value.trim(),facebook:document.getElementById('edit-facebook').value.trim(),photoURL};
+  await updateDoc(doc(db,'users',CU.uid),upd);
+  await updateProfile(CU,{displayName:name,photoURL});
+  CUD={...CUD,...upd};updateNavAv();avatarB64=null;
+  showToast(curLang==='bn'?'প্রোফাইল আপডেট হয়েছে!':'Profile updated!','success');
+  navBack();
+};
+
+/* ── USER PROFILE (others) ── */
+window.openUP=async uid=>{
+  if(uid===CU.uid){navTo('profile');return;}
+  viewUID=uid;
+  pageHistory.push('user-profile');curPage='user-profile';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-user-profile').classList.add('active');
+  window.scrollTo(0,0);
+  const snap=await getDoc(doc(db,'users',uid));if(!snap.exists())return;
+  const data=snap.data();
+  document.getElementById('up-avatar').src=data.photoURL||avURL(data.displayName);
+  document.getElementById('up-name').textContent=data.displayName||'User';
+  document.getElementById('user-profile-name').textContent=data.displayName||'User';
+  document.getElementById('up-badge-wrap').innerHTML=badgeHTML(data.role);
+  document.getElementById('up-bio').textContent=data.bio||'';
+  document.getElementById('up-followers').textContent=(data.followers||[]).length;
+  document.getElementById('up-following').textContent=(data.following||[]).length;
+  const isF=CUD.following&&CUD.following.includes(uid);
+  document.getElementById('up-follow-btn').textContent=isF?'Following':'Follow';
+  const ic=document.getElementById('up-info-card');ic.innerHTML='';
+  if(data.telegram)ic.innerHTML+=`<div class="profile-info-row"><i class="fab fa-telegram"></i><a href="https://t.me/${escH(data.telegram.replace('@',''))}" target="_blank" class="profile-info-val profile-link">${escH(data.telegram)}</a></div>`;
+  if(data.facebook)ic.innerHTML+=`<div class="profile-info-row"><i class="fab fa-facebook"></i><a href="${esc(data.facebook)}" target="_blank" class="profile-info-val profile-link">Facebook</a></div>`;
+  const pg=document.getElementById('up-posts-grid');pg.innerHTML='<div class="spinner"></div>';
+  const q=query(collection(db,'posts'),where('userId','==',uid),where('status','==','approved'),orderBy('createdAt','desc'));
+  const psnap=await getDocs(q);
+  document.getElementById('up-posts').textContent=psnap.size;
+  if(psnap.empty){pg.innerHTML='<div class="empty-state"><i class="fa fa-image"></i><p>No posts yet</p></div>';return;}
+  pg.innerHTML='';
+  psnap.docs.forEach(d=>{
+    const outer=document.createElement('div');outer.className='post-card-outer';outer.style.marginBottom='.5rem';
+    outer.appendChild(buildCard(d.id,d.data(),0));
+    pg.appendChild(outer);
+  });
+};
+
+/* ── FOLLOWERS ── */
+window.showFollowers=async type=>{
+  pageHistory.push('followers');curPage='followers';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-followers').classList.add('active');
+  document.getElementById('followers-page-title').textContent=type==='followers'?'Followers':'Following';
+  const el=document.getElementById('follow-list-items');el.innerHTML='<div class="spinner"></div>';
+  const s=await getDoc(doc(db,'users',CU.uid));
+  const ids=s.data()[type]||[];
+  if(!ids.length){el.innerHTML='<div class="empty-state"><i class="fa fa-users"></i><p>None yet</p></div>';return;}
+  el.innerHTML='';
+  for(const uid of ids){
+    const us=await getDoc(doc(db,'users',uid));
+    if(us.exists()){
+      const d=us.data();
+      const row=document.createElement('div');row.className='follow-row';
+      row.innerHTML=`<img class="follow-av" src="${d.photoURL||avURL(d.displayName)}" alt=""/><div class="follow-info"><div class="follow-name">${escH(d.displayName||'User')} ${badgeHTML(d.role)}</div><div class="follow-role">${escH(d.bio||'')}</div></div>`;
+      row.onclick=()=>openUP(uid);el.appendChild(row);
+    }
+  }
+};
+
+/* ── SEARCH ── */
+window.setSearchFilter=(f,el)=>{
+  searchFilter=f;
+  document.querySelectorAll('.s-filter').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');doSearch();
+};
+window.doSearch=async()=>{
+  const q=document.getElementById('search-input').value.trim().toLowerCase();
+  const el=document.getElementById('search-results');
+  if(!q){el.innerHTML='<div class="empty-state"><i class="fa fa-search"></i><p>Search for prompts or users</p></div>';return;}
+  el.innerHTML='<div class="spinner"></div>';
+  let html='';
+  if(searchFilter==='all'||searchFilter==='posts'){
+    const snap=await getDocs(query(collection(db,'posts'),where('status','==','approved'),orderBy('createdAt','desc'),limit(80)));
+    const posts=snap.docs.filter(d=>{const da=d.data();return(da.prompt||'').toLowerCase().includes(q)||(da.userName||'').toLowerCase().includes(q)||(da.tags||[]).some(t=>t.toLowerCase().includes(q));});
+    if(posts.length){
+      html+=`<div style="font-family:var(--font-d);font-size:.9rem;font-weight:700;margin-bottom:.7rem;color:var(--text2)"><i class="fa fa-image" style="color:var(--primary)"></i> Posts (${posts.length})</div>`;
+      html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1.2rem">`;
+      posts.slice(0,12).forEach(d=>{html+=`<div style="border-radius:12px;overflow:hidden;aspect-ratio:1;cursor:pointer;border:1px solid var(--border)" onclick="openImgV('${esc(d.data().imageUrl)}')"><img src="${esc(d.data().imageUrl)}" style="width:100%;height:100%;object-fit:cover" loading="lazy" decoding="async"/></div>`;});
+      html+=`</div>`;
+    }
+  }
+  if(searchFilter==='all'||searchFilter==='users'){
+    const snap=await getDocs(collection(db,'users'));
+    const users=snap.docs.filter(d=>(d.data().displayName||'').toLowerCase().includes(q));
+    if(users.length){
+      html+=`<div style="font-family:var(--font-d);font-size:.9rem;font-weight:700;margin:.5rem 0 .7rem;color:var(--text2)"><i class="fa fa-user" style="color:var(--primary)"></i> Users (${users.length})</div>`;
+      users.slice(0,10).forEach(d=>{const u=d.data();html+=`<div class="follow-row" style="cursor:pointer" onclick="openUP('${d.id}')"><img class="follow-av" src="${u.photoURL||avURL(u.displayName)}" alt=""/><div class="follow-info"><div class="follow-name">${escH(u.displayName||'User')} ${badgeHTML(u.role)}</div><div class="follow-role">${escH(u.bio||'')}</div></div></div>`;});
+    }
+  }
+  el.innerHTML=html||'<div class="empty-state"><i class="fa fa-search"></i><p>No results found</p></div>';
+};
+window.clearSearch=()=>{document.getElementById('search-input').value='';document.getElementById('search-results').innerHTML='<div class="empty-state"><i class="fa fa-search"></i><p>Search for prompts or users</p></div>';};
+
+/* ── THEME ── */
+window.setTheme=(theme,el)=>{
+  document.documentElement.setAttribute('data-theme',theme);
+  localStorage.setItem('pa-theme',theme);
+  document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const lbl=document.getElementById('current-theme-label');
+  if(lbl)lbl.textContent={dark:'Dark',light:'Light'}[theme]||theme;
+};
+function applyStoredTheme(){
+  const t=localStorage.getItem('pa-theme')||'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  const lbl=document.getElementById('current-theme-label');if(lbl)lbl.textContent={dark:'Dark',light:'Light'}[t]||t;
+  const card=document.getElementById('theme-'+t);
+  if(card){document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('active'));card.classList.add('active');}
+}
+
+/* ── LANGUAGE ── */
+window.setLang=(lang,el)=>{
+  curLang=lang;localStorage.setItem('pa-lang',lang);
+  document.querySelectorAll('.lang-card').forEach(c=>c.classList.remove('active'));
+  if(el)el.classList.add('active');
+  applyLang(lang);
+  showToast(lang==='bn'?'ভাষা পরিবর্তন হয়েছে!':'Language changed to English!','success');
+};
+function applyLang(lang){
+  document.documentElement.setAttribute('data-lang',lang);
+  document.querySelectorAll('[data-en][data-bn]').forEach(el=>{
+    const txt=el.getAttribute('data-'+lang);
+    if(txt!==null&&txt!=='')el.textContent=txt;
+  });
+  document.querySelectorAll('[data-en-placeholder]').forEach(el=>{
+    const ph=el.getAttribute('data-'+lang+'-placeholder');
+    if(ph)el.placeholder=ph;
+  });
+  const lbl=document.getElementById('current-lang-label');
+  if(lbl)lbl.textContent=lang==='bn'?'বাংলা':'English';
+  document.querySelectorAll('.lang-card').forEach(c=>c.classList.remove('active'));
+  const ac=document.getElementById('lang-'+lang);if(ac)ac.classList.add('active');
+}
+
+/* ── CHANGE PASSWORD ── */
+window.changePassword=async()=>{
+  const cur=document.getElementById('pw-current').value,nw=document.getElementById('pw-new').value,conf=document.getElementById('pw-confirm').value;
+  if(!cur||!nw||!conf){showToast('Fill all fields','error');return;}
+  if(nw!==conf){showToast('New passwords do not match','error');return;}
+  if(nw.length<6){showToast('Password must be 6+ characters','error');return;}
+  try{
+    const cred=EmailAuthProvider.credential(CU.email,cur);
+    await reauthenticateWithCredential(CU,cred);
+    await updatePassword(CU,nw);
+    showToast(curLang==='bn'?'পাসওয়ার্ড আপডেট হয়েছে!':'Password updated!','success');
+    ['pw-current','pw-new','pw-confirm'].forEach(id=>document.getElementById(id).value='');
+    navBack();
+  }catch(e){showToast('Error: '+e.message,'error');}
+};
+
+/* ── ACTIVITY LOG ── */
+async function logAct(action){
+  try{await addDoc(collection(db,'activityLog'),{action,userId:CU?.uid||'system',timestamp:serverTimestamp()});}catch(e){}
+}
+
+/* ── UTILS ── */
+function timeAgo(date){
+  if(!date)return'just now';
+  const diff=Date.now()-date.getTime(),mins=Math.floor(diff/60000);
+  if(mins<1)return'just now';if(mins<60)return`${mins}m ago`;
+  const hrs=Math.floor(mins/60);
+  if(hrs<24)return`${hrs}h ago`;
+  const days=Math.floor(hrs/24);
+  if(days<7)return`${days}d ago`;
+  return date.toLocaleDateString();
+}
+function escH(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function esc(str){return String(str||'').replace(/'/g,"\\'");}
+
+window.showToast=(msg,type='info')=>{
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  const icons={success:'✓',error:'✗',info:'ℹ'};
+  t.className=`toast ${type}`;
+  t.innerHTML=`<span style="font-weight:800;font-size:1rem">${icons[type]||'ℹ'}</span> ${escH(msg)}`;
+  c.appendChild(t);
+  setTimeout(()=>{t.classList.add('toast-out');setTimeout(()=>t.remove(),320);},3200);
+};
+window.scrollToTop=()=>window.scrollTo({top:0,behavior:'smooth'});
+</script>
+</body>
+</html>
