@@ -609,6 +609,21 @@ nav.tabbar{
   color:var(--text-3);margin-bottom:8px;display:flex;align-items:center;gap:6px;
 }
 .recovery-label::before,.recovery-label::after{content:"";flex:1;height:1px;background:var(--border);}
+/* Premium Grid Protection */
+.blur-locked { 
+  filter: blur(14px) brightness(0.6); 
+  transform: scale(1.1);
+}
+.grid-premium-overlay {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
+  z-index: 5; pointer-events: none;
+}
+.grid-premium-badge {
+  background: rgba(0,0,0,0.65); color: #f59e0b; font-size: 10px; font-weight: 700; 
+  padding: 4px 8px; border-radius: 999px; backdrop-filter: blur(4px); 
+  border: 1px solid rgba(245, 158, 11, 0.3); display: flex; align-items: center; gap: 4px;
+}
+
 </style>
 </head>
 <body>
@@ -736,6 +751,9 @@ nav.tabbar{
         <div class="profile-name" id="pfName">User</div>
         <div class="profile-bio" id="pfBio">No bio yet.</div>
         <div class="profile-location" id="pfLocation" style="display:none;"><i class="fa-solid fa-location-dot"></i><span id="pfLocationText"></span></div>
+        <div class="profile-uid" style="font-size:11px; color:var(--text-3); margin-bottom:10px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; background:var(--surface-2); padding:4px 10px; border-radius:999px;" onclick="copyUserUID()">
+          ID: <span id="pfUID">Loading...</span> <i class="fa-solid fa-copy"></i>
+        </div>
         <div class="profile-socials" id="pfSocials"></div>
         <div class="stats-row">
           <div class="stat" onclick="viewFollowers()"><b id="pfPosts">0</b><span>Posts</span></div>
@@ -813,6 +831,13 @@ nav.tabbar{
         <input class="input" id="postTags" placeholder="neon, portrait, fantasy" />
         <button class="btn btn-ghost" type="button" onclick="autoTag()"><i class="fa-solid fa-robot"></i></button>
       </div>
+    </div>
+    <div class="field" id="adminCategoryField" style="display:none;">
+      <label>Category <span style="color:var(--accent);">(Admin Only)</span></label>
+      <select class="input" id="postCategory">
+        <option value="free">Free</option>
+        <option value="premium">Premium</option>
+      </select>
     </div>
     <button class="btn btn-primary btn-block" id="postSubmitBtn" onclick="submitPost()"><i class="fa-solid fa-paper-plane"></i> Submit</button>
   </div>
@@ -909,7 +934,12 @@ nav.tabbar{
     <div class="field"><label>Display Name</label><input class="input" id="edName" /></div>
     <div class="field"><label>Bio</label><textarea class="textarea" id="edBio"></textarea></div>
     <div class="field"><label>Location</label><input class="input" id="edLocation" placeholder="e.g. Dhaka, Bangladesh" /></div>
-    <div class="field"><label>Banner URL (optional)</label><input class="input" id="edBanner" placeholder="https://..." /></div>
+    <div class="field">
+      <label>Cover Photo</label>
+      <input class="input" type="file" id="edBannerFile" accept="image/*" onchange="previewBanner(event)" />
+      <div id="edBannerPreview" style="margin-top:8px;"></div>
+      <input type="hidden" id="edBanner" />
+    </div>
     <div class="field"><label>Telegram Handle</label><input class="input" id="edTelegram" placeholder="@username" /></div>
     <div class="field"><label>Twitter / X Handle</label><input class="input" id="edTwitter" placeholder="@username" /></div>
     <button class="btn btn-primary btn-block" onclick="saveProfile()">Save Changes</button>
@@ -996,7 +1026,8 @@ const state = {
   currentCat: 'free',
   carouselPosts: [], carouselIdx: 0, carouselTimer: null,
   viewingUid: null, followingSet: new Set(),
-  sysLog: []
+  sysLog: [],
+  baseReferralUrl: ''
 };
 
 /* ===================================================================
@@ -1085,8 +1116,13 @@ async function getDeviceFingerprint(){
    REFERRAL HELPERS
    =================================================================== */
 function getReferralLink(){
-  const base=location.origin+location.pathname;
-  return `${base}?ref=${state.user.uid}`;
+  let base = state.baseReferralUrl;
+  if (!base) {
+    base = location.origin + location.pathname;
+  }
+  if(!base.endsWith('/') && !base.includes('?')) base += '/';
+  const separator = base.includes('?') ? '&' : '?';
+  return `${base}${separator}ref=${state.user.uid}`;
 }
 window.copyReferralLink=()=>{
   const link=getReferralLink();
@@ -1242,6 +1278,12 @@ onAuthStateChanged(auth, async (u) => {
    APP INIT
    =================================================================== */
 async function initApp(){
+  try {
+    const platSnap = await getDoc(doc(db, 'settings', 'platform'));
+    if (platSnap.exists()) {
+      state.baseReferralUrl = platSnap.data().baseReferralUrl || '';
+    }
+  } catch(e) {}
   renderProfile();
   await loadFeed(true);
   await loadTrending();
@@ -1560,6 +1602,17 @@ window.remixPrompt=(pid)=>{
   toast('Prompt loaded for remixing!','fa-solid fa-shuffle');
 };
 
+window.deleteOwnPost = async (pid) => {
+  if (!confirm('Delete this post permanently?')) return;
+  try {
+    await deleteDoc(doc(db, 'posts', pid));
+    await updateDoc(doc(db, 'users', state.user.uid), { postsCount: increment(-1) });
+    if (state.profile) state.profile.postsCount = Math.max(0, (state.profile.postsCount || 1) - 1);
+    toast('Post deleted', 'fa-solid fa-trash');
+    renderProfile();
+  } catch (e) { toast('Could not delete post.'); }
+};
+
 /* ===================================================================
    AD WALL → FULL PROMPT
    =================================================================== */
@@ -1645,9 +1698,23 @@ window.openPostModal=()=>{
   $('postModalTitle').innerHTML='<i class="fa-solid fa-cloud-arrow-up"></i> New Prompt';
   $('postImage').value='';$('imgPreview').innerHTML='';
   $('postPrompt').value='';$('postParams').value='';$('postTags').value='';
+  if (state.profile?.role === 'admin') {
+    const catField = $('adminCategoryField');
+    if(catField) catField.style.display = 'block';
+    if($('postCategory')) $('postCategory').value = 'free';
+  } else {
+    if($('adminCategoryField')) $('adminCategoryField').style.display = 'none';
+  }
   hideAlert('postAlert');openOverlay('postModal');
 };
 let _pendingFile=null;
+let _pendingBannerFile=null;
+window.previewBanner=(e)=>{
+  const f=e.target.files[0];if(!f)return;
+  _pendingBannerFile=f;
+  const url=URL.createObjectURL(f);
+  if($('edBannerPreview')) $('edBannerPreview').innerHTML=`<img src="${url}" style="width:100%;border-radius:12px;height:auto;max-height:120px;object-fit:cover;pointer-events:none;">`;
+};
 window.previewImg=(e)=>{
   const f=e.target.files[0];if(!f)return;_pendingFile=f;
   const url=URL.createObjectURL(f);
@@ -1683,6 +1750,10 @@ window.submitPost=async()=>{
     const tags=$('postTags').value.split(',').map(t=>t.trim().replace(/^#/,'')).filter(Boolean);
     const role=state.profile?.role||'user';
     const autoApprove=role==='admin'||role==='expert';
+    let selectedCategory = 'free';
+    if (role === 'admin' && $('postCategory')) {
+      selectedCategory = $('postCategory').value;
+    }
     await addDoc(collection(db,'posts'),{
       userId:state.user.uid,
       authorName:state.profile?.name||'Creator',
@@ -1692,7 +1763,7 @@ window.submitPost=async()=>{
       imageUrl:url,model:$('postModel').value,
       prompt,params:$('postParams').value.trim(),
       tags,
-      category:'free', 
+      category:selectedCategory,
       status:autoApprove?'approved':'pending',
       likes:0,commentCount:0,copies:0,impressions:0,engagement:0,
       createdAt:serverTimestamp()
@@ -1759,12 +1830,25 @@ async function loadTrending(){
 /* ===================================================================
    EXPLORE + SAVED
    =================================================================== */
-window.renderExplore=()=>{
-  const q=($('searchInput').value||'').toLowerCase().replace('#','');
-  const grid=$('exploreGrid');
-  const items=state.posts.filter(p=>!q||(p.tags||[]).some(t=>t.includes(q))||(p.prompt||'').toLowerCase().includes(q));
-  if(items.length===0){grid.innerHTML='<div class="empty" style="grid-column:1/-1;"><i class="fa-solid fa-compass"></i>Nothing found.</div>';return;}
-  grid.innerHTML=items.map(p=>`<div class="g-item" onclick="seeFullPrompt('${escH(p.id)}')"><img src="${escH(p.imageUrl)}" loading="lazy"></div>`).join('');
+window.renderExplore = () => {
+  const q = ($('searchInput').value || '').toLowerCase().replace('#', '');
+  const grid = $('exploreGrid');
+  const items = state.posts.filter(p => !q || (p.tags || []).some(t => t.includes(q)) || (p.prompt || '').toLowerCase().includes(q));
+  if (items.length === 0) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;"><i class="fa-solid fa-compass"></i>Nothing found.</div>';
+    return;
+  }
+  grid.innerHTML = items.map(p => {
+    const isPremium = p.category === 'premium';
+    const isOwner = p.userId === state.user?.uid;
+    const hasUnlocked = state.profile?.unlockedPrompts?.includes(p.id) || state.profile?.role === 'admin';
+    const isLocked = isPremium && !hasUnlocked && !isOwner;
+    const imgClass = isLocked ? 'blur-locked' : '';
+    const overlayHtml = isLocked
+      ? '<div class="grid-premium-overlay"><span class="grid-premium-badge"><i class="fa-solid fa-lock"></i> Premium</span></div>'
+      : '';
+    return `<div class="g-item" style="position:relative; overflow:hidden;" onclick="seeFullPrompt('${escH(p.id)}')">${overlayHtml}<img src="${escH(p.imageUrl)}" loading="lazy" class="${imgClass}" style="width:100%; height:100%; object-fit:cover; transition:var(--transition);"></div>`;
+  }).join('');
 };
 state.saved_data={};
 async function renderSaved(){
@@ -1804,6 +1888,7 @@ async function renderProfile(){
   $('pfFollowers').textContent=p.followers||0;
   $('pfFollowing').textContent=p.following||0;
   $('pfPoints').textContent=p.points||0;
+  if($('pfUID') && state.user) $('pfUID').textContent=state.user.uid;
   if(p.location){$('pfLocationText').textContent=p.location;$('pfLocation').style.display='flex';}
   else{$('pfLocation').style.display='none';}
   let socialHtml='';
@@ -1817,8 +1902,10 @@ async function renderProfile(){
     if(snap.empty){grid.innerHTML='<div class="empty" style="grid-column:1/-1;"><i class="fa-solid fa-image"></i>No posts yet.</div>';return;}
     grid.innerHTML='';
     snap.forEach(d=>{const post=d.data();
-      const badge=post.status!=='approved'?`<span class="media-tag" style="top:4px;left:4px;font-size:8px;">${escH(post.status)}</span>`:'';
-      grid.insertAdjacentHTML('beforeend',`<div class="g-item" onclick="seeFullPrompt('${escH(d.id)}')">${badge}<img src="${escH(post.imageUrl)}"></div>`);
+      const statusLabel=post.status||'pending';
+      const statusBg=statusLabel==='approved'?'var(--ok)':statusLabel==='rejected'?'var(--danger)':'var(--warn)';
+      const statusBadge=`<span class="media-tag" style="top:4px;left:4px;font-size:8px;background:${statusBg};">${escH(statusLabel)}</span>`;
+      grid.insertAdjacentHTML('beforeend',`<div class="g-item" style="position:relative;" onclick="seeFullPrompt('${escH(d.id)}')">${statusBadge}<img src="${escH(post.imageUrl)}"><button onclick="event.stopPropagation();deleteOwnPost('${escH(d.id)}')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.65);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;padding:0;"><i class="fa-solid fa-trash"></i></button></div>`);
     });
   }catch(e){$('myGrid').innerHTML='<div class="empty" style="grid-column:1/-1;">Could not load.</div>';}
 }
@@ -1830,6 +1917,13 @@ window.openEditProfile=()=>{
   $('edBio').value=p.bio||'';
   $('edLocation').value=p.location||'';
   $('edBanner').value=p.banner||'';
+  _pendingBannerFile=null;
+  if($('edBannerFile')) $('edBannerFile').value='';
+  if($('edBannerPreview')) {
+    $('edBannerPreview').innerHTML=p.banner
+      ? `<img src="${escH(p.banner)}" style="width:100%;border-radius:12px;height:auto;max-height:120px;object-fit:cover;pointer-events:none;">`
+      : '';
+  }
   $('edTelegram').value=p.telegram||'';
   $('edTwitter').value=p.twitter||'';
   openOverlay('editModal');
@@ -1837,8 +1931,17 @@ window.openEditProfile=()=>{
 window.saveProfile=async()=>{
   try{
     const name=$('edName').value.trim(),bio=$('edBio').value.trim();
-    const location=$('edLocation').value.trim(),banner=$('edBanner').value.trim();
+    const location=$('edLocation').value.trim();
+    let banner=$('edBanner').value.trim()||state.profile?.banner||'';
     const telegram=$('edTelegram').value.trim(),twitter=$('edTwitter').value.trim();
+    if(_pendingBannerFile){
+      toast('Uploading cover photo...','fa-solid fa-spinner');
+      try{
+        const bannerBlob=await compressImage(_pendingBannerFile,1.5*1024*1024);
+        banner=await uploadToImgBB(bannerBlob);
+        _pendingBannerFile=null;
+      }catch(er){toast('Cover photo upload failed.');return;}
+    }
     await updateDoc(doc(db,'users',state.user.uid),{name,bio,location,banner,telegram,twitter});
     Object.assign(state.profile,{name,bio,location,banner,telegram,twitter});
     renderProfile();closeOverlay('editModal');
@@ -1900,8 +2003,16 @@ window.openPublicProfile=async(uid)=>{
     const grid=$('pubGrid');
     if(postsSnap.empty){grid.innerHTML='<div class="empty" style="grid-column:1/-1;"><i class="fa-solid fa-image"></i>No public posts.</div>';return;}
     grid.innerHTML='';
-    postsSnap.forEach(d=>{
-      grid.insertAdjacentHTML('beforeend',`<div class="g-item" onclick="seeFullPrompt('${escH(d.id)}')"><img src="${escH(d.data().imageUrl)}" loading="lazy"></div>`);
+    postsSnap.forEach(d => {
+      const p = d.data();
+      const isPremium = p.category === 'premium';
+      const hasUnlocked = state.profile?.unlockedPrompts?.includes(d.id) || state.profile?.role === 'admin';
+      const isLocked = isPremium && !hasUnlocked;
+      const imgClass = isLocked ? 'blur-locked' : '';
+      const overlayHtml = isLocked
+        ? '<div class="grid-premium-overlay"><span class="grid-premium-badge"><i class="fa-solid fa-lock"></i> Premium</span></div>'
+        : '';
+      grid.insertAdjacentHTML('beforeend', `<div class="g-item" style="position:relative; overflow:hidden;" onclick="seeFullPrompt('${escH(d.id)}')">${overlayHtml}<img src="${escH(p.imageUrl)}" loading="lazy" class="${imgClass}" style="width:100%; height:100%; object-fit:cover; transition:var(--transition);"></div>`);
     });
   }catch(e){closeOverlay('publicProfileModal');toast('Could not load profile.');}
 };
@@ -2027,7 +2138,8 @@ async function loadNextVideo(){
     const v=pool[Math.floor(Math.random()*pool.length)];
     _ytActiveVideo=v;
     state.currentVideo=v;
-    state.currentVideoPoints=(v.type==='main'||v.type==='long')?3:1;
+    const defaultPoints=(v.type==='main'||v.type==='long')?3:1;
+    state.currentVideoPoints=v.customPoints?parseInt(v.customPoints):defaultPoints;
     area.innerHTML=`
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
@@ -2365,6 +2477,10 @@ async function loadVouchers(){
     </div>
     <div class="field"><label>YouTube Video ID (optional)</label><input class="input" id="vcVid" placeholder="dQw4w9WgXcQ"></div>
     <div class="field"><label>Expiry Date (optional)</label><input class="input" type="date" id="vcExpiry" /></div>
+    <div class="field">
+      <label>Custom Points <span style="color:var(--text-3);font-weight:400;">(Optional override)</span></label>
+      <input class="input" type="number" id="vcCustomPoints" placeholder="e.g. 5, 10, or leave blank" />
+    </div>
     <button class="btn btn-primary btn-block" onclick="adminCreateCode()"><i class="fa-solid fa-plus"></i> Create Code</button>
   </div>
   <div id="codeListAdmin"></div>`;
@@ -2406,9 +2522,12 @@ window.adminCreateCode=async()=>{
     const data={points:pts,createdAt:serverTimestamp(),active:true};
     if(vid) data.videoId=vid;
     if(expDate) data.expiresAt=new Date(expDate+'T23:59:59');
+    const customPts=parseInt($('vcCustomPoints')?.value||'');
+    if(!isNaN(customPts)&&customPts>0) data.customPoints=customPts;
     await setDoc(doc(db,'codes',code),data);
     toast('Code created!');
     $('vcCode').value='';$('vcVid').value='';$('vcExpiry').value='';
+    if($('vcCustomPoints')) $('vcCustomPoints').value='';
     await refreshCodeList();
   }catch(e){toast('Failed: '+e.message);}
 };
@@ -2427,7 +2546,16 @@ window.adminDeleteCode=async(codeId)=>{
 let adminChartRef=null;
 async function loadAdminAnalytics(){
   const c=$('admin-analytics');
-  c.innerHTML=`<div class="admin-chart-panel">
+  const currentRefUrl=state.baseReferralUrl||'';
+  c.innerHTML=`<div class="mod-card" id="adminSettingsCard">
+    <h3 style="margin-top:0;font-size:15px;font-family:var(--font-display);"><i class="fa-solid fa-globe"></i> Platform Settings</h3>
+    <div class="field">
+      <label>Custom Base Referral URL <span style="color:var(--text-3);font-weight:400;">(Optional)</span></label>
+      <input class="input" type="url" id="adminBaseRefUrl" placeholder="https://yourdomain.com/" value="${escH(currentRefUrl)}" />
+    </div>
+    <button class="btn btn-primary" onclick="savePlatformSettings()">Save Settings</button>
+  </div>
+  <div class="admin-chart-panel">
     <h3 style="font-family:var(--font-display);margin:0 0 14px;font-size:16px;"><i class="fa-solid fa-chart-bar"></i> Platform Analytics</h3>
     <div class="admin-stats-row" id="adminStatsRow">
       <div class="admin-stat-box"><b id="totalPostsStat">—</b><span>Posts</span></div>
@@ -2470,6 +2598,23 @@ function loadAdminLog(){
     </div>
   </div>`;
 }
+
+window.savePlatformSettings = async () => {
+  const url = $('adminBaseRefUrl')?.value.trim() || '';
+  try {
+    await setDoc(doc(db, 'settings', 'platform'), { baseReferralUrl: url }, { merge: true });
+    toast('Platform settings saved!', 'fa-solid fa-check');
+    state.baseReferralUrl = url;
+  } catch(e) { toast('Failed to save settings.'); }
+};
+
+window.copyUserUID = async () => {
+  if(!state.user) return;
+  try {
+    await navigator.clipboard.writeText(state.user.uid);
+    toast('Unique ID copied!', 'fa-solid fa-copy');
+  } catch(e) { toast('Failed to copy ID.'); }
+};
 
 /* ===================================================================
    OVERLAY HELPERS
