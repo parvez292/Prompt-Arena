@@ -5,6 +5,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#f3f3fa" />
+
+    <script>
+        if (!sessionStorage.getItem('app_refreshed')) {
+            sessionStorage.setItem('app_refreshed', 'true');
+            window.location.replace(window.location.href.split('?')[0] + '?v=' + Date.now() + window.location.hash);
+        }
+    </script>
+
     <title>Prompt Arena · v1.03 Peak</title>
 
     <!-- Google Fonts: Syne + Plus Jakarta Sans + Noto Sans Bengali -->
@@ -2277,7 +2285,7 @@
     <!-- ================= MAIN APP ================= -->
     <div id="app" class="hidden">
         <header class="topbar">
-            <span class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i> Arena</span>
+            <span class="brand" onclick="window.location.replace(window.location.href.split('?')[0] + '?update=' + Date.now() + window.location.hash)" style="cursor:pointer;"><i class="fa-solid fa-wand-magic-sparkles"></i> Arena</span>
             <span class="spacer"></span>
             <button class="icon-btn" id="adminBridgeBtn" onclick="toggleAdminPortal()" title="Admin Portal" style="display:none;"><i class="fa-solid fa-shield-halved"></i></button>
             <button class="icon-btn" onclick="openRewards()" title="Earn Points"><i class="fa-solid fa-clapperboard"></i></button>
@@ -2831,43 +2839,49 @@
         /* ===================================================================
            BULLETPROOF COPY FUNCTION (Works on WebView, HTTP, & Mobile)
            =================================================================== */
-        async function fallbackCopyTextToClipboard(text) {
-            if (navigator.clipboard && window.isSecureContext) {
-                await navigator.clipboard.writeText(text);
-            } else {
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                textArea.style.position = "fixed";
-                textArea.style.left = "-9999px";
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                } catch (err) {}
-                document.body.removeChild(textArea);
-            }
-        }
+        
+        /* ===================================================================
+   BULLETPROOF SYNC COPY FUNCTION (WebView/HopWeb Fixed)
+   =================================================================== */
+function fallbackCopyTextToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).catch(e => console.error(e));
+  } 
+  
+  let success = false;
+  try {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.style.top = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    success = document.execCommand('copy');
+    document.body.removeChild(textArea);
+  } catch (err) {
+    console.error('Fallback copy failed', err);
+  }
+  return success;
+}
 
-        function getReferralLink() {
-            let base = state.baseReferralUrl;
-            if (!base) {
-                base = location.origin + location.pathname;
-            }
-            const separator = base.includes('?') ? '&' : '?';
-            return `${base}${separator}ref=${state.user.uid}`;
-        }
+function getReferralLink(){
+  let base = state.baseReferralUrl;
+  if (!base) {
+    base = location.origin + location.pathname;
+  }
+  const separator = base.includes('?') ? '&' : '?';
+  return `${base}${separator}ref=${state.user.uid}`;
+}
 
-        window.copyReferralLink = async () => {
-            const link = getReferralLink();
-            try {
-                await fallbackCopyTextToClipboard(link);
-                toast('Referral link copied!', 'fa-solid fa-link');
-                microPopup('follow', 'Link Copied', 'Share with friends!');
-            } catch (e) {
-                toast('Failed to copy link. Try again.');
-            }
-        };
+window.copyReferralLink = () => {
+  const link = getReferralLink();
+  fallbackCopyTextToClipboard(link);
+  toast('Referral link copied!', 'fa-solid fa-link');
+  microPopup('follow', 'Link Copied', 'Share with friends!');
+};
+
 
         async function applyPromoCode(newUid, promoCode) {
             if (!promoCode) return;
@@ -3578,18 +3592,15 @@
                 host.innerHTML = '<span style="color:var(--text-3);font-size:12px;">Sponsored · 300×250</span>';
             }
         }
-        window.copyFullPrompt = async () => {
-            try {
-                await fallbackCopyTextToClipboard(state.currentPrompt);
-                toast('Prompt copied!', 'fa-solid fa-copy');
-                microPopup('save', 'Copied!', 'Prompt is in your clipboard');
-                if (state.activePostId) updateDoc(doc(db, 'posts', state.activePostId), {
-                    copies: increment(1)
-                }).catch(() => {});
-            } catch (e) {
-                toast('Copy failed.');
-            }
-        };
+        window.copyFullPrompt = () => {
+  fallbackCopyTextToClipboard(state.currentPrompt);
+  toast('Prompt copied!', 'fa-solid fa-copy');
+  microPopup('save', 'Copied!', 'Prompt is in your clipboard');
+  if(state.activePostId) {
+    updateDoc(doc(db,'posts',state.activePostId),{copies:increment(1)}).catch(()=>{});
+  }
+};
+
 
 
         /* ===================================================================
@@ -4935,15 +4946,13 @@
             }
         };
 
-        window.copyUserUID = async () => {
+        window.copyUserUID = () => {
   if(!state.user) return;
-  try {
-    await fallbackCopyTextToClipboard(state.user.uid);
-    toast('Promo Code copied!', 'fa-solid fa-copy'); 
-  } catch(e) { 
-    toast('Failed to copy Code.'); 
-  }
+  fallbackCopyTextToClipboard(state.user.uid);
+  toast('Promo Code copied!', 'fa-solid fa-copy');
 };
+
+
 
 
 
