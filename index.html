@@ -3606,14 +3606,18 @@ window.copyReferralLink = () => {
         /* ===================================================================
            POST SUBMISSION
            =================================================================== */
-        window.openPostModal = () => {
+              window.openPostModal = () => {
+            _pendingFile = null; // ✅ মেমোরি ক্লিয়ার করার ফিক্স
+            
             $('postModalTitle').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> New Prompt';
             $('postImage').value = '';
             $('imgPreview').innerHTML = '';
             $('postPrompt').value = '';
             $('postParams').value = '';
             $('postTags').value = '';
-            if (state.profile?.role === 'admin') {
+            
+            // ✅ এক্সপার্টদেরও প্রিমিয়াম পোস্ট করার পারমিশন দেওয়া হলো
+            if (state.profile?.role === 'admin' || state.profile?.role === 'expert') {
                 const catField = $('adminCategoryField');
                 if (catField) catField.style.display = 'block';
                 if ($('postCategory')) $('postCategory').value = 'free';
@@ -3623,6 +3627,7 @@ window.copyReferralLink = () => {
             hideAlert('postAlert');
             openOverlay('postModal');
         };
+
         let _pendingFile = null;
         let _pendingBannerFile = null;
         window.previewBanner = (e) => {
@@ -3701,7 +3706,7 @@ window.copyReferralLink = () => {
                 const role = state.profile?.role || 'user';
                 const autoApprove = role === 'admin' || role === 'expert';
                 let selectedCategory = 'free';
-                if (role === 'admin' && $('postCategory')) {
+                if ((role === 'admin' || role === 'expert') && $('postCategory')) {
                     selectedCategory = $('postCategory').value;
                 }
                 await addDoc(collection(db, 'posts'), {
