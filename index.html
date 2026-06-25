@@ -4262,21 +4262,22 @@ window.copyReferralLink = () => {
             area.innerHTML = '<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i></div>';
             ensureYTApi();
             try {
-                let vids = [];
+                            let vids = [];
                 try {
-                    const snap = await getDocs(query(collection(db, 'videos'), where('active', '!=', false), limit(50)));
-                    snap.forEach(d => vids.push({
-                        id: d.id,
-                        ...d.data()
-                    }));
+                    const snap = await getDocs(query(collection(db, 'codes'), limit(100)));
+                    snap.forEach(d => {
+                        const data = d.data();
+                        if (data.active !== false && data.videoId) {
+                            vids.push({
+                                id: d.id,
+                                videoId: data.videoId,
+                                type: data.points > 2 ? 'main' : 'short',
+                                customPoints: data.customPoints || data.points
+                            });
+                        }
+                    });
                 } catch (e) {}
-                if (vids.length === 0) {
-                    const snap2 = await getDocs(query(collection(db, 'videos'), limit(50)));
-                    snap2.forEach(d => vids.push({
-                        id: d.id,
-                        ...d.data()
-                    }));
-                }
+
                 const unseen = vids.filter(v => !state.watchedVideos.includes(v.videoId || v.id));
                 const pool = unseen.length > 0 ? unseen : vids;
                 if (pool.length === 0) {
