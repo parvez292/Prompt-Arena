@@ -2,6 +2,8 @@
 <html lang="en" data-theme="light">
 
 <head>
+        <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#f3f3fa" />
@@ -5032,6 +5034,15 @@ window.copyReferralLink = () => {
         document.addEventListener('touchend', () => clearTimeout(lpTimer));
 
         console.log('Prompt Arena v1.03 Peak initialized - All Bugs Fixed.');
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA Ready'))
+                    .catch(err => console.log('PWA Failed: ', err));
+            });
+        }
     </script>
 </body>
 
