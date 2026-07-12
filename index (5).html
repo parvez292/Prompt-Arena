@@ -1,0 +1,5073 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon.png" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#f3f3fa" />
+
+    <script>
+        if (!sessionStorage.getItem('app_refreshed')) {
+            sessionStorage.setItem('app_refreshed', 'true');
+            window.location.replace(window.location.href.split('?')[0] + '?v=' + Date.now() + window.location.hash);
+        }
+    </script>
+
+    <title>Prompt Arena · v1.03 Peak</title>
+
+    <!-- Google Fonts: Syne + Plus Jakarta Sans + Noto Sans Bengali -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet" />
+
+    <!-- Font Awesome 6.5.1 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        /* ===================================================================
+   PROMPT ARENA v1.03 PEAK — CSS Custom Properties
+   =================================================================== */
+        :root {
+            --max-w: 600px;
+            --radius: 18px;
+            --radius-sm: 12px;
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Plus Jakarta Sans', 'Noto Sans Bengali', sans-serif;
+            --transition: .25s cubic-bezier(.4, 0, .2, 1);
+            --spring: all .3s cubic-bezier(.34, 1.56, .64, 1);
+            --accent: #7c5cff;
+            --accent-2: #ff5ca8;
+            --accent-grad: linear-gradient(120deg, #7c5cff 0%, #ff5ca8 100%);
+            --accent-grad-r: linear-gradient(120deg, #ff5ca8 0%, #7c5cff 100%);
+            --ok: #2fd07f;
+            --warn: #ffb020;
+            --danger: #ff5470;
+            --expert: #1877F2;
+        }
+
+        html[data-theme="light"] {
+            --bg: #f3f3fa;
+            --bg-2: #ffffff;
+            --surface: #ffffff;
+            --surface-2: #f0f0f8;
+            --border: #e3e3ef;
+            --text: #16161f;
+            --text-2: #56566e;
+            --text-3: #9090a8;
+            --shadow: 0 10px 40px rgba(80, 60, 160, .12);
+            --glass: rgba(255, 255, 255, .72);
+            --neon-glow: 0 0 0 1.5px rgba(124, 92, 255, .35), 0 0 18px rgba(124, 92, 255, .18);
+            --card-hover-shadow: 0 18px 52px rgba(80, 60, 160, .18);
+        }
+
+        html[data-theme="dark"] {
+            --bg: #0b0b12;
+            --bg-2: #12121d;
+            --surface: #171727;
+            --surface-2: #1f1f33;
+            --border: #2a2a40;
+            --text: #f2f2fa;
+            --text-2: #a7a7c2;
+            --text-3: #6f6f8c;
+            --shadow: 0 10px 40px rgba(0, 0, 0, .45);
+            --glass: rgba(17, 17, 30, .82);
+            --neon-glow: 0 0 0 1.5px rgba(124, 92, 255, .55), 0 0 24px rgba(124, 92, 255, .28);
+            --card-hover-shadow: 0 20px 56px rgba(0, 0, 0, .6);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            overflow-x: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+            transition: background var(--transition), color var(--transition);
+        }
+
+        img {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            pointer-events: none;
+            -webkit-user-drag: none;
+            user-drag: none;
+        }
+
+        .selectable,
+        .selectable * {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        /* ---- App container ---- */
+        #app {
+            max-width: var(--max-w);
+            margin: 0 auto;
+            min-height: 100vh;
+            background: var(--bg);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 80px rgba(0, 0, 0, .18);
+        }
+
+        @media(min-width:601px) {
+            body {
+                background: var(--bg-2);
+            }
+        }
+
+        /* ---- Topbar ---- */
+        header.topbar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -.5px;
+            background: var(--accent-grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .topbar .spacer {
+            flex: 1;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: var(--spring);
+            font-size: 15px;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background: var(--surface-2);
+            transform: translateY(-2px) scale(1.06);
+            box-shadow: var(--neon-glow);
+        }
+
+        .badge-dot {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-2);
+        }
+
+        /* ---- Views ---- */
+        main#viewport {
+            flex: 1;
+            padding-bottom: 84px;
+        }
+
+        .view {
+            display: none;
+            animation: fade .35s ease;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fade {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* ---- Bottom nav ---- */
+        nav.tabbar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: var(--max-w);
+            z-index: 45;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 6px env(safe-area-inset-bottom);
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border);
+        }
+
+        .tab {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-3);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding: 6px 0;
+            font-size: 10px;
+            font-weight: 600;
+            transition: var(--spring);
+        }
+
+        .tab i {
+            font-size: 19px;
+        }
+
+        .tab.active {
+            color: var(--accent);
+        }
+
+        .tab.fab {
+            flex: 0 0 auto;
+        }
+
+        .tab.fab .fab-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent-grad);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            font-size: 22px;
+            margin-top: -22px;
+            box-shadow: 0 8px 28px rgba(124, 92, 255, .55);
+            transition: var(--spring);
+        }
+
+        .tab.fab:hover .fab-circle {
+            transform: scale(1.1) rotate(8deg);
+        }
+
+        .tab:hover {
+            color: var(--accent);
+        }
+
+        /* ---- Hero Carousel ---- */
+        #hero-carousel {
+            position: relative;
+            width: 100%;
+            height: 240px;
+            overflow: hidden;
+            background: var(--surface-2);
+        }
+
+        .carousel-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            transition: opacity .8s ease-in-out;
+            opacity: 0;
+        }
+
+        .carousel-bg.active {
+            opacity: 1;
+        }
+
+        .carousel-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(0, 0, 0, .72) 0%, rgba(0, 0, 0, .2) 60%, transparent 100%);
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            gap: 16px;
+        }
+
+        .carousel-left {
+            flex: 1;
+            max-width: 62%;
+        }
+
+        .carousel-eyebrow {
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, .65);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+        }
+
+        .carousel-prompt {
+            font-family: var(--font-display);
+            font-size: 14px;
+            color: #fff;
+            font-weight: 700;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, .5);
+        }
+
+        .carousel-see-more {
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, .18);
+            backdrop-filter: blur(8px);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .28);
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 14px;
+            cursor: pointer;
+            transition: var(--spring);
+        }
+
+        .carousel-see-more:hover {
+            background: rgba(255, 255, 255, .32);
+            transform: scale(1.04);
+        }
+
+        .carousel-right {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 0 0 auto;
+            width: 72px;
+        }
+
+        .thumb-card {
+            width: 72px;
+            height: 56px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--surface);
+            border: 2px solid rgba(255, 255, 255, .2);
+            flex: 0 0 auto;
+            position: relative;
+            cursor: pointer;
+            transition: var(--spring);
+            opacity: .62;
+        }
+
+        .thumb-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .thumb-card.active-thumb {
+            transform: scale(1.08);
+            opacity: 1;
+            border-color: var(--accent);
+            box-shadow: 0 4px 16px rgba(124, 92, 255, .55);
+        }
+
+        .carousel-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 2;
+        }
+
+        .c-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .45);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .c-dot.active {
+            width: 18px;
+            border-radius: 3px;
+            background: #fff;
+        }
+
+        .carousel-skeleton {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.3s infinite;
+        }
+
+        @keyframes shimmer {
+            from {
+                background-position: 200% 0;
+            }
+
+            to {
+                background-position: -200% 0;
+            }
+        }
+
+        /* ---- Trending ticker ---- */
+        .ticker-wrap {
+            overflow: hidden;
+            border-bottom: 1px solid var(--border);
+            padding: 10px 0;
+            background: var(--bg-2);
+        }
+
+        .ticker-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 16px 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ticker-track {
+            display: flex;
+            gap: 10px;
+            width: max-content;
+            animation: scrollx 30s linear infinite;
+            will-change: transform;
+        }
+
+        .ticker-wrap:hover .ticker-track {
+            animation-play-state: paused;
+        }
+
+        @keyframes scrollx {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        .ticker-card {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .ticker-card .tk-fire {
+            color: var(--accent-2);
+        }
+
+        /* ---- Cards / Feed ---- */
+        .feed {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: box-shadow var(--transition), border-color var(--transition);
+            animation: slideUpA .45s ease both;
+            will-change: transform, opacity;
+        }
+
+        .card:hover {
+            box-shadow: var(--card-hover-shadow);
+            border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+        }
+
+        @keyframes slideUpA {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* Neon pulsing border for cards */
+        .card-neon {
+            position: relative;
+        }
+
+        .card-neon::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: calc(var(--radius)+1px);
+            z-index: 0;
+            background: var(--accent-grad);
+            opacity: 0;
+            transition: opacity .4s ease;
+            pointer-events: none;
+        }
+
+        .card-neon:hover::before {
+            opacity: .45;
+            animation: neonPulse 2.4s ease-in-out infinite;
+        }
+
+        @keyframes neonPulse {
+
+            0%,
+            100% {
+                opacity: .25;
+            }
+
+            50% {
+                opacity: .55;
+            }
+        }
+
+        .card-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--accent-grad);
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-weight: 700;
+            pointer-events: auto;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .avatar:hover {
+            transform: scale(1.08);
+        }
+
+        .card-head .meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-head .uname {
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        /* Admin badge */
+        .badge-admin {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: var(--accent-grad);
+            color: #fff;
+            font-size: 9px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-weight: 700;
+            box-shadow: 0 2px 10px rgba(124, 92, 255, .5);
+            animation: adminPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes adminPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 2px 10px rgba(124, 92, 255, .4);
+            }
+
+            50% {
+                box-shadow: 0 2px 18px rgba(124, 92, 255, .8);
+            }
+        }
+
+        /* Expert blue checkmark */
+        .badge-expert {
+            color: var(--expert);
+            font-size: 16px;
+            animation: expertPulse 2.5s ease-in-out infinite;
+            filter: drop-shadow(0 0 4px rgba(24, 119, 242, .5));
+        }
+
+        @keyframes expertPulse {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 4px rgba(24, 119, 242, .35));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 10px rgba(24, 119, 242, .85));
+            }
+        }
+
+        .card-head .time {
+            font-size: 11px;
+            color: var(--text-3);
+        }
+
+        /* ---- Image display: raw dimensions, viewport constrained ---- */
+        .card-media {
+            position: relative;
+            width: 100%;
+            background: var(--bg-2);
+        }
+
+        .card-media img {
+            width: 100%;
+            height: auto;
+            max-height: 80vh;
+            object-fit: contain;
+            display: block;
+        }
+
+        .media-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, .55);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 9px;
+            border-radius: 999px;
+            backdrop-filter: blur(6px);
+            pointer-events: none;
+        }
+
+        /* ---- Actions ---- */
+        .card-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 12px 14px 6px;
+        }
+
+        .act {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 19px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--spring);
+        }
+
+        .act small {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .act.liked {
+            color: var(--accent-2);
+        }
+
+        .act.saved {
+            color: var(--accent);
+        }
+
+        .act:hover {
+            transform: scale(1.12);
+        }
+
+        .card-body {
+            padding: 0 14px 14px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 8px 0;
+        }
+
+        .tag {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 12%, transparent);
+            padding: 3px 9px;
+            border-radius: 999px;
+        }
+
+        .prompt-cta {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        /* ---- Buttons ---- */
+        .btn {
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-body);
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--spring);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+        }
+
+        .btn-primary {
+            background: var(--accent-grad);
+            color: #fff;
+            padding: 11px 16px;
+            font-size: 13px;
+        }
+
+        .btn-ghost {
+            background: var(--surface-2);
+            color: var(--text);
+            padding: 11px 16px;
+            font-size: 13px;
+            border: 1px solid var(--border);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: scale(1.035);
+            box-shadow: 0 6px 20px rgba(124, 92, 255, .28);
+        }
+
+        .btn:active {
+            transform: scale(.97);
+        }
+
+        .btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ---- Skeleton shimmer grid ---- */
+        .skeleton-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            padding: 14px;
+        }
+
+        .skeleton-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            padding: 14px;
+        }
+
+        .sk-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .sk-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--surface-2);
+            animation: shimmer 1.3s infinite;
+            background-size: 200% 100%;
+            background-image: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+        }
+
+        .sk-lines {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .sk-line {
+            height: 12px;
+            border-radius: 6px;
+            background-image: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.3s infinite;
+        }
+
+        .sk-line.short {
+            width: 55%;
+        }
+
+        .sk-img {
+            width: 100%;
+            height: 200px;
+            border-radius: var(--radius-sm);
+            background-image: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.3s infinite;
+            margin-bottom: 12px;
+        }
+
+        .sk-btn {
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background-image: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.3s infinite;
+        }
+
+        /* ---- Bouncy Toast Micro-Popup ---- */
+        #toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px) scale(.9);
+            background: var(--text);
+            color: var(--bg);
+            padding: 12px 22px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
+            max-width: 90%;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        #toast .toast-icon {
+            font-size: 15px;
+        }
+
+        /* ---- Micro-popup notifications ---- */
+        .micro-popup {
+            position: fixed;
+            top: 80px;
+            right: 16px;
+            z-index: 210;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, .2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 200px;
+            max-width: 280px;
+            opacity: 0;
+            transform: translateX(20px) scale(.92);
+            transition: all .4s cubic-bezier(.34, 1.56, .64, 1);
+            pointer-events: none;
+        }
+
+        .micro-popup.show {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+
+        .micro-popup .mp-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .micro-popup .mp-text {
+            flex: 1;
+        }
+
+        .micro-popup .mp-title {
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .micro-popup .mp-sub {
+            font-size: 11px;
+            color: var(--text-3);
+        }
+
+        .micro-popup.like {
+            border-left: 3px solid var(--accent-2);
+        }
+
+        .micro-popup.like .mp-icon {
+            background: color-mix(in srgb, var(--accent-2) 15%, transparent);
+            color: var(--accent-2);
+        }
+
+        .micro-popup.save {
+            border-left: 3px solid var(--accent);
+        }
+
+        .micro-popup.save .mp-icon {
+            background: color-mix(in srgb, var(--accent) 15%, transparent);
+            color: var(--accent);
+        }
+
+        .micro-popup.follow {
+            border-left: 3px solid var(--ok);
+        }
+
+        .micro-popup.follow .mp-icon {
+            background: color-mix(in srgb, var(--ok) 15%, transparent);
+            color: var(--ok);
+        }
+
+        .micro-popup.coins {
+            border-left: 3px solid var(--warn);
+        }
+
+        .micro-popup.coins .mp-icon {
+            background: color-mix(in srgb, var(--warn) 15%, transparent);
+            color: var(--warn);
+        }
+
+        /* ---- Ad slots ---- */
+        .ad-slot {
+            margin: 4px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px;
+            background: var(--surface);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius-sm);
+        }
+
+        .ad-slot .ad-label {
+            font-size: 9px;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ---- Overlays / Sheets ---- */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            background: rgba(8, 8, 16, .72);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .overlay.active {
+            display: flex;
+            animation: fade .25s ease;
+        }
+
+        .sheet {
+            width: 100%;
+            max-width: var(--max-w);
+            max-height: 92vh;
+            overflow-y: auto;
+            background: var(--bg);
+            border-radius: 22px 22px 0 0;
+            border: 1px solid var(--border);
+            padding: 18px 18px calc(28px + env(safe-area-inset-bottom));
+            animation: slideup .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        @keyframes slideup {
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: none;
+            }
+        }
+
+        .sheet-handle {
+            width: 42px;
+            height: 5px;
+            border-radius: 999px;
+            background: var(--border);
+            margin: 0 auto 14px;
+        }
+
+        .sheet h3 {
+            font-family: var(--font-display);
+            margin: 0 0 14px;
+            font-size: 18px;
+        }
+
+        .modal-center {
+            align-items: center;
+        }
+
+        .modal-center .sheet {
+            border-radius: 22px;
+            max-height: 88vh;
+            margin: 0 14px;
+        }
+
+        /* ---- Forms ---- */
+        .field {
+            margin-bottom: 13px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-2);
+            margin-bottom: 6px;
+        }
+
+        .input,
+        .textarea,
+        select.input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            color: var(--text);
+            font-family: var(--font-body);
+            font-size: 14px;
+            transition: var(--transition);
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .input:focus,
+        .textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+        }
+
+        .textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        /* ---- Auth ---- */
+        #authScreen {
+            position: fixed;
+            inset: 0;
+            z-index: 90;
+            background: var(--bg);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        #authScreen.active {
+            display: flex;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .auth-logo {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 34px;
+            text-align: center;
+            margin-bottom: 6px;
+            background: var(--accent-grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .auth-sub {
+            text-align: center;
+            color: var(--text-2);
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: var(--surface);
+            border-radius: 999px;
+            padding: 4px;
+            margin-bottom: 18px;
+            border: 1px solid var(--border);
+        }
+
+        .auth-tabs button {
+            flex: 1;
+            border: none;
+            background: none;
+            padding: 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            color: var(--text-2);
+            cursor: pointer;
+            font-family: var(--font-body);
+            transition: var(--transition);
+        }
+
+        .auth-tabs button.active {
+            background: var(--accent-grad);
+            color: #fff;
+        }
+
+        .link {
+            color: var(--accent);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .alert {
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert.err {
+            background: color-mix(in srgb, var(--danger) 15%, transparent);
+            color: var(--danger);
+            border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+        }
+
+        .alert.ok {
+            background: color-mix(in srgb, var(--ok) 15%, transparent);
+            color: var(--ok);
+            border: 1px solid color-mix(in srgb, var(--ok) 35%, transparent);
+        }
+
+        /* ---- Ad wall ---- */
+        #adWall .sheet {
+            text-align: center;
+        }
+
+        .adwall-timer {
+            font-family: var(--font-display);
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .adwall-ring {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin: 6px auto 14px;
+        }
+
+        .adwall-note {
+            font-size: 12px;
+            color: var(--text-3);
+            margin-top: 8px;
+        }
+
+        #interstitialAd {
+            margin: 10px auto;
+            min-height: 250px;
+            width: 300px;
+            display: grid;
+            place-items: center;
+            background: var(--surface-2);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+
+        /* ---- Profile ---- */
+        .profile-banner {
+            width: 100%;
+            height: 110px;
+            background: var(--accent-grad);
+            position: relative;
+            object-fit: cover;
+        }
+
+        .profile-head {
+            padding: 0 16px 16px;
+            text-align: center;
+            margin-top: -46px;
+        }
+
+        .profile-avatar {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            font-size: 32px;
+            background: var(--accent-grad);
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-weight: 800;
+            border: 3px solid var(--bg);
+            overflow: hidden;
+            cursor: pointer;
+
+            /* এই দুই লাইন প্রোফাইল পিকচারকে কভার ফটোর উপরে আনবে */
+            position: relative;
+            z-index: 10;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .profile-name {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .profile-bio {
+            color: var(--text-2);
+            font-size: 13px;
+            margin: 6px 0 14px;
+            max-width: 340px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .profile-location {
+            font-size: 12px;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .profile-socials {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .social-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-2);
+            text-decoration: none;
+            transition: var(--spring);
+        }
+
+        .social-chip:hover {
+            transform: translateY(-2px);
+            color: var(--accent);
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 26px;
+            margin-bottom: 16px;
+        }
+
+        .stat {
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .stat b {
+            font-family: var(--font-display);
+            font-size: 18px;
+            display: block;
+        }
+
+        .stat span {
+            font-size: 11px;
+            color: var(--text-3);
+        }
+
+        .grid3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+            padding: 0 3px;
+        }
+
+        .grid3 .g-item {
+            aspect-ratio: 1/1;
+            background: var(--surface-2);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .grid3 .g-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .points-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--accent-grad);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .referral-banner {
+            margin: 12px 16px;
+            padding: 13px 15px;
+            border-radius: var(--radius);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ref-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: color-mix(in srgb, var(--ok) 18%, transparent);
+            color: var(--ok);
+            display: grid;
+            place-items: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .ref-text {
+            flex: 1;
+        }
+
+        .ref-text b {
+            font-size: 13px;
+            display: block;
+        }
+
+        .ref-text small {
+            font-size: 11px;
+            color: var(--text-3);
+        }
+
+        .ref-copy {
+            padding: 7px 12px;
+            border-radius: 8px;
+            background: var(--accent-grad);
+            color: #fff;
+            border: none;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--spring);
+        }
+
+        .ref-copy:hover {
+            transform: scale(1.05);
+        }
+
+        /* ---- Public profile view ---- */
+        .pub-profile-header {
+            position: relative;
+        }
+
+        .pub-banner {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            background: var(--accent-grad-r);
+        }
+
+        .pub-follow-btn {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            background: var(--accent-grad);
+            color: #fff;
+            border: none;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--spring);
+            box-shadow: 0 4px 16px rgba(124, 92, 255, .4);
+        }
+
+        .pub-follow-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .pub-follow-btn.following {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            box-shadow: none;
+        }
+
+        /* ---- Pills / Sections ---- */
+        .section-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 16px;
+            padding: 16px 16px 6px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-3);
+        }
+
+        .empty i {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 12px;
+            opacity: .5;
+        }
+
+        /* ---- Admin ---- */
+        .admin-banner {
+            background: var(--accent-grad);
+            color: #fff;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .admin-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .admin-tabs button {
+            white-space: nowrap;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-2);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--spring);
+        }
+
+        .admin-tabs button.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .admin-tabs button:hover {
+            transform: translateY(-1px);
+        }
+
+        .mod-card {
+            margin: 10px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+        }
+
+        .mod-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .mini-btn {
+            padding: 7px 12px;
+            border-radius: 8px;
+            border: none;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #fff;
+            transition: var(--spring);
+        }
+
+        .mini-btn:hover {
+            transform: translateY(-1px) scale(1.04);
+        }
+
+        .b-ok {
+            background: var(--ok);
+        }
+
+        .b-warn {
+            background: var(--warn);
+        }
+
+        .b-danger {
+            background: var(--danger);
+        }
+
+        .b-accent {
+            background: var(--accent);
+        }
+
+        .b-expert {
+            background: var(--expert);
+        }
+
+        .b-grey {
+            background: var(--text-3);
+        }
+
+        /* Admin chart panel */
+        .admin-chart-panel {
+            margin: 10px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+        }
+
+        .admin-stats-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .admin-stat-box {
+            flex: 1;
+            background: var(--surface-2);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            text-align: center;
+        }
+
+        .admin-stat-box b {
+            font-family: var(--font-display);
+            font-size: 22px;
+            background: var(--accent-grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .admin-stat-box span {
+            display: block;
+            font-size: 10px;
+            color: var(--text-3);
+            margin-top: 2px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Live log */
+        .live-log {
+            margin: 10px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+        }
+
+        .live-log h4 {
+            font-family: var(--font-display);
+            font-size: 14px;
+            margin: 0 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .log-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--ok);
+            animation: logBlink 1.4s ease-in-out infinite;
+        }
+
+        @keyframes logBlink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .3;
+            }
+        }
+
+        .log-scroll {
+            max-height: 160px;
+            overflow-y: auto;
+            font-size: 11px;
+            font-family: monospace;
+            color: var(--text-2);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .log-entry {
+            padding: 4px 8px;
+            background: var(--surface-2);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .log-entry.warn {
+            border-color: var(--warn);
+        }
+
+        .log-entry.err {
+            border-color: var(--danger);
+        }
+
+        /* Voucher code row */
+        .code-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-val {
+            flex: 1;
+            font-family: monospace;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .code-status {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 999px;
+        }
+
+        .code-status.active {
+            background: color-mix(in srgb, var(--ok) 18%, transparent);
+            color: var(--ok);
+        }
+
+        .code-status.inactive {
+            background: color-mix(in srgb, var(--danger) 18%, transparent);
+            color: var(--danger);
+        }
+
+        .code-expiry {
+            font-size: 10px;
+            color: var(--text-3);
+        }
+
+        /* ---- Video reward ---- */
+        .video-frame {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: #000;
+            margin-bottom: 12px;
+        }
+
+        .video-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .reward-tier {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .reward-tier .rt {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            text-align: center;
+        }
+
+        .reward-tier .rt b {
+            font-family: var(--font-display);
+            font-size: 20px;
+            color: var(--accent);
+        }
+
+        /* ---- Comments ---- */
+        .comment {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comment .c-body {
+            flex: 1;
+        }
+
+        .comment .c-name {
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .comment .c-text {
+            font-size: 13px;
+            color: var(--text-2);
+        }
+
+        .reply-row {
+            margin-left: 46px;
+        }
+
+        /* ---- Misc ---- */
+        .hidden {
+            display: none !important;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 14px 0;
+        }
+
+        /* Telegram dev banner */
+        .dev-banner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 14px;
+            padding: 13px 15px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            color: var(--text);
+            position: relative;
+            overflow: hidden;
+            background: var(--surface);
+            border: 1px solid transparent;
+            animation: popIn .5s ease both;
+            background-clip: padding-box;
+        }
+
+        .dev-banner::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radius);
+            padding: 1px;
+            background: var(--accent-grad);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            background-size: 200% 200%;
+            animation: gradBorder 4s linear infinite;
+            will-change: background-position;
+            pointer-events: none;
+        }
+
+        .db-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--accent-grad);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            font-size: 20px;
+            flex: 0 0 auto;
+        }
+
+        .db-text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.3;
+        }
+
+        .db-text b {
+            font-family: var(--font-display);
+            font-size: 14px;
+        }
+
+        .db-text small {
+            font-size: 11px;
+            color: var(--text-3);
+        }
+
+        .db-arrow {
+            color: var(--accent);
+            font-size: 13px;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(.92);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes gradBorder {
+            from {
+                background-position: 0% 50%;
+            }
+
+            to {
+                background-position: 200% 50%;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Theme toggle & switch */
+        .toggle {
+            width: 46px;
+            height: 26px;
+            border-radius: 999px;
+            background: var(--border);
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .toggle.on {
+            background: var(--accent);
+        }
+
+        .toggle::after {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            transition: var(--transition);
+        }
+
+        .toggle.on::after {
+            left: 23px;
+        }
+
+        .switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin: 10px 16px;
+        }
+
+        /* Category filter tabs */
+        .cat-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 10px 14px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .cat-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-tab {
+            white-space: nowrap;
+            padding: 8px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-2);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--spring);
+        }
+
+        .cat-tab.active {
+            background: var(--accent-grad);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .cat-tab:hover {
+            transform: translateY(-1px);
+        }
+
+        .cat-tab .lock-icon {
+            margin-left: 5px;
+            font-size: 10px;
+            opacity: .7;
+        }
+
+        /* Premium gate overlay on card */
+        .prem-gate {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, .6);
+            backdrop-filter: blur(6px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #fff;
+            border-radius: var(--radius);
+        }
+
+        .prem-gate i {
+            font-size: 34px;
+            color: var(--warn);
+        }
+
+        .prem-gate p {
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        /* ===================================================================
+   YT PLAYER MODAL + UNBYPASSABLE LOCK OVERLAY
+   =================================================================== */
+        #yt-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, .96);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        #yt-modal.active {
+            display: flex;
+        }
+
+        .yt-modal-inner {
+            width: 100%;
+            max-width: var(--max-w);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            position: relative;
+        }
+
+        .yt-modal-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px 8px;
+        }
+
+        .yt-modal-title {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 15px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .yt-progress-bar {
+            width: calc(100% - 32px);
+            height: 4px;
+            background: rgba(255, 255, 255, .18);
+            border-radius: 2px;
+            margin: 0 16px 10px;
+            overflow: hidden;
+        }
+
+        .yt-progress-fill {
+            height: 100%;
+            background: var(--accent-grad);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 1s linear;
+        }
+
+        #ytPlayerWrap {
+            width: calc(100% - 32px);
+            aspect-ratio: 16/9;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: #000;
+            position: relative;
+        }
+
+        #ytPlayerWrap iframe,
+        #ytPlayerWrap #ytPlayer {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: block;
+        }
+
+        .yt-info-bar {
+            width: calc(100% - 32px);
+            background: rgba(255, 255, 255, .06);
+            border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .yt-pts-pill {
+            background: var(--accent-grad);
+            color: #fff;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 12px;
+            white-space: nowrap;
+        }
+
+        .yt-countdown {
+            flex: 1;
+            font-size: 12px;
+            color: rgba(255, 255, 255, .7);
+        }
+
+        .yt-watching-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, .5);
+        }
+
+        .yt-watching-badge .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--ok);
+            animation: logBlink 1.4s ease-in-out infinite;
+        }
+
+        /* The absolute input-blocking layer, sits above the player */
+        #lockOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: transparent;
+            cursor: not-allowed;
+            display: none;
+            /* Intercept all pointer & touch events */
+            pointer-events: all;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        #lockOverlay.active {
+            display: block;
+        }
+
+        /* Recovery manual redeem section inside reward modal */
+        .recovery-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-3);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .recovery-label::before,
+        .recovery-label::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Premium Grid Protection */
+        .blur-locked {
+            filter: blur(14px) brightness(0.6);
+            transform: scale(1.1);
+        }
+
+        .grid-premium-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .grid-premium-badge {
+            background: rgba(0, 0, 0, 0.65);
+            color: #f59e0b;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 999px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="micro-popup-container" style="position:fixed;top:80px;right:16px;z-index:210;display:flex;flex-direction:column;gap:8px;max-width:280px;pointer-events:none;"></div>
+
+    <!-- ================= AUTH SCREEN ================= -->
+    <div id="authScreen" class="active">
+        <div class="auth-card">
+            <div class="auth-logo"><i class="fa-solid fa-wand-magic-sparkles"></i> Prompt Arena</div>
+            <p class="auth-sub">Share prompts. Discover magic. Remix the future.</p>
+            <div class="auth-tabs">
+                <button id="tabSignIn" class="active" onclick="switchAuth('signin')">Sign In</button>
+                <button id="tabSignUp" onclick="switchAuth('signup')">Register</button>
+            </div>
+            <div id="authAlert" class="alert err"></div>
+
+            <form id="signinForm" onsubmit="handleSignIn(event)">
+                <div class="field"><label>Email</label><input class="input" type="email" id="siEmail" required placeholder="you@gmail.com" /></div>
+                <div class="field"><label>Password</label><input class="input" type="password" id="siPass" required placeholder="••••••••" /></div>
+                <button class="btn btn-primary btn-block" type="submit">Sign In</button>
+                <p style="text-align:center;margin-top:14px;"><span class="link" onclick="handleReset()">Forgot password?</span></p>
+            </form>
+
+            <form id="signupForm" class="hidden" onsubmit="handleSignUp(event)">
+                <div class="field"><label>Display Name</label><input class="input" type="text" id="suName" required placeholder="creator_name" /></div>
+                <div class="field"><label>Email</label><input class="input" type="email" id="suEmail" required placeholder="you@gmail.com" /></div>
+                <div class="field"><label>Password</label><input class="input" type="password" id="suPass" required minlength="6" placeholder="min 6 chars" /></div>
+                <div class="field">
+                    <label>Promo Code <span style="color:var(--text-3);font-weight:400;">(optional · gives you +3 pts)</span></label>
+                    <input class="input" type="text" id="suPromo" placeholder="Enter referral code" />
+                </div>
+                <button class="btn btn-primary btn-block" type="submit"><i class="fa-solid fa-shield-halved"></i> Create Account</button>
+                <p class="adwall-note" style="text-align:center;margin-top:10px;font-size:11px;color:var(--text-3);">Device fingerprint guard active · one account per device.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MAIN APP ================= -->
+    <div id="app" class="hidden">
+        <header class="topbar">
+            <span class="brand" onclick="window.location.replace(window.location.href.split('?')[0] + '?update=' + Date.now() + window.location.hash)" style="cursor:pointer;"><i class="fa-solid fa-wand-magic-sparkles"></i> Arena</span>
+            <span class="spacer"></span>
+            <button class="icon-btn" id="adminBridgeBtn" onclick="toggleAdminPortal()" title="Admin Portal" style="display:none;"><i class="fa-solid fa-shield-halved"></i></button>
+            <button class="icon-btn" onclick="openRewards()" title="Earn Points"><i class="fa-solid fa-clapperboard"></i></button>
+            <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Theme"><i class="fa-solid fa-sun"></i></button>
+            <button class="icon-btn" onclick="doSignOut()" title="Sign Out"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+        </header>
+
+        <main id="viewport">
+
+            <!-- ===== HOME / FEED ===== -->
+            <section class="view active" id="view-home">
+
+                <!-- Hero Carousel -->
+                <div id="hero-carousel">
+                    <div class="carousel-skeleton" id="carouselSkeleton"></div>
+                    <div class="carousel-overlay" id="carouselOverlay" style="display:none;">
+                        <div class="carousel-left">
+                            <div class="carousel-eyebrow"><i class="fa-solid fa-sparkles"></i> Featured Prompt</div>
+                            <div class="carousel-prompt" id="carouselPromptText">Loading prompt...</div>
+                            <button class="carousel-see-more" id="carouselSeeMore" onclick="carouselSeeMore()">
+                                See Full Prompt <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div class="carousel-right" id="carouselThumbs"></div>
+                    </div>
+                    <div class="carousel-dots" id="carouselDots"></div>
+                </div>
+
+                <!-- Category tabs -->
+                <div class="cat-tabs" id="catTabs">
+                    <button class="cat-tab active" data-cat="free" onclick="switchCat('free')">🔓 Free</button>
+                    <button class="cat-tab" data-cat="premium" onclick="switchCat('premium')">⭐ Premium <i class="fa-solid fa-lock lock-icon"></i></button>
+                </div>
+
+                <!-- ================= NATIVE BANNER AD ================= -->
+                <div style="margin: 10px 14px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius-sm); text-align: center; overflow: hidden; padding: 10px;">
+                    <div style="font-size: 9px; color: var(--text-3); text-transform: uppercase; margin-bottom: 8px;">Sponsored</div>
+
+                    <script async="async" data-cfasync="false" src="https://pl30161099.effectivecpmnetwork.com/6993077ce0e264e9648523f41cadd114/invoke.js"></script>
+                    <div id="container-6993077ce0e264e9648523f41cadd114"></div>
+                </div>
+                <!-- ==================================================== -->
+
+
+                <!-- Trending ticker -->
+                <div class="ticker-wrap">
+                    <div class="ticker-label"><i class="fa-solid fa-fire tk-fire"></i> Trending Now</div>
+                    <div class="ticker-track" id="tickerTrack"></div>
+                </div>
+
+                <a class="dev-banner" href="https://t.me/annonymous707" target="_blank" rel="noopener">
+                    <span class="db-icon"><i class="fa-brands fa-telegram"></i></span>
+                    <span class="db-text"><b>Need a custom web app?</b><small>Chat with the developer · @annonymous707</small></span>
+                    <i class="fa-solid fa-arrow-up-right-from-square db-arrow"></i>
+                </a>
+
+                <!-- Skeleton loaders (shown initially) -->
+                <div class="skeleton-feed" id="feedSkeleton">
+                    <div class="skeleton-card">
+                        <div class="sk-row">
+                            <div class="sk-circle"></div>
+                            <div class="sk-lines">
+                                <div class="sk-line"></div>
+                                <div class="sk-line short"></div>
+                            </div>
+                        </div>
+                        <div class="sk-img"></div>
+                        <div class="sk-btn"></div>
+                    </div>
+                    <div class="skeleton-card">
+                        <div class="sk-row">
+                            <div class="sk-circle"></div>
+                            <div class="sk-lines">
+                                <div class="sk-line"></div>
+                                <div class="sk-line short"></div>
+                            </div>
+                        </div>
+                        <div class="sk-img"></div>
+                        <div class="sk-btn"></div>
+                    </div>
+                </div>
+
+                <div class="feed" id="feedList"></div>
+                <div id="feedSentinel" style="height:40px;"></div>
+                <div id="feedLoader" class="empty hidden"><i class="fa-solid fa-spinner fa-spin"></i> Loading more...</div>
+            </section>
+
+            <!-- ===== EXPLORE ===== -->
+            <section class="view" id="view-explore">
+                <div class="section-title">Explore Prompts</div>
+                <div style="padding:0 14px 12px;"><input class="input" id="searchInput" placeholder="Search #tags or prompts..." oninput="renderExplore()" /></div>
+                <div class="grid3" id="exploreGrid"></div>
+            </section>
+
+            <!-- ===== SAVED ===== -->
+            <section class="view" id="view-saved">
+                <div class="section-title"><i class="fa-solid fa-bookmark"></i> Saved Prompts</div>
+                <div class="feed" id="savedList"></div>
+            </section>
+
+            <!-- ===== PROFILE ===== -->
+            <section class="view" id="view-profile">
+                <div id="profileBannerWrap">
+                    <div class="profile-banner" id="profileBannerImg" style="background:var(--accent-grad);"></div>
+                </div>
+                <div class="profile-head">
+                    <div class="profile-avatar" id="pfAvatar" onclick="changeAvatar()">U</div>
+                    <div class="profile-name" id="pfName">User</div>
+                    <div class="profile-bio" id="pfBio">No bio yet.</div>
+                    <div class="profile-location" id="pfLocation" style="display:none;"><i class="fa-solid fa-location-dot"></i><span id="pfLocationText"></span></div>
+                    <div class="profile-uid" style="font-size:12px; font-weight:700; color:var(--accent); margin-bottom:12px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; background:color-mix(in srgb, var(--accent) 12%, transparent); padding:8px 16px; border-radius:999px; border: 1px dashed var(--accent);" onclick="copyUserUID()">
+                        <i class="fa-solid fa-gift"></i> Promo Code: <span id="pfUID">Loading...</span> <i class="fa-regular fa-copy"></i>
+                    </div>
+
+                    <div class="profile-socials" id="pfSocials"></div>
+                    <div class="stats-row">
+                        <div class="stat" onclick="viewFollowers()"><b id="pfPosts">0</b><span>Posts</span></div>
+                        <div class="stat" onclick="viewFollowers()"><b id="pfFollowers">0</b><span>Followers</span></div>
+                        <div class="stat" onclick="viewFollowing()"><b id="pfFollowing">0</b><span>Following</span></div>
+                    </div>
+                    <div class="points-chip"><i class="fa-solid fa-coins"></i> <span id="pfPoints">0</span> points</div>
+                    <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                        <button class="btn btn-ghost" onclick="openEditProfile()"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button class="btn btn-ghost" onclick="openAnalytics()"><i class="fa-solid fa-chart-line"></i> Analytics</button>
+                    </div>
+                </div>
+                <!-- Referral banner -->
+                <div class="referral-banner" id="referralBanner">
+                    <div class="ref-icon"><i class="fa-solid fa-user-plus"></i></div>
+                    <div class="ref-text">
+                        <b>Invite Friends & Earn</b>
+                        <small>You get +5 pts, they get +3 pts</small>
+                    </div>
+                    <button class="ref-copy" onclick="copyReferralLink()">Copy Link</button>
+                </div>
+                <div class="divider"></div>
+                <div class="section-title">My Creations</div>
+                <div class="grid3" id="myGrid"></div>
+            </section>
+
+            <!-- ===== ADMIN ===== -->
+            <section class="view" id="view-admin">
+                <div class="admin-banner"><i class="fa-solid fa-tower-broadcast"></i> Admin Control Center</div>
+                <div class="admin-tabs">
+                    <button class="active" data-atab="moderation" onclick="switchAdminTab('moderation')">Moderation</button>
+                    <button data-atab="users" onclick="switchAdminTab('users')">Users</button>
+                    <button data-atab="vouchers" onclick="switchAdminTab('vouchers')">Vouchers</button>
+                    <button data-atab="analytics" onclick="switchAdminTab('analytics')">Analytics</button>
+                    <button data-atab="log" onclick="switchAdminTab('log')">Live Log</button>
+                </div>
+                <div id="admin-moderation"></div>
+                <div id="admin-users" class="hidden"></div>
+                <div id="admin-vouchers" class="hidden"></div>
+                <div id="admin-analytics" class="hidden"></div>
+                <div id="admin-log" class="hidden"></div>
+            </section>
+
+        </main>
+
+        <nav class="tabbar">
+            <button class="tab active" data-route="home" onclick="navigate('home')"><i class="fa-solid fa-house"></i>Home</button>
+            <button class="tab" data-route="explore" onclick="navigate('explore')"><i class="fa-solid fa-compass"></i>Explore</button>
+            <button class="tab fab" onclick="openPostModal()"><span class="fab-circle"><i class="fa-solid fa-plus"></i></span></button>
+            <button class="tab" data-route="saved" onclick="navigate('saved')"><i class="fa-solid fa-bookmark"></i>Saved</button>
+            <button class="tab" data-route="profile" onclick="navigate('profile')"><i class="fa-solid fa-user"></i>Profile</button>
+        </nav>
+    </div>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- Post submission -->
+    <div class="overlay" id="postModal">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <h3 id="postModalTitle"><i class="fa-solid fa-cloud-arrow-up"></i> New Prompt</h3>
+            <div id="postAlert" class="alert err"></div>
+            <div class="field"><label>Image</label><input class="input" type="file" id="postImage" accept="image/*" onchange="previewImg(event)" /></div>
+            <div id="imgPreview" style="margin-bottom:12px;"></div>
+            <div class="field"><label>AI Model</label>
+                <select class="input" id="postModel">
+                    <option>Midjourney</option>
+                    <option>Leonardo AI</option>
+                    <option>Stable Diffusion</option>
+                    <option>Gemini</option>
+                    <option>DALL-E 3</option>
+                    <option>Flux</option>
+                    <option>Ideogram</option>
+                </select>
+            </div>
+            <div class="field"><label>Prompt Text</label><textarea class="textarea" id="postPrompt" placeholder="A neon cyberpunk samurai..."></textarea></div>
+            <div class="field"><label>Parameters (optional)</label><input class="input" id="postParams" placeholder="--ar 16:9 --v 6 --style raw" /></div>
+            <div class="field"><label>Tags (comma separated)</label>
+                <div style="display:flex;gap:8px;">
+                    <input class="input" id="postTags" placeholder="neon, portrait, fantasy" />
+                    <button class="btn btn-ghost" type="button" onclick="autoTag()"><i class="fa-solid fa-robot"></i></button>
+                </div>
+            </div>
+            <div class="field" id="adminCategoryField" style="display:none;">
+                <label>Category <span style="color:var(--accent);">(Admin Only)</span></label>
+                <select class="input" id="postCategory">
+                    <option value="free">Free</option>
+                    <option value="premium">Premium</option>
+                </select>
+            </div>
+            <button class="btn btn-primary btn-block" id="postSubmitBtn" onclick="submitPost()"><i class="fa-solid fa-paper-plane"></i> Submit</button>
+        </div>
+    </div>
+
+    <!-- Ad wall + full prompt -->
+    <div class="overlay modal-center" id="adWall">
+        <div class="sheet">
+            <h3><i class="fa-solid fa-lock"></i> Unlocking Full Prompt</h3>
+            <div id="interstitialAd"><span style="color:var(--text-3);font-size:12px;">Sponsored · 300×250</span></div>
+            <div class="adwall-timer" id="adTimer">10</div>
+            <p class="adwall-note">Please wait — the full prompt unlocks automatically.</p>
+            <div id="fullPromptReveal" class="hidden">
+                <div class="divider"></div>
+                <div class="selectable" id="fullPromptText" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:14px;text-align:left;white-space:pre-wrap;word-break:break-word;"></div>
+                <div style="display:flex;gap:8px;margin-top:12px;">
+                    <button class="btn btn-primary btn-block" onclick="copyFullPrompt()"><i class="fa-solid fa-copy"></i> Copy Prompt</button>
+                    <button class="btn btn-ghost" onclick="closeOverlay('adWall')">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments -->
+    <div class="overlay" id="commentModal">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <h3><i class="fa-solid fa-comments"></i> Comments</h3>
+            <div id="commentList"></div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <input class="input" id="commentInput" placeholder="Add a comment..." />
+                <button class="btn btn-primary" onclick="postComment()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rewards -->
+    <div class="overlay" id="rewardModal">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <h3><i class="fa-solid fa-clapperboard"></i> Earn Points</h3>
+            <div class="reward-tier">
+                <div class="rt"><b>+1</b>
+                    <div style="font-size:11px;color:var(--text-3);">Short Video</div>
+                </div>
+                <div class="rt"><b>+3</b>
+                    <div style="font-size:11px;color:var(--text-3);">Main Video</div>
+                </div>
+                <div class="rt"><b>5 pts</b>
+                    <div style="font-size:11px;color:var(--text-3);">Unlocks Premium</div>
+                </div>
+            </div>
+            <div id="videoArea"></div>
+            <!-- Manual recovery — optional fallback only -->
+            <div style="margin-top:18px;">
+                <div class="recovery-label">Manual Recovery (optional)</div>
+                <div style="display:flex;gap:8px;">
+                    <input class="input" id="redeemInput" placeholder="Backup code if auto-redeem fails" />
+                    <button class="btn btn-ghost" style="white-space:nowrap;" onclick="redeemCode()">Claim</button>
+                </div>
+            </div>
+            <div id="redeemAlert" class="alert err" style="margin-top:10px;"></div>
+        </div>
+    </div>
+
+    <!-- YT Video Intercept Modal -->
+    <div id="yt-modal">
+        <div class="yt-modal-inner">
+            <div class="yt-modal-header">
+                <div class="yt-modal-title">
+                    <i class="fa-solid fa-play" style="color:var(--accent);"></i>
+                    Watch to Earn Points
+                </div>
+                <span id="ytPtsPill" class="yt-pts-pill">+? pts</span>
+            </div>
+            <div id="ytPlayerWrap">
+                <div id="ytPlayer"></div>
+            </div>
+            <div class="yt-info-bar">
+                <div class="yt-countdown" id="ytCountdown">Loading video...</div>
+                <div class="yt-watching-badge"><span class="pulse-dot"></span> Watching</div>
+            </div>
+            <div class="yt-progress-bar">
+                <div class="yt-progress-fill" id="ytProgressFill"></div>
+            </div>
+            <p style="color:rgba(255,255,255,.4);font-size:11px;text-align:center;margin:6px 16px 0;padding-bottom:8px;">
+                <i class="fa-solid fa-lock" style="font-size:10px;"></i>
+                Points are awarded automatically when the video ends.
+                You cannot skip, minimize, or close this player.
+            </p>
+        </div>
+    </div>
+
+    <!-- Absolute input-blocker lock overlay -->
+    <div id="lockOverlay"></div>
+
+    <!-- Edit profile -->
+    <div class="overlay" id="editModal">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <h3><i class="fa-solid fa-pen"></i> Edit Profile</h3>
+            <div class="field"><label>Display Name</label><input class="input" id="edName" /></div>
+            <div class="field"><label>Bio</label><textarea class="textarea" id="edBio"></textarea></div>
+            <div class="field"><label>Location</label><input class="input" id="edLocation" placeholder="e.g. Dhaka, Bangladesh" /></div>
+            <div class="field">
+                <label>Cover Photo</label>
+                <input class="input" type="file" id="edBannerFile" accept="image/*" onchange="previewBanner(event)" />
+                <div id="edBannerPreview" style="margin-top:8px;"></div>
+                <input type="hidden" id="edBanner" />
+            </div>
+            <div class="field"><label>Telegram Handle</label><input class="input" id="edTelegram" placeholder="@username" /></div>
+            <div class="field"><label>Twitter / X Handle</label><input class="input" id="edTwitter" placeholder="@username" /></div>
+            <button class="btn btn-primary btn-block" onclick="saveProfile()">Save Changes</button>
+        </div>
+    </div>
+
+    <!-- Analytics -->
+    <div class="overlay" id="analyticsModal">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <h3><i class="fa-solid fa-chart-line"></i> Creator Analytics</h3>
+            <div class="reward-tier">
+                <div class="rt"><b id="anImpr">0</b>
+                    <div style="font-size:11px;color:var(--text-3);">Impressions</div>
+                </div>
+                <div class="rt"><b id="anCopies">0</b>
+                    <div style="font-size:11px;color:var(--text-3);">Copies</div>
+                </div>
+                <div class="rt"><b id="anTags">0</b>
+                    <div style="font-size:11px;color:var(--text-3);">Tags</div>
+                </div>
+            </div>
+            <canvas id="analyticsChart" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Public profile view -->
+    <div class="overlay" id="publicProfileModal">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <div class="pub-profile-header">
+                <div class="pub-banner" id="pubBanner"></div>
+                <button class="pub-follow-btn" id="pubFollowBtn" onclick="toggleFollowUser()">Follow</button>
+            </div>
+            <div style="padding:12px 16px;text-align:center;margin-top:-28px;">
+                <div class="profile-avatar" id="pubAvatar" style="margin:0 auto 8px;width:60px;height:60px;font-size:22px;border:2px solid var(--bg);">U</div>
+                <div style="font-family:var(--font-display);font-size:18px;font-weight:800;" id="pubName">Creator</div>
+                <div style="font-size:12px;color:var(--text-2);margin:6px 0;" id="pubBio"></div>
+                <div class="stats-row" style="margin-bottom:8px;">
+                    <div class="stat"><b id="pubPosts">0</b><span>Posts</span></div>
+                    <div class="stat"><b id="pubFollowers">0</b><span>Followers</span></div>
+                </div>
+            </div>
+            <div class="grid3" id="pubGrid"></div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <!-- ================= FIREBASE + APP LOGIC ================= -->
+    <script type="module">
+        import {
+            initializeApp
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getAuth,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged,
+            sendEmailVerification,
+            sendPasswordResetEmail
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            getDoc,
+            setDoc,
+            updateDoc,
+            addDoc,
+            deleteDoc,
+            collection,
+            query,
+            where,
+            orderBy,
+            limit,
+            startAfter,
+            getDocs,
+            serverTimestamp,
+            increment,
+            arrayUnion,
+            runTransaction,
+            writeBatch
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        /* ===================================================================
+           CONFIG
+           =================================================================== */
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyREfgzkwzIb7RPJKjvJtf4ydSbJF5hXg",
+            authDomain: "prompt-fb290.firebaseapp.com",
+            projectId: "prompt-fb290",
+            storageBucket: "prompt-fb290.firebasestorage.app",
+            messagingSenderId: "1052714449462",
+            appId: "1:1052714449462:web:155b6ae3351d7d54213697",
+            measurementId: "G-VLND3MJFHP"
+        };
+        const IMGBB_API_KEY = "8a532a8412649b71b273a6b5a54da110";
+
+        const fbApp = initializeApp(firebaseConfig);
+        const auth = getAuth(fbApp);
+        const db = getFirestore(fbApp);
+
+        /* ===================================================================
+           GLOBAL STATE
+           =================================================================== */
+        const state = {
+            user: null,
+            profile: null,
+            feedCursor: null,
+            isFetchingPosts: false,
+            feedExhausted: false,
+            posts: [],
+            saved: new Set(),
+            liked: new Set(),
+            pageHistory: ['home'],
+            currentPrompt: '',
+            activePostId: null,
+            activePost: null,
+            inAdmin: false,
+            watchedVideos: [],
+            currentVideo: null,
+            currentVideoPoints: 0,
+            currentCat: 'free',
+            carouselPosts: [],
+            carouselIdx: 0,
+            carouselTimer: null,
+            viewingUid: null,
+            followingSet: new Set(),
+            sysLog: [],
+            baseReferralUrl: ''
+        };
+
+        /* ===================================================================
+           UTILITIES
+           =================================================================== */
+        function escH(str) {
+            if (str === undefined || str === null) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        function $(id) {
+            return document.getElementById(id);
+        }
+
+        function timeAgo(ts) {
+            if (!ts) return 'now';
+            const d = ts.toDate ? ts.toDate() : new Date(ts);
+            const s = Math.floor((Date.now() - d.getTime()) / 1000);
+            if (s < 60) return s + 's';
+            if (s < 3600) return Math.floor(s / 60) + 'm';
+            if (s < 86400) return Math.floor(s / 3600) + 'h';
+            return Math.floor(s / 86400) + 'd';
+        }
+
+        function sysLog(msg, type = 'info') {
+            const entry = {
+                msg,
+                type,
+                ts: new Date().toLocaleTimeString()
+            };
+            state.sysLog.unshift(entry);
+            if (state.sysLog.length > 80) state.sysLog.pop();
+            const el = $('log-scroll-inner');
+            if (el) {
+                const div = document.createElement('div');
+                div.className = `log-entry ${type==='warn'?'warn':type==='err'?'err':''}`;
+                div.textContent = `[${entry.ts}] ${msg}`;
+                el.insertBefore(div, el.firstChild);
+                if (el.children.length > 80) el.lastChild.remove();
+            }
+        }
+
+        /* ===================================================================
+           BOUNCY TOAST + MICRO POPUP
+           =================================================================== */
+        function toast(msg, icon = '') {
+            const t = $('toast');
+            t.innerHTML = icon ? `<i class="toast-icon ${icon}"></i>${escH(msg)}` : escH(msg);
+            t.classList.add('show');
+            clearTimeout(t._t);
+            t._t = setTimeout(() => t.classList.remove('show'), 2800);
+        }
+
+        function microPopup(type, title, sub) {
+            const icons = {
+                like: 'fa-solid fa-heart',
+                save: 'fa-solid fa-bookmark',
+                follow: 'fa-solid fa-user-plus',
+                coins: 'fa-solid fa-coins'
+            };
+            const c = document.getElementById('micro-popup-container');
+            const el = document.createElement('div');
+            el.className = `micro-popup ${type}`;
+            el.innerHTML = `<div class="mp-icon"><i class="${icons[type]||'fa-solid fa-bell'}"></i></div>
+    <div class="mp-text"><div class="mp-title">${escH(title)}</div><div class="mp-sub">${escH(sub)}</div></div>`;
+            c.appendChild(el);
+            requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+            setTimeout(() => {
+                el.classList.remove('show');
+                setTimeout(() => el.remove(), 400);
+            }, 2600);
+        }
+
+        /* ===================================================================
+           DEVICE FINGERPRINTING
+           =================================================================== */
+        async function getDeviceFingerprint() {
+            const parts = [];
+            parts.push(navigator.userAgent);
+            parts.push(screen.width + 'x' + screen.height + 'x' + screen.colorDepth);
+            parts.push(navigator.hardwareConcurrency || 0);
+            parts.push(navigator.deviceMemory || 0);
+            parts.push(navigator.language);
+            parts.push(new Date().getTimezoneOffset());
+            try {
+                const c = document.createElement('canvas');
+                const ctx = c.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = "14px 'Arial'";
+                ctx.fillStyle = '#f60';
+                ctx.fillRect(0, 0, 120, 30);
+                ctx.fillStyle = '#069';
+                ctx.fillText('PromptArena⚡', 2, 15);
+                parts.push(c.toDataURL());
+            } catch (e) {
+                parts.push('nocanvas');
+            }
+            const raw = parts.join('|');
+            if (window.crypto && crypto.subtle && window.isSecureContext) {
+                try {
+                    const data = new TextEncoder().encode(raw);
+                    const buf = await crypto.subtle.digest('SHA-256', data);
+                    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+                } catch (e) {}
+            }
+            let hash = 0;
+            for (let i = 0; i < raw.length; i++) {
+                hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+                hash |= 0;
+            }
+            return 'fb_' + Math.abs(hash).toString(16);
+        }
+
+        /* ===================================================================
+           REFERRAL HELPERS
+           =================================================================== */
+        /* ===================================================================
+           BULLETPROOF COPY FUNCTION (Works on WebView, HTTP, & Mobile)
+           =================================================================== */
+
+        /* ===================================================================
+   BULLETPROOF SYNC COPY FUNCTION (WebView/HopWeb Fixed)
+   =================================================================== */
+        function fallbackCopyTextToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).catch(e => console.error(e));
+            }
+
+            let success = false;
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-9999px";
+                textArea.style.top = "-9999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                success = document.execCommand('copy');
+                document.body.removeChild(textArea);
+            } catch (err) {
+                console.error('Fallback copy failed', err);
+            }
+            return success;
+        }
+
+        function getReferralLink() {
+            let base = state.baseReferralUrl;
+            if (!base) {
+                base = location.origin + location.pathname;
+            }
+            const separator = base.includes('?') ? '&' : '?';
+            return `${base}${separator}ref=${state.user.uid}`;
+        }
+
+        window.copyReferralLink = () => {
+            const link = getReferralLink();
+            fallbackCopyTextToClipboard(link);
+            toast('Referral link copied!', 'fa-solid fa-link');
+            microPopup('follow', 'Link Copied', 'Share with friends!');
+        };
+
+
+        async function applyPromoCode(newUid, promoCode) {
+            if (!promoCode) return;
+            try {
+                const refDoc = await getDoc(doc(db, 'users', promoCode));
+                if (!refDoc.exists()) return;
+                await updateDoc(doc(db, 'users', promoCode), {
+                    points: increment(5),
+                    referralCount: increment(1)
+                });
+                await updateDoc(doc(db, 'users', newUid), {
+                    points: increment(3)
+                });
+                sysLog(`Referral: ${promoCode} → ${newUid} (+5/+3 pts)`, 'info');
+            } catch (e) {
+                console.warn('Promo apply failed', e);
+            }
+        }
+
+        /* ===================================================================
+           AUTH
+           =================================================================== */
+        window.switchAuth = (mode) => {
+            const si = mode === 'signin';
+            $('tabSignIn').classList.toggle('active', si);
+            $('tabSignUp').classList.toggle('active', !si);
+            $('signinForm').classList.toggle('hidden', !si);
+            $('signupForm').classList.toggle('hidden', si);
+            hideAlert('authAlert');
+        };
+
+        function showAlert(id, msg, ok = false) {
+            const a = $(id);
+            a.textContent = msg;
+            a.className = 'alert show ' + (ok ? 'ok' : 'err');
+        }
+
+        function hideAlert(id) {
+            $(id).className = 'alert';
+        }
+
+        window.handleSignUp = async (e) => {
+            e.preventDefault();
+            const name = $('suName').value.trim();
+            const email = $('suEmail').value.trim();
+            const pass = $('suPass').value;
+            const promo = $('suPromo').value.trim();
+            showAlert('authAlert', 'Verifying device & creating account...', true);
+            try {
+                const fp = await getDeviceFingerprint();
+                const devRef = doc(db, 'registeredDevices', fp);
+                const devSnap = await getDoc(devRef);
+                if (devSnap.exists()) {
+                    throw {
+                        code: 'device/blocked',
+                        message: 'Warning: Multiple accounts are not allowed on this device!'
+                    };
+                }
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                await setDoc(doc(db, 'users', cred.user.uid), {
+                    name,
+                    email,
+                    role: 'user',
+                    bio: '',
+                    avatar: '',
+                    banner: '',
+                    location: '',
+                    telegram: '',
+                    twitter: '',
+                    points: 0,
+                    postsCount: 0,
+                    followers: 0,
+                    following: 0,
+                    referralCount: 0,
+                    impressions: 0,
+                    copies: 0,
+                    watchedVideos: [],
+                    redeemedCodes: [],
+                    failCount: 0,
+                    failDate: '',
+                    banUntil: 0,
+                    createdAt: serverTimestamp()
+                });
+                await setDoc(devRef, {
+                    uid: cred.user.uid,
+                    email,
+                    createdAt: serverTimestamp()
+                });
+                if (promo) await applyPromoCode(cred.user.uid, promo);
+                sysLog(`New user registered: ${name} (${email})`);
+                showAlert('authAlert', 'Account created! Signing you in...', true);
+            } catch (err) {
+                showAlert('authAlert', err.message || 'Registration failed.');
+                sysLog('Register fail: ' + err.message, 'err');
+            }
+        };
+
+        window.handleSignIn = async (e) => {
+            e.preventDefault();
+            const email = $('siEmail').value.trim();
+            const pass = $('siPass').value;
+            showAlert('authAlert', 'Signing in...', true);
+            try {
+                const fp = await getDeviceFingerprint();
+                const cred = await signInWithEmailAndPassword(auth, email, pass);
+                const devRef = doc(db, 'registeredDevices', fp);
+                const devSnap = await getDoc(devRef);
+                if (devSnap.exists() && devSnap.data().uid !== cred.user.uid) {
+                    await signOut(auth);
+                    throw {
+                        message: 'Warning: Multiple accounts are not allowed on this device!'
+                    };
+                }
+                if (!devSnap.exists()) {
+                    await setDoc(devRef, {
+                        uid: cred.user.uid,
+                        email,
+                        createdAt: serverTimestamp()
+                    });
+                }
+                sysLog(`Login: ${email}`);
+                hideAlert('authAlert');
+            } catch (err) {
+                showAlert('authAlert', err.message || 'Sign-in failed.');
+            }
+        };
+
+        window.handleReset = async () => {
+            const email = $('siEmail').value.trim();
+            if (!email) {
+                showAlert('authAlert', 'Enter your email first.');
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showAlert('authAlert', 'Reset email sent!', true);
+            } catch (err) {
+                showAlert('authAlert', err.message);
+            }
+        };
+
+        window.doSignOut = async () => {
+            try {
+                await signOut(auth);
+                localStorage.clear();
+                location.reload();
+            } catch (e) {
+                toast('Sign out failed');
+            }
+        };
+
+        onAuthStateChanged(auth, async (u) => {
+            if (u) {
+                state.user = u;
+                $('authScreen').classList.remove('active');
+                $('app').classList.remove('hidden');
+
+                try {
+                    const snap = await getDoc(doc(db, 'users', u.uid));
+                    if (snap.exists()) {
+                        state.profile = snap.data();
+                        state.watchedVideos = state.profile?.watchedVideos || [];
+                    } else {
+                        state.profile = {
+                            role: 'user',
+                            points: 0,
+                            watchedVideos: [],
+                            name: 'Creator'
+                        };
+                    }
+
+                    if (state.profile?.banUntil && state.profile.banUntil > Date.now()) {
+                        const mins = Math.ceil((state.profile.banUntil - Date.now()) / 60000);
+                        showAlert('authAlert', `Account restricted. Try again in ${mins} min.`);
+                        await signOut(auth);
+                        return;
+                    }
+
+                    if (state.profile?.role === 'admin') $('adminBridgeBtn').style.display = 'grid';
+
+                    const urlRef = new URLSearchParams(location.search).get('ref');
+                    if (urlRef && urlRef !== u.uid && !(state.profile?.referralApplied)) {
+                        await applyPromoCode(u.uid, urlRef);
+                        await updateDoc(doc(db, 'users', u.uid), {
+                            referralApplied: true
+                        });
+                    }
+                } catch (e) {
+                    console.warn("Profile fetch error:", e);
+                }
+
+                initApp();
+            } else {
+                $('authScreen').classList.add('active');
+                $('app').classList.add('hidden');
+                const _sf = $('signinForm');
+                if (_sf) _sf.reset();
+                const _spf = $('signupForm');
+                if (_spf) _spf.reset();
+                const _aa = $('authAlert');
+                if (_aa) {
+                    _aa.textContent = '';
+                    _aa.className = 'alert';
+                }
+            }
+        });
+
+        /* ===================================================================
+           APP INIT
+           =================================================================== */
+        async function initApp() {
+            try {
+                const platSnap = await getDoc(doc(db, 'settings', 'platform'));
+                if (platSnap.exists()) {
+                    state.baseReferralUrl = platSnap.data().baseReferralUrl || '';
+                }
+            } catch (e) {}
+            renderProfile();
+            await loadFeed(true);
+            await loadTrending();
+            await loadCarousel();
+            navigate('home', false);
+            loadFollowGraph();
+        }
+
+        /* ===================================================================
+           ROUTER
+           =================================================================== */
+        window.navigate = (route, push = true) => {
+            if (route === 'admin' && (!state.profile || state.profile.role !== 'admin')) {
+                toast('Access denied.');
+                route = 'home';
+            }
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            const view = $('view-' + route);
+            if (view) view.classList.add('active');
+            document.querySelectorAll('.tab[data-route]').forEach(t => t.classList.toggle('active', t.dataset.route === route));
+            if (push && state.pageHistory[state.pageHistory.length - 1] !== route) {
+                state.pageHistory.push(route);
+                history.pushState({
+                    route
+                }, '', '#' + route);
+            }
+            if (route === 'explore') renderExplore();
+            if (route === 'saved') renderSaved();
+            if (route === 'profile') renderProfile();
+            if (route === 'admin') loadAdmin();
+            window.scrollTo(0, 0);
+        };
+        window.addEventListener('popstate', () => {
+            if (state.pageHistory.length > 1) {
+                state.pageHistory.pop();
+                navigate(state.pageHistory[state.pageHistory.length - 1], false);
+            } else {
+                navigate('home', false);
+            }
+        });
+        window.toggleAdminPortal = () => {
+            if (state.profile?.role !== 'admin') {
+                toast('Access denied.');
+                return;
+            }
+            state.inAdmin = !state.inAdmin;
+            navigate(state.inAdmin ? 'admin' : 'home');
+            toast(state.inAdmin ? 'Admin Portal activated' : 'User Portal');
+        };
+
+        /* ===================================================================
+           THEME (default: light)
+           =================================================================== */
+        window.toggleTheme = () => {
+            const cur = document.documentElement.getAttribute('data-theme');
+            const next = cur === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            $('themeBtn').innerHTML = next === 'dark' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+            localStorage.setItem('pa_theme', next);
+        };
+        (function() {
+            const t = localStorage.getItem('pa_theme');
+            if (t) {
+                document.documentElement.setAttribute('data-theme', t);
+            }
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const btn = document.getElementById('themeBtn');
+            if (btn) btn.innerHTML = isDark ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+        })();
+
+        /* ===================================================================
+           CATEGORY FILTER
+           =================================================================== */
+        window.switchCat = (cat) => {
+            state.currentCat = cat;
+            document.querySelectorAll('.cat-tab').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+            if (cat === 'premium') {
+                const pts = state.profile?.points || 0;
+                if (pts < 5) {
+                    toast('You need 5 points to unlock Premium 🔒', 'fa-solid fa-lock');
+                    state.currentCat = 'free';
+                    document.querySelectorAll('.cat-tab').forEach(b => b.classList.toggle('active', b.dataset.cat === 'free'));
+                    return;
+                }
+            }
+            loadFeed(true);
+        };
+
+        /* ===================================================================
+           HERO CAROUSEL
+           =================================================================== */
+        async function loadCarousel() {
+            try {
+                const snap = await getDocs(query(collection(db, 'posts'), where('status', '==', 'approved'), orderBy('engagement', 'desc'), limit(8)));
+                state.carouselPosts = [];
+                snap.forEach(d => state.carouselPosts.push({
+                    id: d.id,
+                    ...d.data()
+                }));
+                if (state.carouselPosts.length === 0) {
+                    $('hero-carousel').style.display = 'none';
+                    return;
+                }
+                buildCarousel();
+            } catch (e) {
+                $('hero-carousel').style.display = 'none';
+            }
+        }
+
+        function buildCarousel() {
+            const posts = state.carouselPosts;
+            if (!posts.length) {
+                $('hero-carousel').style.display = 'none';
+                return;
+            }
+            document.querySelectorAll('.carousel-bg').forEach(el => el.remove());
+            const car = $('hero-carousel');
+            posts.forEach((p, i) => {
+                const bg = document.createElement('div');
+                bg.className = 'carousel-bg' + (i === 0 ? ' active' : '');
+                bg.style.backgroundImage = `url('${escH(p.imageUrl||'')}')`;
+                car.insertBefore(bg, car.firstChild);
+            });
+            $('carouselDots').innerHTML = posts.map((_, i) => `<div class="c-dot${i===0?' active':''}" onclick="goCarousel(${i})"></div>`).join('');
+            buildCarouselThumbs(0);
+            updateCarouselText(0);
+            $('carouselSkeleton').remove();
+            $('carouselOverlay').style.display = 'flex';
+            if (state.carouselTimer) clearInterval(state.carouselTimer);
+            state.carouselTimer = setInterval(() => goCarousel((state.carouselIdx + 1) % posts.length), 5000);
+        }
+
+        function buildCarouselThumbs(activeIdx) {
+            const posts = state.carouselPosts;
+            const total = posts.length;
+            const thumbsEl = $('carouselThumbs');
+            const next = [1, 2, 3].map(offset => posts[(activeIdx + offset) % total]);
+            thumbsEl.innerHTML = next.map((p, i) => `
+    <div class="thumb-card${i===0?' active-thumb':''}" onclick="goCarousel(${(activeIdx+1+i)%total})">
+      <img src="${escH(p.imageUrl||'')}" loading="lazy" />
+    </div>`).join('');
+        }
+
+        function updateCarouselText(idx) {
+            const p = state.carouselPosts[idx];
+            const prompt = (p.prompt || '').substring(0, 120) + (p.prompt && p.prompt.length > 120 ? '…' : '');
+            $('carouselPromptText').textContent = prompt || p.model || 'AI Creation';
+            $('carouselSeeMore').dataset.pid = p.id;
+        }
+
+        window.goCarousel = (idx) => {
+            if (!state.carouselPosts.length) return;
+            state.carouselIdx = idx;
+            document.querySelectorAll('.carousel-bg').forEach((el, i) => {
+                el.classList.toggle('active', (state.carouselPosts.length - 1 - i) === idx);
+            });
+            document.querySelectorAll('.c-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+            buildCarouselThumbs(idx);
+            updateCarouselText(idx);
+            if (state.carouselTimer) clearInterval(state.carouselTimer);
+            state.carouselTimer = setInterval(() => goCarousel((state.carouselIdx + 1) % state.carouselPosts.length), 5000);
+        };
+
+        window.carouselSeeMore = () => {
+            const pid = $('carouselSeeMore').dataset.pid;
+            if (pid) seeFullPrompt(pid);
+        };
+
+        /* ===================================================================
+           FEED + INFINITE SCROLL
+           =================================================================== */
+        async function loadFeed(reset = false) {
+            if (state.isFetchingPosts || (state.feedExhausted && !reset)) return;
+            state.isFetchingPosts = true;
+            if (reset) {
+                state.feedCursor = null;
+                state.feedExhausted = false;
+                state.posts = [];
+                $('feedList').innerHTML = '';
+                $('feedSkeleton').classList.remove('hidden');
+            }
+            $('feedLoader').classList.remove('hidden');
+            try {
+                const cat = state.currentCat;
+                let q;
+                if (cat === 'premium') {
+                    q = query(collection(db, 'posts'), where('status', '==', 'approved'), where('category', '==', 'premium'), orderBy('createdAt', 'desc'), limit(20));
+                    if (state.feedCursor) q = query(collection(db, 'posts'), where('status', '==', 'approved'), where('category', '==', 'premium'), orderBy('createdAt', 'desc'), startAfter(state.feedCursor), limit(20));
+                } else {
+                    q = query(collection(db, 'posts'), where('status', '==', 'approved'), orderBy('createdAt', 'desc'), limit(20));
+                    if (state.feedCursor) q = query(collection(db, 'posts'), where('status', '==', 'approved'), orderBy('createdAt', 'desc'), startAfter(state.feedCursor), limit(20));
+                }
+                const snap = await getDocs(q);
+                $('feedSkeleton').classList.add('hidden');
+                if (snap.empty) {
+                    state.feedExhausted = true;
+                } else {
+                    state.feedCursor = snap.docs[snap.docs.length - 1];
+                    snap.forEach(d => {
+                        const p = {
+                            id: d.id,
+                            ...d.data()
+                        };
+                        if (cat === 'free' && p.category === 'premium') return;
+                        state.posts.push(p);
+                        renderCard(p, 'feedList');
+                    });
+                    if (snap.docs.length < 20) state.feedExhausted = true;
+                }
+                if ($('feedList').children.length === 0) {
+                    $('feedSkeleton').classList.add('hidden');
+                    $('feedList').innerHTML = '<div class="empty"><i class="fa-solid fa-image"></i>No prompts yet. Be the first to share!</div>';
+                }
+            } catch (err) {
+                console.error(err);
+                $('feedSkeleton').classList.add('hidden');
+                $('feedList').insertAdjacentHTML('beforeend', '<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i>Feed unavailable. Check Firestore indexes.</div>');
+                state.feedExhausted = true;
+            }
+            $('feedLoader').classList.add('hidden');
+            state.isFetchingPosts = false;
+        }
+
+        const io = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && state.user && !state.feedExhausted) loadFeed(false);
+        }, {
+            rootMargin: '300px'
+        });
+        window.addEventListener('load', () => {
+            const s = $('feedSentinel');
+            if (s) io.observe(s);
+        });
+
+        /* ===================================================================
+           RENDER CARD
+           =================================================================== */
+        function badgeHtml(role) {
+            if (role === 'admin') return '<span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span>';
+            if (role === 'expert') return '<i class="fa-solid fa-circle-check badge-expert" title="Verified Expert"></i>';
+            return '<i class="fa-solid fa-circle-check verified" style="color:var(--accent);font-size:12px;opacity:.6;"></i>';
+        }
+
+        function avatarHtml(p, size = '38') {
+            const initial = (p.authorName || 'U').charAt(0).toUpperCase();
+            if (p.authorAvatar) {
+                return `<img src="${escH(p.authorAvatar)}" class="avatar" style="width:${size}px;height:${size}px;" onclick="openPublicProfile('${escH(p.userId)}')" />`;
+            }
+            return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${Math.round(parseInt(size)*0.45)}px;" onclick="openPublicProfile('${escH(p.userId)}')">${escH(initial)}</div>`;
+        }
+
+        function renderCard(p, target) {
+            const cont = $(target);
+            if (!cont) return;
+            const liked = state.liked.has(p.id);
+            const saved = state.saved.has(p.id);
+            const tagsHtml = (p.tags || []).map(t => `<span class="tag">#${escH(t)}</span>`).join('');
+            const isPremium = (p.category === 'premium');
+            const isUnlocked = !isPremium || (state.profile?.unlockedPrompts || []).includes(p.id);
+            const premGate = isPremium && !isUnlocked ?
+                `<div class="prem-gate" onclick="seeFullPrompt('${escH(p.id)}')">
+        <i class="fa-solid fa-lock"></i>
+        <p>Premium Prompt<br><small style="opacity:.8">Costs 5 pts to unlock · yours forever</small></p>
+        <span style="background:var(--accent-grad);color:#fff;padding:7px 18px;border-radius:999px;font-size:12px;font-weight:700;">Unlock Now</span>
+      </div>` : '';
+            const html = `
+  <article class="card card-neon" data-pid="${escH(p.id)}" style="position:relative;">
+    <div class="card-head">
+      ${avatarHtml(p,'38')}
+      <div class="meta">
+        <div class="uname">${escH(p.authorName||'Creator')} ${badgeHtml(p.authorRole)}</div>
+        <div class="time">${escH(p.model||'AI')} · ${timeAgo(p.createdAt)}</div>
+      </div>
+      ${isPremium?`<span style="font-size:10px;font-weight:700;color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent);padding:3px 8px;border-radius:999px;">⭐ ${isUnlocked?'Unlocked':'Premium'}</span>`:''}
+    </div>
+    <div class="card-media" style="position:relative;">
+      <span class="media-tag">${escH(p.model||'AI')}</span>
+      <img src="${escH(p.imageUrl||'')}" alt="" loading="lazy" />
+      ${premGate}
+    </div>
+    <div class="card-actions">
+      <button class="act ${liked?'liked':''}" onclick="toggleLike('${escH(p.id)}',this)"><i class="fa-${liked?'solid':'regular'} fa-heart"></i><small>${p.likes||0}</small></button>
+      <button class="act" onclick="openComments('${escH(p.id)}')"><i class="fa-regular fa-comment"></i><small>${p.commentCount||0}</small></button>
+      <button class="act" onclick="remixPrompt('${escH(p.id)}')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+      <span style="flex:1"></span>
+      <button class="act ${saved?'saved':''}" onclick="toggleSave('${escH(p.id)}',this)"><i class="fa-${saved?'solid':'regular'} fa-bookmark"></i></button>
+    </div>
+    <div class="card-body">
+      <div class="tags">${tagsHtml}</div>
+      <button class="btn btn-primary btn-block" onclick="seeFullPrompt('${escH(p.id)}')">
+        <i class="fa-solid fa-${isPremium&&!isUnlocked?'lock':'eye'}"></i>
+        ${isPremium&&!isUnlocked?'Unlock Premium Prompt':'See Full Prompt'}
+      </button>
+    </div>
+  </article>`;
+            cont.insertAdjacentHTML('beforeend', html);
+            bumpImpression(p.id);
+            if (target === 'feedList' && cont.querySelectorAll('.card').length % 3 === 0) injectFeedAd(cont);
+        }
+
+        let _imprBatch = {};
+
+        function bumpImpression(pid) {
+            _imprBatch[pid] = (_imprBatch[pid] || 0) + 1;
+        }
+
+        function injectFeedAd(cont) {
+            const wrap = document.createElement('div');
+            wrap.className = 'ad-slot';
+
+            // আপনার নেটিভ অ্যাড কন্টেইনার ID এখানে দেওয়া হলো
+            wrap.innerHTML = '<div class="ad-label">Sponsored</div><div id="container-6993077ce0e264e9648523f41cadd114"></div>';
+            cont.appendChild(wrap);
+
+            try {
+                const s = document.createElement('script');
+                s.async = true;
+                s.dataset.cfasync = "false";
+                // আপনার নেটিভ অ্যাডের স্ক্রিপ্ট লিংক 
+                s.src = "https://pl30161099.effectivecpmnetwork.com/6993077ce0e264e9648523f41cadd114/invoke.js";
+
+                wrap.appendChild(s);
+            } catch (e) {}
+        }
+
+
+
+        /* ===================================================================
+           LIKES + SAVE
+           =================================================================== */
+        window.toggleLike = async (pid, btn) => {
+            if (banned()) return;
+            const liked = state.liked.has(pid);
+            try {
+                const likeRef = doc(db, 'posts', pid, 'likes', state.user.uid);
+                if (liked) {
+                    await deleteDoc(likeRef);
+                    state.liked.delete(pid);
+                    await updateDoc(doc(db, 'posts', pid), {
+                        likes: increment(-1),
+                        engagement: increment(-1)
+                    });
+                } else {
+                    await setDoc(likeRef, {
+                        userId: state.user.uid,
+                        createdAt: serverTimestamp()
+                    });
+                    state.liked.add(pid);
+                    await updateDoc(doc(db, 'posts', pid), {
+                        likes: increment(1),
+                        engagement: increment(1)
+                    });
+                    microPopup('like', 'Liked!', 'You liked this post');
+                }
+                const i = btn.querySelector('i'),
+                    s = btn.querySelector('small');
+                btn.classList.toggle('liked', !liked);
+                i.className = !liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+                s.textContent = parseInt(s.textContent || 0) + (!liked ? 1 : -1);
+            } catch (e) {
+                toast('Could not like.');
+            }
+        };
+
+        window.toggleSave = async (pid, btn) => {
+            const saved = state.saved.has(pid);
+            try {
+                const sRef = doc(db, 'users', state.user.uid, 'savedPosts', pid);
+                if (saved) {
+                    await deleteDoc(sRef);
+                    state.saved.delete(pid);
+                } else {
+                    await setDoc(sRef, {
+                        pid,
+                        createdAt: serverTimestamp()
+                    });
+                    state.saved.add(pid);
+                    microPopup('save', 'Saved!', 'Added to your collection');
+                }
+                btn.classList.toggle('saved', !saved);
+                btn.querySelector('i').className = !saved ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
+            } catch (e) {
+                toast('Could not save.');
+            }
+        };
+
+        window.remixPrompt = (pid) => {
+            const p = state.posts.find(x => x.id === pid);
+            if (!p) return;
+            openPostModal();
+            $('postModalTitle').innerHTML = '<i class="fa-solid fa-shuffle"></i> Remix Prompt';
+            $('postPrompt').value = p.prompt || '';
+            $('postParams').value = p.params || '';
+            $('postModel').value = p.model || 'Midjourney';
+            $('postTags').value = (p.tags || []).join(', ');
+            toast('Prompt loaded for remixing!', 'fa-solid fa-shuffle');
+        };
+
+        window.deleteOwnPost = async (pid) => {
+            if (!confirm('Delete this post permanently?')) return;
+            try {
+                await deleteDoc(doc(db, 'posts', pid));
+                await updateDoc(doc(db, 'users', state.user.uid), {
+                    postsCount: increment(-1)
+                });
+                if (state.profile) state.profile.postsCount = Math.max(0, (state.profile.postsCount || 1) - 1);
+                toast('Post deleted', 'fa-solid fa-trash');
+                renderProfile();
+            } catch (e) {
+                toast('Could not delete post.');
+            }
+        };
+
+        /* ===================================================================
+           AD WALL → FULL PROMPT
+           =================================================================== */
+        window.seeFullPrompt = async (pid) => {
+            let post = state.posts.find(x => x.id === pid);
+            if (!post) {
+                const s = await getDoc(doc(db, 'posts', pid));
+                if (s.exists()) post = {
+                    id: pid,
+                    ...s.data()
+                };
+            }
+            if (!post) return;
+            if (post.category === 'premium') {
+                const unlocked = (state.profile?.unlockedPrompts || []);
+                if (!unlocked.includes(pid)) {
+                    if ((state.profile?.points || 0) < 5) {
+                        toast('You need 5 points to unlock Premium posts 🔒', 'fa-solid fa-lock');
+                        microPopup('coins', 'Premium Locked', 'Earn 5 pts to unlock this prompt');
+                        return;
+                    }
+                    await updateDoc(doc(db, 'users', state.user.uid), {
+                        points: increment(-5),
+                        unlockedPrompts: arrayUnion(pid)
+                    });
+                    if (state.profile) state.profile.points = (state.profile?.points || 0) - 5;
+                    if (state.profile) state.profile.unlockedPrompts = [...unlocked, pid];
+                    $('pfPoints').textContent = state.profile?.points ?? 0;
+                    toast('Premium prompt unlocked! 🎉', 'fa-solid fa-unlock');
+                    microPopup('coins', 'Unlocked!', '-5 pts · prompt accessible forever');
+                    sysLog(`${state.profile?.name} unlocked premium post ${pid}`);
+                }
+            }
+            state.currentPrompt = (post.prompt || '') + (post.params ? ('\n\n' + post.params) : '');
+            state.activePostId = pid;
+            state.activePost = post;
+            $('fullPromptReveal').classList.add('hidden');
+            $('fullPromptText').textContent = '';
+            $('adTimer').textContent = '10';
+            openOverlay('adWall');
+            injectInterstitial();
+            let t = 10;
+            if (window.currentAdTimer) {
+                clearInterval(window.currentAdTimer);
+                window.currentAdTimer = null;
+            }
+            window.currentAdTimer = setInterval(() => {
+                t--;
+                $('adTimer').textContent = t;
+                if (t <= 0) {
+                    clearInterval(window.currentAdTimer);
+                    window.currentAdTimer = null;
+                    revealPrompt();
+                }
+            }, 1000);
+        };
+
+        function revealPrompt() {
+            $('adTimer').textContent = '✓';
+            $('fullPromptText').textContent = state.currentPrompt;
+            $('fullPromptReveal').classList.remove('hidden');
+            if (state.activePostId) updateDoc(doc(db, 'posts', state.activePostId), {
+                engagement: increment(1)
+            }).catch(() => {});
+        }
+
+        let _interstitialDone = false;
+
+        function injectInterstitial() {
+            const host = $('interstitialAd');
+            if (_interstitialDone) {
+                return;
+            }
+            try {
+                host.innerHTML = '';
+                const s1 = document.createElement('script');
+                // নতুন ৩০০x২৫০ অ্যাড কোড আপডেট করা হয়েছে
+                s1.text = "atOptions={'key':'1cecefe53ed2c0dfefe6cb150c0982f2','format':'iframe','height':250,'width':300,'params':{}};";
+                const s2 = document.createElement('script');
+                s2.src = "https://www.highperformanceformat.com/1cecefe53ed2c0dfefe6cb150c0982f2/invoke.js";
+
+                host.appendChild(s1);
+                host.appendChild(s2);
+                _interstitialDone = true;
+            } catch (e) {
+                host.innerHTML = '<span style="color:var(--text-3);font-size:12px;">Sponsored · 300×250</span>';
+            }
+        }
+
+        window.copyFullPrompt = () => {
+            fallbackCopyTextToClipboard(state.currentPrompt);
+            toast('Prompt copied!', 'fa-solid fa-copy');
+            microPopup('save', 'Copied!', 'Prompt is in your clipboard');
+            if (state.activePostId) {
+                updateDoc(doc(db, 'posts', state.activePostId), {
+                    copies: increment(1)
+                }).catch(() => {});
+            }
+        };
+
+
+
+        /* ===================================================================
+           POST SUBMISSION
+           =================================================================== */
+        window.openPostModal = () => {
+            _pendingFile = null; // ✅ মেমোরি ক্লিয়ার করার ফিক্স
+
+            $('postModalTitle').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> New Prompt';
+            $('postImage').value = '';
+            $('imgPreview').innerHTML = '';
+            $('postPrompt').value = '';
+            $('postParams').value = '';
+            $('postTags').value = '';
+
+            // ✅ এক্সপার্টদেরও প্রিমিয়াম পোস্ট করার পারমিশন দেওয়া হলো
+            if (state.profile?.role === 'admin' || state.profile?.role === 'expert') {
+                const catField = $('adminCategoryField');
+                if (catField) catField.style.display = 'block';
+                if ($('postCategory')) $('postCategory').value = 'free';
+            } else {
+                if ($('adminCategoryField')) $('adminCategoryField').style.display = 'none';
+            }
+            hideAlert('postAlert');
+            openOverlay('postModal');
+        };
+
+        let _pendingFile = null;
+        let _pendingBannerFile = null;
+        window.previewBanner = (e) => {
+            const f = e.target.files[0];
+            if (!f) return;
+            _pendingBannerFile = f;
+            const url = URL.createObjectURL(f);
+            if ($('edBannerPreview')) $('edBannerPreview').innerHTML = `<img src="${url}" style="width:100%;border-radius:12px;height:auto;max-height:120px;object-fit:cover;pointer-events:none;">`;
+        };
+        window.previewImg = (e) => {
+            const f = e.target.files[0];
+            if (!f) return;
+            _pendingFile = f;
+            const url = URL.createObjectURL(f);
+            $('imgPreview').innerHTML = `<img src="${url}" style="width:100%;border-radius:12px;height:auto;max-height:240px;object-fit:contain;pointer-events:none;">`;
+        };
+        async function compressImage(file, maxBytes = 1.8 * 1024 * 1024) {
+            const img = await new Promise((res, rej) => {
+                const i = new Image();
+                i.onload = () => res(i);
+                i.onerror = rej;
+                i.src = URL.createObjectURL(file);
+            });
+            let {
+                width,
+                height
+            } = img;
+            const MAX = 1600;
+            if (width > MAX || height > MAX) {
+                const r = Math.min(MAX / width, MAX / height);
+                width *= r;
+                height *= r;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            let quality = 0.9,
+                blob;
+            for (let i = 0; i < 8; i++) {
+                blob = await new Promise(r => canvas.toBlob(r, 'image/webp', quality));
+                if (blob && blob.size <= maxBytes) break;
+                quality -= 0.12;
+            }
+            return blob;
+        }
+        async function uploadToImgBB(blob) {
+            const fd = new FormData();
+            fd.append('image', blob);
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: 'POST',
+                body: fd
+            });
+            const json = await res.json();
+            if (!json.success) throw new Error('Image host failed');
+            return json.data.url;
+        }
+        window.submitPost = async () => {
+            if (banned()) return;
+            if (!_pendingFile) {
+                showAlert('postAlert', 'Please choose an image.');
+                return;
+            }
+            const prompt = $('postPrompt').value.trim();
+            if (!prompt) {
+                showAlert('postAlert', 'Prompt text is required.');
+                return;
+            }
+            const btn = $('postSubmitBtn');
+            btn.disabled = true;
+            showAlert('postAlert', 'Compressing & uploading...', true);
+            try {
+                const blob = await compressImage(_pendingFile);
+                const url = await uploadToImgBB(blob);
+                const tags = $('postTags').value.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean);
+                const role = state.profile?.role || 'user';
+                const autoApprove = role === 'admin' || role === 'expert';
+                let selectedCategory = 'free';
+                if ((role === 'admin' || role === 'expert') && $('postCategory')) {
+                    selectedCategory = $('postCategory').value;
+                }
+                await addDoc(collection(db, 'posts'), {
+                    userId: state.user.uid,
+                    authorName: state.profile?.name || 'Creator',
+                    authorAvatar: state.profile?.avatar || '',
+                    authorRole: role,
+                    authorExpert: role === 'expert',
+                    imageUrl: url,
+                    model: $('postModel').value,
+                    prompt,
+                    params: $('postParams').value.trim(),
+                    tags,
+                    category: selectedCategory,
+                    status: autoApprove ? 'approved' : 'pending',
+                    likes: 0,
+                    commentCount: 0,
+                    copies: 0,
+                    impressions: 0,
+                    engagement: 0,
+                    createdAt: serverTimestamp()
+                });
+                await updateDoc(doc(db, 'users', state.user.uid), {
+                    postsCount: increment(1)
+                });
+                if (state.profile) state.profile.postsCount = (state.profile?.postsCount || 0) + 1;
+                sysLog(`Post submitted by ${state.profile?.name} (${autoApprove?'auto-approved':'pending'})`);
+                showAlert('postAlert', autoApprove ? 'Post published instantly! ✨' : 'Submitted for review.', true);
+                _pendingFile = null;
+                setTimeout(() => {
+                    closeOverlay('postModal');
+                    if (autoApprove) loadFeed(true);
+                }, 1400);
+            } catch (err) {
+                showAlert('postAlert', err.message || 'Upload failed.');
+            }
+            btn.disabled = false;
+        };
+        window.autoTag = () => {
+            const p = $('postPrompt').value.toLowerCase();
+            const dict = ['neon', 'portrait', 'fantasy', 'cyberpunk', 'landscape', 'anime', '3d', 'realistic', 'abstract', 'sci-fi', 'nature', 'dark', 'vintage', 'minimal', 'futuristic', 'cinematic', 'surreal', 'glitch'];
+            const found = dict.filter(t => p.includes(t.replace('-', '')));
+            if (found.length) {
+                $('postTags').value = found.join(', ');
+                toast('AI tags extracted!', 'fa-solid fa-robot');
+            } else toast('No obvious tags. Add manually.');
+        };
+
+        /* ===================================================================
+           COMMENTS
+           =================================================================== */
+        window.openComments = async (pid) => {
+            state.activePostId = pid;
+            openOverlay('commentModal');
+            $('commentList').innerHTML = '<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i></div>';
+            try {
+                const snap = await getDocs(query(collection(db, 'posts', pid, 'comments'), orderBy('createdAt', 'desc'), limit(50)));
+                if (snap.empty) {
+                    $('commentList').innerHTML = '<div class="empty"><i class="fa-regular fa-comment"></i>No comments yet.</div>';
+                    return;
+                }
+                let html = '';
+                snap.forEach(d => {
+                    const c = d.data();
+                    html += `<div class="comment"><div class="avatar" style="width:32px;height:32px;font-size:13px;cursor:default;">${escH((c.name||'U').charAt(0).toUpperCase())}</div>
+      <div class="c-body"><div class="c-name">${escH(c.name)}</div><div class="c-text">${escH(c.text)}</div></div></div>`;
+                });
+                $('commentList').innerHTML = html;
+            } catch (e) {
+                $('commentList').innerHTML = '<div class="empty">Could not load comments.</div>';
+            }
+        };
+        window.postComment = async () => {
+            if (banned()) return;
+            const txt = $('commentInput').value.trim();
+            if (!txt) return;
+            try {
+                await addDoc(collection(db, 'posts', state.activePostId, 'comments'), {
+                    userId: state.user.uid,
+                    name: state.profile?.name,
+                    text: txt,
+                    postId: state.activePostId,
+                    createdAt: serverTimestamp()
+                });
+                await updateDoc(doc(db, 'posts', state.activePostId), {
+                    commentCount: increment(1),
+                    engagement: increment(1)
+                }).catch(() => {});
+                $('commentInput').value = '';
+                openComments(state.activePostId);
+            } catch (e) {
+                toast('Could not comment.');
+            }
+        };
+
+        /* ===================================================================
+           TRENDING TICKER
+           =================================================================== */
+        async function loadTrending() {
+            try {
+                const snap = await getDocs(query(collection(db, 'posts'), where('status', '==', 'approved'), orderBy('engagement', 'desc'), limit(8)));
+                let items = [];
+                snap.forEach(d => {
+                    const p = d.data();
+                    items.push(p);
+                });
+                if (items.length === 0) {
+                    $('tickerTrack').innerHTML = '<div class="ticker-card">No trends yet</div>';
+                    return;
+                }
+                const make = (p) => `<div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> ${escH((p.tags&&p.tags[0])?('#'+p.tags[0]):p.model)} · ${p.likes||0}❤</div>`;
+                $('tickerTrack').innerHTML = items.map(make).join('') + items.map(make).join('');
+            } catch (e) {
+                $('tickerTrack').innerHTML = '<div class="ticker-card">Trending unavailable</div>';
+            }
+        }
+
+        /* ===================================================================
+           EXPLORE + SAVED
+           =================================================================== */
+        window.renderExplore = () => {
+            const q = ($('searchInput').value || '').toLowerCase().replace('#', '');
+            const grid = $('exploreGrid');
+            const items = state.posts.filter(p => !q || (p.tags || []).some(t => t.includes(q)) || (p.prompt || '').toLowerCase().includes(q));
+            if (items.length === 0) {
+                grid.innerHTML = '<div class="empty" style="grid-column:1/-1;"><i class="fa-solid fa-compass"></i>Nothing found.</div>';
+                return;
+            }
+            grid.innerHTML = items.map(p => {
+                const isPremium = p.category === 'premium';
+                const isOwner = p.userId === state.user?.uid;
+                const hasUnlocked = state.profile?.unlockedPrompts?.includes(p.id) || state.profile?.role === 'admin';
+                const isLocked = isPremium && !hasUnlocked && !isOwner;
+                const imgClass = isLocked ? 'blur-locked' : '';
+                const overlayHtml = isLocked ?
+                    '<div class="grid-premium-overlay"><span class="grid-premium-badge"><i class="fa-solid fa-lock"></i> Premium</span></div>' :
+                    '';
+                return `<div class="g-item" style="position:relative; overflow:hidden;" onclick="seeFullPrompt('${escH(p.id)}')">${overlayHtml}<img src="${escH(p.imageUrl)}" loading="lazy" class="${imgClass}" style="width:100%; height:100%; object-fit:cover; transition:var(--transition);"></div>`;
+            }).join('');
+        };
+        state.saved_data = {};
+        async function renderSaved() {
+            const list = $('savedList');
+            list.innerHTML = '<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i></div>';
+            try {
+                const snap = await getDocs(collection(db, 'users', state.user.uid, 'savedPosts'));
+                if (snap.empty) {
+                    list.innerHTML = '<div class="empty"><i class="fa-regular fa-bookmark"></i>No saved prompts yet.</div>';
+                    return;
+                }
+                list.innerHTML = '';
+                for (const d of snap.docs) {
+                    state.saved.add(d.id);
+                    const ps = await getDoc(doc(db, 'posts', d.id));
+                    if (ps.exists()) {
+                        const p = {
+                            id: d.id,
+                            ...ps.data()
+                        };
+                        state.saved_data[d.id] = p;
+                        if (!state.posts.find(x => x.id === p.id)) state.posts.push(p);
+                        renderCard(p, 'savedList');
+                    }
+                }
+                if (!list.innerHTML) list.innerHTML = '<div class="empty"><i class="fa-regular fa-bookmark"></i>No saved prompts yet.</div>';
+            } catch (e) {
+                list.innerHTML = '<div class="empty">Could not load saved.</div>';
+            }
+        }
+
+        /* ===================================================================
+           PROFILE
+           =================================================================== */
+        async function renderProfile() {
+            const p = state.profile;
+            if (!p) return;
+            const initChar = (p.name || 'U').charAt(0).toUpperCase();
+            const avEl = $('pfAvatar');
+            if (p.avatar) {
+                avEl.innerHTML = `<img src="${escH(p.avatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+                avEl.style.background = 'none';
+            } else {
+                avEl.textContent = initChar;
+                avEl.style.background = '';
+            }
+            const bannerEl = $('profileBannerImg');
+            if (p.banner) {
+                bannerEl.style.backgroundImage = `url('${escH(p.banner)}')`;
+                bannerEl.style.backgroundSize = 'cover';
+                bannerEl.style.backgroundPosition = 'center';
+            } else {
+                bannerEl.style.backgroundImage = '';
+                bannerEl.style.background = 'var(--accent-grad)';
+            }
+            $('pfName').textContent = p.name || 'User';
+            $('pfBio').textContent = p.bio || 'No bio yet.';
+            $('pfPosts').textContent = p.postsCount || 0;
+            $('pfFollowers').textContent = p.followers || 0;
+            $('pfFollowing').textContent = p.following || 0;
+            $('pfPoints').textContent = p.points || 0;
+            if ($('pfUID') && state.user) $('pfUID').textContent = state.user.uid;
+            if (p.location) {
+                $('pfLocationText').textContent = p.location;
+                $('pfLocation').style.display = 'flex';
+            } else {
+                $('pfLocation').style.display = 'none';
+            }
+            let socialHtml = '';
+            if (p.telegram) socialHtml += `<a class="social-chip" href="https://t.me/${escH(p.telegram.replace('@',''))}" target="_blank" rel="noopener"><i class="fa-brands fa-telegram"></i>${escH(p.telegram)}</a>`;
+            if (p.twitter) socialHtml += `<a class="social-chip" href="https://x.com/${escH(p.twitter.replace('@',''))}" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i>${escH(p.twitter)}</a>`;
+            $('pfSocials').innerHTML = socialHtml;
+            if (!state.user) return;
+            try {
+                const snap = await getDocs(query(collection(db, 'posts'), where('userId', '==', state.user.uid), orderBy('createdAt', 'desc'), limit(30)));
+                const grid = $('myGrid');
+                if (snap.empty) {
+                    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;"><i class="fa-solid fa-image"></i>No posts yet.</div>';
+                    return;
+                }
+                grid.innerHTML = '';
+                snap.forEach(d => {
+                    const post = d.data();
+                    const statusLabel = post.status || 'pending';
+                    const statusBg = statusLabel === 'approved' ? 'var(--ok)' : statusLabel === 'rejected' ? 'var(--danger)' : 'var(--warn)';
+                    const statusBadge = `<span class="media-tag" style="top:4px;left:4px;font-size:8px;background:${statusBg};">${escH(statusLabel)}</span>`;
+                    grid.insertAdjacentHTML('beforeend', `<div class="g-item" style="position:relative;" onclick="seeFullPrompt('${escH(d.id)}')">${statusBadge}<img src="${escH(post.imageUrl)}"><button onclick="event.stopPropagation();deleteOwnPost('${escH(d.id)}')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.65);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;padding:0;"><i class="fa-solid fa-trash"></i></button></div>`);
+                });
+            } catch (e) {
+                $('myGrid').innerHTML = '<div class="empty" style="grid-column:1/-1;">Could not load.</div>';
+            }
+        }
+
+        window.openEditProfile = () => {
+            const p = state.profile;
+            if (!p) {
+                toast('Profile not loaded yet.');
+                return;
+            }
+            $('edName').value = p.name || '';
+            $('edBio').value = p.bio || '';
+            $('edLocation').value = p.location || '';
+            $('edBanner').value = p.banner || '';
+            _pendingBannerFile = null;
+            if ($('edBannerFile')) $('edBannerFile').value = '';
+            if ($('edBannerPreview')) {
+                $('edBannerPreview').innerHTML = p.banner ?
+                    `<img src="${escH(p.banner)}" style="width:100%;border-radius:12px;height:auto;max-height:120px;object-fit:cover;pointer-events:none;">` :
+                    '';
+            }
+            $('edTelegram').value = p.telegram || '';
+            $('edTwitter').value = p.twitter || '';
+            openOverlay('editModal');
+        };
+        window.saveProfile = async () => {
+            try {
+                const name = $('edName').value.trim(),
+                    bio = $('edBio').value.trim();
+                const location = $('edLocation').value.trim();
+                let banner = $('edBanner').value.trim() || state.profile?.banner || '';
+                const telegram = $('edTelegram').value.trim(),
+                    twitter = $('edTwitter').value.trim();
+                if (_pendingBannerFile) {
+                    toast('Uploading cover photo...', 'fa-solid fa-spinner');
+                    try {
+                        const bannerBlob = await compressImage(_pendingBannerFile, 1.5 * 1024 * 1024);
+                        banner = await uploadToImgBB(bannerBlob);
+                        _pendingBannerFile = null;
+                    } catch (er) {
+                        toast('Cover photo upload failed.');
+                        return;
+                    }
+                }
+                await updateDoc(doc(db, 'users', state.user.uid), {
+                    name,
+                    bio,
+                    location,
+                    banner,
+                    telegram,
+                    twitter
+                });
+                Object.assign(state.profile, {
+                    name,
+                    bio,
+                    location,
+                    banner,
+                    telegram,
+                    twitter
+                });
+                renderProfile();
+                closeOverlay('editModal');
+                toast('Profile updated!', 'fa-solid fa-check');
+            } catch (e) {
+                toast('Could not save.');
+            }
+        };
+
+        window.changeAvatar = () => {
+            const inp = document.createElement('input');
+            inp.type = 'file';
+            inp.accept = 'image/*';
+            inp.onchange = async (e) => {
+                const f = e.target.files[0];
+                if (!f) return;
+                toast('Uploading avatar...', 'fa-solid fa-spinner');
+                try {
+                    const blob = await compressImage(f, 400 * 1024);
+                    const url = await uploadToImgBB(blob);
+                    await updateDoc(doc(db, 'users', state.user.uid), {
+                        avatar: url
+                    });
+                    state.profile.avatar = url;
+                    renderProfile();
+                    toast('Avatar updated!', 'fa-solid fa-check');
+                } catch (er) {
+                    toast('Avatar upload failed.');
+                }
+            };
+            inp.click();
+        };
+
+        async function loadFollowGraph() {
+            if (!state.user) return;
+            try {
+                const snap = await getDocs(query(collection(db, 'follows'), where('follower', '==', state.user.uid)));
+                state.followingSet = new Set();
+                snap.forEach(d => state.followingSet.add(d.data().following));
+            } catch (e) {}
+        }
+
+        window.openPublicProfile = async (uid) => {
+            if (!uid || uid === state.user?.uid) {
+                navigate('profile');
+                return;
+            }
+            state.viewingUid = uid;
+            openOverlay('publicProfileModal');
+            $('pubGrid').innerHTML = '<div class="empty" style="grid-column:1/-1;"><i class="fa-solid fa-spinner fa-spin"></i></div>';
+            try {
+                const uSnap = await getDoc(doc(db, 'users', uid));
+                if (!uSnap.exists()) {
+                    closeOverlay('publicProfileModal');
+                    toast('User not found.');
+                    return;
+                }
+                const u = uSnap.data();
+                const init = (u.name || 'U').charAt(0).toUpperCase();
+                const pubAv = $('pubAvatar');
+                if (u.avatar) {
+                    pubAv.innerHTML = `<img src="${escH(u.avatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+                    pubAv.style.background = 'none';
+                } else {
+                    pubAv.textContent = init;
+                    pubAv.style.background = '';
+                }
+                $('pubName').textContent = u.name || 'Creator';
+                $('pubBio').textContent = u.bio || '';
+                $('pubPosts').textContent = u.postsCount || 0;
+                $('pubFollowers').textContent = u.followers || 0;
+                const isFollowing = state.followingSet.has(uid);
+                const fbtn = $('pubFollowBtn');
+                fbtn.textContent = isFollowing ? 'Following' : 'Follow';
+                fbtn.classList.toggle('following', isFollowing);
+                const pubBanner = $('pubBanner');
+                if (u.banner) {
+                    pubBanner.style.backgroundImage = `url('${escH(u.banner)}')`;
+                    pubBanner.style.backgroundSize = 'cover';
+                    pubBanner.style.backgroundPosition = 'center';
+                } else {
+                    pubBanner.style.backgroundImage = '';
+                    pubBanner.style.background = 'var(--accent-grad-r)';
+                }
+                const postsSnap = await getDocs(query(collection(db, 'posts'), where('userId', '==', uid), where('status', '==', 'approved'), orderBy('createdAt', 'desc'), limit(12)));
+                const grid = $('pubGrid');
+                if (postsSnap.empty) {
+                    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;"><i class="fa-solid fa-image"></i>No public posts.</div>';
+                    return;
+                }
+                grid.innerHTML = '';
+                postsSnap.forEach(d => {
+                    const p = d.data();
+                    const isPremium = p.category === 'premium';
+                    const hasUnlocked = state.profile?.unlockedPrompts?.includes(d.id) || state.profile?.role === 'admin';
+                    const isLocked = isPremium && !hasUnlocked;
+                    const imgClass = isLocked ? 'blur-locked' : '';
+                    const overlayHtml = isLocked ?
+                        '<div class="grid-premium-overlay"><span class="grid-premium-badge"><i class="fa-solid fa-lock"></i> Premium</span></div>' :
+                        '';
+                    grid.insertAdjacentHTML('beforeend', `<div class="g-item" style="position:relative; overflow:hidden;" onclick="seeFullPrompt('${escH(d.id)}')">${overlayHtml}<img src="${escH(p.imageUrl)}" loading="lazy" class="${imgClass}" style="width:100%; height:100%; object-fit:cover; transition:var(--transition);"></div>`);
+                });
+            } catch (e) {
+                closeOverlay('publicProfileModal');
+                toast('Could not load profile.');
+            }
+        };
+
+        window.toggleFollowUser = async () => {
+            const uid = state.viewingUid;
+            if (!uid) return;
+            const edgeId = `${state.user.uid}_${uid}`;
+            const isFollowing = state.followingSet.has(uid);
+            const fbtn = $('pubFollowBtn');
+            try {
+                const batch = writeBatch(db);
+                if (isFollowing) {
+                    batch.delete(doc(db, 'follows', edgeId));
+                    batch.update(doc(db, 'users', uid), {
+                        followers: increment(-1)
+                    });
+                    batch.update(doc(db, 'users', state.user.uid), {
+                        following: increment(-1)
+                    });
+                    state.followingSet.delete(uid);
+                    fbtn.textContent = 'Follow';
+                    fbtn.classList.remove('following');
+                    $('pubFollowers').textContent = Math.max(0, parseInt($('pubFollowers').textContent) - 1);
+                } else {
+                    batch.set(doc(db, 'follows', edgeId), {
+                        follower: state.user.uid,
+                        following: uid,
+                        createdAt: serverTimestamp()
+                    });
+                    batch.update(doc(db, 'users', uid), {
+                        followers: increment(1)
+                    });
+                    batch.update(doc(db, 'users', state.user.uid), {
+                        following: increment(1)
+                    });
+                    state.followingSet.add(uid);
+                    fbtn.textContent = 'Following';
+                    fbtn.classList.add('following');
+                    $('pubFollowers').textContent = parseInt($('pubFollowers').textContent) + 1;
+                    microPopup('follow', 'Followed!', 'You are now following this creator');
+                }
+                await batch.commit();
+                state.profile.following = (state.profile.following || 0) + (isFollowing ? -1 : 1);
+            } catch (e) {
+                toast('Follow action failed.');
+            }
+        };
+
+        let chartRef = null;
+        window.openAnalytics = async () => {
+            openOverlay('analyticsModal');
+            let impressions = 0,
+                copies = 0,
+                tagSet = new Set();
+            try {
+                const snap = await getDocs(query(collection(db, 'posts'), where('userId', '==', state.user.uid)));
+                snap.forEach(d => {
+                    const p = d.data();
+                    impressions += p.impressions || 0;
+                    copies += p.copies || 0;
+                    (p.tags || []).forEach(t => tagSet.add(t));
+                });
+            } catch (e) {}
+            $('anImpr').textContent = impressions;
+            $('anCopies').textContent = copies;
+            $('anTags').textContent = tagSet.size;
+            if (chartRef) chartRef.destroy();
+            const ctx = $('analyticsChart').getContext('2d');
+            chartRef = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Impressions', 'Copies', 'Tags', 'Followers'],
+                    datasets: [{
+                        label: 'Metrics',
+                        data: [impressions, copies, tagSet.size, (state.profile.followers || 0)],
+                        backgroundColor: ['#7c5cff', '#ff5ca8', '#2fd07f', '#ffb020'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        };
+
+        /* ===================================================================
+           VIDEO REWARDS
+           =================================================================== */
+        let _ytApiLoaded = false;
+
+        function ensureYTApi() {
+            if (_ytApiLoaded || window.YT) return;
+            _ytApiLoaded = true;
+            const s = document.createElement('script');
+            s.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(s);
+        }
+
+        function waitForYT() {
+            return new Promise((resolve) => {
+                if (window.YT && window.YT.Player) {
+                    resolve();
+                    return;
+                }
+                const prev = window.onYouTubeIframeAPIReady;
+                window.onYouTubeIframeAPIReady = function() {
+                    if (typeof prev === 'function') prev();
+                    resolve();
+                };
+                ensureYTApi();
+            });
+        }
+
+        let _ytPlayer = null;
+        let _ytActiveVideo = null;
+        let _ytProgressIv = null;
+        let _ytPopstateGuard = null;
+        window.onYouTubeIframeAPIReady = null;
+
+        function destroyYTPlayer() {
+            if (_ytProgressIv) {
+                clearInterval(_ytProgressIv);
+                _ytProgressIv = null;
+            }
+            if (_ytPlayer) {
+                try {
+                    _ytPlayer.destroy();
+                } catch (e) {}
+                _ytPlayer = null;
+            }
+            const wrap = $('ytPlayerWrap');
+            if (wrap) {
+                wrap.innerHTML = '<div id="ytPlayer"></div>';
+            }
+            const lo = $('lockOverlay');
+            if (lo) lo.classList.remove('active');
+            if (_ytPopstateGuard) {
+                window.removeEventListener('popstate', _ytPopstateGuard);
+                _ytPopstateGuard = null;
+            }
+        }
+
+        function closYTModal() {
+            destroyYTPlayer();
+            const ytModal = $('yt-modal');
+            if (ytModal) ytModal.classList.remove('active');
+        }
+
+        window.openRewards = async () => {
+            openOverlay('rewardModal');
+            hideAlert('redeemAlert');
+            await loadNextVideo();
+        };
+
+        async function loadNextVideo() {
+            const area = $('videoArea');
+            area.innerHTML = '<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i></div>';
+            ensureYTApi();
+            try {
+                let vids = [];
+                try {
+                    const snap = await getDocs(query(collection(db, 'codes'), limit(100)));
+                    snap.forEach(d => {
+                        const data = d.data();
+                        if (data.active !== false && data.videoId) {
+                            vids.push({
+                                id: d.id,
+                                videoId: data.videoId,
+                                type: data.points > 2 ? 'main' : 'short',
+                                customPoints: data.customPoints || data.points
+                            });
+                        }
+                    });
+                } catch (e) {}
+
+                const unseen = vids.filter(v => !state.watchedVideos.includes(v.videoId || v.id));
+                const pool = unseen.length > 0 ? unseen : vids;
+                if (pool.length === 0) {
+                    area.innerHTML = '<div class="empty"><i class="fa-solid fa-circle-check"></i>No videos available at the moment.</div>';
+                    return;
+                }
+                const v = pool[Math.floor(Math.random() * pool.length)];
+                _ytActiveVideo = v;
+                state.currentVideo = v;
+                const defaultPoints = (v.type === 'main' || v.type === 'long') ? 3 : 1;
+                state.currentVideoPoints = v.customPoints ? parseInt(v.customPoints) : defaultPoints;
+                area.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:44px;height:44px;border-radius:10px;background:var(--accent-grad);display:grid;place-items:center;flex-shrink:0;">
+            <i class="fa-brands fa-youtube" style="color:#fff;font-size:22px;"></i>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:14px;">Watch & Earn</div>
+            <div style="font-size:12px;color:var(--text-3);">Complete the video to automatically earn
+              <b style="color:var(--accent);">+${state.currentVideoPoints} point${state.currentVideoPoints>1?'s':''}</b></div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="launchVideoReward()">
+          <i class="fa-solid fa-play"></i> Watch Now — Earn +${state.currentVideoPoints} pts
+        </button>
+      </div>`;
+            } catch (e) {
+                area.innerHTML = '<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i>No videos available.</div>';
+            }
+        }
+
+        window.launchVideoReward = function() {
+            if (!_ytActiveVideo) {
+                toast('No video loaded. Try again.');
+                return;
+            }
+            const v = _ytActiveVideo;
+            const videoId = v.videoId || v.id;
+            if (!videoId) {
+                toast('Invalid video.');
+                return;
+            }
+
+            const ytModal = $('yt-modal');
+            const wrap = $('ytPlayerWrap');
+            wrap.innerHTML = '<div id="ytPlayer"></div>';
+            $('ytProgressFill').style.width = '0%';
+            $('ytPtsPill').textContent = `+${state.currentVideoPoints} pts`;
+            $('ytCountdown').textContent = 'Loading video...';
+            ytModal.classList.add('active');
+
+            _ytPopstateGuard = (e) => {
+                e.preventDefault();
+                history.pushState(null, '', location.href);
+                toast('Complete the video first.', 'fa-solid fa-lock');
+            };
+            history.pushState(null, '', location.href);
+            window.addEventListener('popstate', _ytPopstateGuard);
+
+            const lo = $('lockOverlay');
+            const killEvent = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            };
+            lo.addEventListener('touchstart', killEvent, {
+                passive: false,
+                capture: true
+            });
+            lo.addEventListener('touchmove', killEvent, {
+                passive: false,
+                capture: true
+            });
+            lo.addEventListener('touchend', killEvent, {
+                passive: false,
+                capture: true
+            });
+            lo.addEventListener('click', killEvent, {
+                capture: true
+            });
+            lo.addEventListener('mousedown', killEvent, {
+                capture: true
+            });
+
+            function createPlayer() {
+                _ytPlayer = new window.YT.Player('ytPlayer', {
+                    videoId,
+                    playerVars: {
+                        autoplay: 1,
+                        controls: 0,
+                        disablekb: 1,
+                        fs: 0,
+                        iv_load_policy: 3,
+                        modestbranding: 1,
+                        rel: 0,
+                        playsinline: 1,
+                        showinfo: 0
+                    },
+                    events: {
+                        onReady: (e) => {
+                            e.target.playVideo();
+                        },
+                        onStateChange: (e) => {
+                            if (e.data === window.YT.PlayerState.PLAYING) {
+                                $('lockOverlay').classList.add('active');
+                                if (_ytProgressIv) clearInterval(_ytProgressIv);
+                                _ytProgressIv = setInterval(() => {
+                                    try {
+                                        const elapsed = _ytPlayer.getCurrentTime() || 0;
+                                        const dur = _ytPlayer.getDuration() || 1;
+                                        const pct = Math.min((elapsed / dur) * 100, 100);
+                                        $('ytProgressFill').style.width = pct + '%';
+                                        const remain = Math.max(0, Math.ceil(dur - elapsed));
+                                        const m = Math.floor(remain / 60),
+                                            s = remain % 60;
+                                        $('ytCountdown').textContent = `${m}:${s.toString().padStart(2,'0')} remaining`;
+                                    } catch (er) {}
+                                }, 1000);
+                            }
+                            if (e.data === window.YT.PlayerState.PAUSED) {
+                                try {
+                                    _ytPlayer.playVideo();
+                                } catch (er) {}
+                            }
+                            if (e.data === window.YT.PlayerState.ENDED) {
+                                onVideoEnded();
+                            }
+                        },
+                        onError: () => {
+                            toast('Video error. Try another video.', 'fa-solid fa-triangle-exclamation');
+                            closYTModal();
+                        }
+                    }
+                });
+            }
+
+            waitForYT().then(createPlayer).catch(() => {
+                toast('YouTube API failed to load.', 'fa-solid fa-triangle-exclamation');
+                closYTModal();
+            });
+        };
+
+        async function onVideoEnded() {
+            if (_ytProgressIv) {
+                clearInterval(_ytProgressIv);
+                _ytProgressIv = null;
+            }
+            $('ytProgressFill').style.width = '100%';
+            $('ytCountdown').textContent = 'Video complete! Awarding points...';
+            const lo = $('lockOverlay');
+            if (lo) lo.classList.remove('active');
+            const v = _ytActiveVideo;
+            const videoId = v ? v.videoId || v.id : '';
+            try {
+                const codesSnap = await getDocs(query(collection(db, 'codes'), where('videoId', '==', videoId), limit(1)));
+                let autoCode = null;
+                codesSnap.forEach(d => {
+                    autoCode = d.id;
+                });
+                closYTModal();
+                if (autoCode) await processRedeemCode(autoCode, true);
+                else await awardPointsDirect(state.currentVideoPoints, videoId);
+            } catch (e) {
+                closYTModal();
+                await awardPointsDirect(state.currentVideoPoints, videoId);
+            }
+        }
+
+        async function processRedeemCode(code, isAuto = false) {
+            const today = new Date().toISOString().slice(0, 10);
+            try {
+                let fail = state.profile?.failCount || 0,
+                    failDate = state.profile?.failDate || '';
+                if (failDate !== today) fail = 0;
+                const codeSnap = await getDoc(doc(db, 'codes', code));
+                const redeemed = state.profile?.redeemedCodes || [];
+                if (codeSnap.exists()) {
+                    const cd = codeSnap.data();
+                    if (cd.expiresAt) {
+                        const exp = cd.expiresAt.toDate ? cd.expiresAt.toDate() : new Date(cd.expiresAt);
+                        if (exp < new Date()) {
+                            if (!isAuto) showAlert('redeemAlert', 'This code has expired.');
+                            else await awardPointsDirect(state.currentVideoPoints, code);
+                            return;
+                        }
+                    }
+                    if (cd.active === false) {
+                        if (!isAuto) showAlert('redeemAlert', 'This code is inactive.');
+                        else await awardPointsDirect(state.currentVideoPoints, code);
+                        return;
+                    }
+                }
+                if (!codeSnap.exists() || redeemed.includes(code)) {
+                    if (isAuto) {
+                        if (!redeemed.includes(code)) await awardPointsDirect(state.currentVideoPoints, code);
+                        else toast('You already earned points for this video.', 'fa-solid fa-check');
+                        return;
+                    }
+                    fail++;
+                    const upd = {
+                        failCount: fail,
+                        failDate: today
+                    };
+                    if (fail > 5) upd.banUntil = Date.now() + 30 * 60 * 1000;
+                    await updateDoc(doc(db, 'users', state.user.uid), upd);
+                    state.profile.failCount = fail;
+                    state.profile.failDate = today;
+                    if (fail > 5) {
+                        state.profile.banUntil = upd.banUntil;
+                        showAlert('redeemAlert', 'Too many invalid attempts. 30-min cooldown.');
+                        setTimeout(() => doSignOut(), 2500);
+                    } else showAlert('redeemAlert', `Invalid${redeemed.includes(code)?' or already used':''} code. (${fail}/5 today)`);
+                    return;
+                }
+                const cdata = codeSnap.data();
+                const pts = cdata.points || state.currentVideoPoints || 1;
+                const vid = cdata.videoId || (state.currentVideo && (state.currentVideo.videoId || state.currentVideo.id));
+                await updateDoc(doc(db, 'users', state.user.uid), {
+                    points: increment(pts),
+                    redeemedCodes: arrayUnion(code),
+                    watchedVideos: vid ? arrayUnion(vid) : state.watchedVideos,
+                    failCount: 0
+                });
+                if (state.profile) state.profile.points = (state.profile?.points || 0) + pts;
+                if (state.profile) state.profile.redeemedCodes = [...redeemed, code];
+                if (vid && !state.watchedVideos.includes(vid)) state.watchedVideos.push(vid);
+                $('pfPoints').textContent = state.profile.points;
+                $('redeemInput').value = '';
+                if (isAuto) {
+                    toast(`Video Completed! +${pts} points added automatically 🎉`, 'fa-solid fa-coins');
+                    microPopup('coins', `+${pts} Points Earned!`, `Total: ${state.profile?.points??0} pts`);
+                } else {
+                    showAlert('redeemAlert', `+${pts} points! ${(state.profile?.points||0)>=5?'Premium tier unlocked 🎉':''}`, true);
+                    microPopup('coins', `+${pts} Points!`, `Total: ${state.profile?.points??0} pts`);
+                }
+                sysLog(`Redeem: ${state.profile?.name} ${isAuto?'[auto]':''} code "${code}" (+${pts}pts)`);
+                setTimeout(() => {
+                    loadNextVideo();
+                }, 1400);
+            } catch (e) {
+                if (isAuto) toast('Points award failed. Try manual recovery below.', 'fa-solid fa-triangle-exclamation');
+                else showAlert('redeemAlert', 'Verification failed.');
+            }
+        }
+
+        async function awardPointsDirect(pts, videoId) {
+            if (state.watchedVideos.includes(videoId)) {
+                toast('Already earned points for this video.', 'fa-solid fa-check');
+                return;
+            }
+            try {
+                await updateDoc(doc(db, 'users', state.user.uid), {
+                    points: increment(pts),
+                    watchedVideos: arrayUnion(videoId),
+                    failCount: 0
+                });
+                if (state.profile) state.profile.points = (state.profile?.points || 0) + pts;
+                if (!state.watchedVideos.includes(videoId)) state.watchedVideos.push(videoId);
+                $('pfPoints').textContent = state.profile.points;
+                toast(`Video Completed! +${pts} points added automatically 🎉`, 'fa-solid fa-coins');
+                microPopup('coins', `+${pts} Points Earned!`, `Total: ${state.profile?.points??0} pts`);
+                sysLog(`Direct award: ${state.profile?.name} +${pts}pts (video:${videoId})`);
+                setTimeout(() => {
+                    loadNextVideo();
+                }, 1400);
+            } catch (e) {
+                toast('Could not award points. Use manual recovery.');
+            }
+        }
+
+        window.redeemCode = async () => {
+            if (banned()) return;
+            const code = $('redeemInput').value.trim();
+            if (!code) {
+                showAlert('redeemAlert', 'Enter a recovery code.');
+                return;
+            }
+            await processRedeemCode(code, false);
+        };
+
+        function banned() {
+            if (state.profile?.banUntil && state.profile.banUntil > Date.now()) {
+                const m = Math.ceil((state.profile.banUntil - Date.now()) / 60000);
+                toast(`Restricted. Try again in ${m} min.`);
+                return true;
+            }
+            return false;
+        }
+
+        /* ===================================================================
+           ADMIN DASHBOARD
+           =================================================================== */
+        window.switchAdminTab = (tab) => {
+            document.querySelectorAll('.admin-tabs button').forEach(b => b.classList.toggle('active', b.dataset.atab === tab));
+            ['moderation', 'users', 'vouchers', 'analytics', 'log'].forEach(t => $('admin-' + t).classList.toggle('hidden', t !== tab));
+            if (tab === 'moderation') loadModeration();
+            if (tab === 'users') loadUsers();
+            if (tab === 'vouchers') loadVouchers();
+            if (tab === 'analytics') loadAdminAnalytics();
+            if (tab === 'log') loadAdminLog();
+        };
+        async function loadAdmin() {
+            switchAdminTab('moderation');
+        }
+
+        async function loadModeration() {
+            const c = $('admin-moderation');
+            c.innerHTML = '<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i></div>';
+            try {
+                const snap = await getDocs(query(collection(db, 'posts'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'), limit(30)));
+                if (snap.empty) {
+                    c.innerHTML = '<div class="empty"><i class="fa-solid fa-inbox"></i>No pending posts.</div>';
+                    return;
+                }
+                c.innerHTML = '';
+                snap.forEach(d => {
+                    const p = d.data();
+                    c.insertAdjacentHTML('beforeend', `<div class="mod-card">
+        <div style="display:flex;gap:10px;margin-bottom:10px;">
+          <img src="${escH(p.imageUrl)}" style="width:70px;height:70px;border-radius:10px;object-fit:cover;pointer-events:none;flex-shrink:0;">
+          <div style="flex:1;min-width:0;">
+            <b>${escH(p.authorName)}</b> · <span style="font-size:11px;color:var(--text-3);">${escH(p.model)}</span>
+            <div style="font-size:12px;color:var(--text-2);max-height:48px;overflow:hidden;margin-top:4px;">${escH((p.prompt||'').substring(0,100))}</div>
+          </div>
+        </div>
+        <div class="mod-actions">
+          <button class="mini-btn b-ok" onclick="moderatePost('${escH(d.id)}','approved','free')">Approve Free</button>
+          <button class="mini-btn b-warn" onclick="moderatePost('${escH(d.id)}','approved','premium')" style="background:linear-gradient(120deg,#f59e0b,#d97706);">Approve Premium</button>
+          <button class="mini-btn b-danger" onclick="moderatePost('${escH(d.id)}','rejected','free')">Reject</button>
+          <button class="mini-btn b-grey" onclick="adminDeletePost('${escH(d.id)}')">Delete</button>
+        </div>
+      </div>`);
+                });
+            } catch (e) {
+                c.innerHTML = '<div class="empty">Could not load. Check Firestore indexes.</div>';
+            }
+        }
+        window.moderatePost = async (pid, status, category = 'free') => {
+            try {
+                if (status === 'rejected') {
+                    const reason = prompt('Reason for rejection:', 'low-quality') || 'rejected';
+                    await updateDoc(doc(db, 'posts', pid), {
+                        status: 'rejected',
+                        reason
+                    });
+                } else {
+                    await updateDoc(doc(db, 'posts', pid), {
+                        status: 'approved',
+                        category
+                    });
+                }
+                toast(status === 'approved' ? `Approved as ${category}!` : 'Post rejected');
+                loadModeration();
+                if (status === 'approved') loadFeed(true);
+            } catch (e) {
+                toast('Action failed.');
+            }
+        };
+        window.adminDeletePost = async (pid) => {
+            if (!confirm('Delete this post permanently?')) return;
+            try {
+                await deleteDoc(doc(db, 'posts', pid));
+                toast('Post deleted');
+                loadModeration();
+            } catch (e) {
+                toast('Delete failed.');
+            }
+        };
+
+        async function loadUsers() {
+            const c = $('admin-users');
+            c.innerHTML = '<div style="padding:10px 14px;"><input class="input" id="adminUserSearch" placeholder="Search by name or email..." oninput="filterAdminUsers()" /></div><div id="adminUserList"></div>';
+            try {
+                const snap = await getDocs(query(collection(db, 'users'), limit(80)));
+                window._adminUsers = [];
+                snap.forEach(d => window._adminUsers.push({
+                    id: d.id,
+                    ...d.data()
+                }));
+                renderAdminUsers(window._adminUsers);
+            } catch (e) {
+                c.innerHTML = '<div class="empty">Could not load users.</div>';
+            }
+        }
+
+        function renderAdminUsers(users) {
+            const c = $('adminUserList');
+            if (!c) return;
+            c.innerHTML = '';
+            users.forEach(u => {
+                c.insertAdjacentHTML('beforeend', `<div class="mod-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--accent-grad);display:grid;place-items:center;color:#fff;font-weight:700;flex-shrink:0;">${escH((u.name||'U').charAt(0).toUpperCase())}</div>
+        <div><b>${escH(u.name||'—')}</b> <span style="font-size:10px;color:var(--text-3);">${escH(u.role||'user')}</span><div style="font-size:11px;color:var(--text-3);">${escH(u.email||'')} · ${u.points||0} pts</div></div>
+      </div>
+      <div class="mod-actions">
+        <button class="mini-btn b-expert" onclick="adminSetRole('${escH(u.id)}','expert')">Expert</button>
+        <button class="mini-btn b-accent" onclick="adminSetRole('${escH(u.id)}','admin')">Admin</button>
+        <button class="mini-btn b-ok" onclick="adminAddCoins('${escH(u.id)}')">+Coins</button>
+        <button class="mini-btn b-warn" onclick="adminBan('${escH(u.id)}',1440)">Ban 24h</button>
+        <button class="mini-btn b-danger" onclick="adminBan('${escH(u.id)}',0)">Unban</button>
+        <button class="mini-btn b-grey" onclick="adminPushAlert('${escH(u.id)}')">Alert</button>
+      </div>
+    </div>`);
+            });
+        }
+        window.filterAdminUsers = () => {
+            const q = ($('adminUserSearch').value || '').toLowerCase();
+            const filtered = (window._adminUsers || []).filter(u => (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q));
+            renderAdminUsers(filtered);
+        };
+        window.adminSetRole = async (uid, role) => {
+            try {
+                await updateDoc(doc(db, 'users', uid), {
+                    role
+                });
+                toast('Role → ' + role);
+            } catch (e) {
+                toast('Failed.');
+            }
+        };
+        window.adminBan = async (uid, mins) => {
+            try {
+                await updateDoc(doc(db, 'users', uid), {
+                    banUntil: mins ? Date.now() + mins * 60000 : 0
+                });
+                toast(mins ? 'User banned' : 'User unbanned');
+            } catch (e) {
+                toast('Failed.');
+            }
+        };
+        window.adminAddCoins = async (uid) => {
+            const amount = parseInt(prompt('Points to add:', '10') || '0');
+            if (!amount || isNaN(amount)) return;
+            try {
+                await updateDoc(doc(db, 'users', uid), {
+                    points: increment(amount)
+                });
+                toast(`+${amount} pts added`);
+            } catch (e) {
+                toast('Failed.');
+            }
+        };
+        window.adminPushAlert = async (uid) => {
+            const msg = prompt('Alert message to push:', '');
+            if (!msg) return;
+            try {
+                await addDoc(collection(db, 'notifications'), {
+                    uid,
+                    message: msg,
+                    type: 'admin',
+                    read: false,
+                    createdAt: serverTimestamp()
+                });
+                toast('Alert sent!');
+            } catch (e) {
+                toast('Could not send alert.');
+            }
+        };
+
+        async function loadVouchers() {
+            const c = $('admin-vouchers');
+            c.innerHTML = `<div class="mod-card">
+    <h3 style="margin-top:0;font-size:15px;font-family:var(--font-display);">Create Reward Code</h3>
+    <div class="field"><label>Code</label><input class="input" id="vcCode" placeholder="ARENA2025"></div>
+    <div class="field"><label>Points</label>
+      <select class="input" id="vcType">
+        <option value="1">Short Video (+1 pt)</option>
+        <option value="3">Main Video (+3 pts)</option>
+      </select>
+    </div>
+    <div class="field"><label>YouTube Video ID (optional)</label><input class="input" id="vcVid" placeholder="dQw4w9WgXcQ"></div>
+    <div class="field"><label>Expiry Date (optional)</label><input class="input" type="date" id="vcExpiry" /></div>
+    <div class="field">
+      <label>Custom Points <span style="color:var(--text-3);font-weight:400;">(Optional override)</span></label>
+      <input class="input" type="number" id="vcCustomPoints" placeholder="e.g. 5, 10, or leave blank" />
+    </div>
+    <button class="btn btn-primary btn-block" onclick="adminCreateCode()"><i class="fa-solid fa-plus"></i> Create Code</button>
+  </div>
+  <div id="codeListAdmin"></div>`;
+            await refreshCodeList();
+        }
+        async function refreshCodeList() {
+            const cl = $('codeListAdmin');
+            if (!cl) return;
+            cl.innerHTML = '<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i></div>';
+            try {
+                const snap = await getDocs(query(collection(db, 'codes'), limit(60)));
+                if (snap.empty) {
+                    cl.innerHTML = '<div class="empty"><i class="fa-solid fa-ticket"></i>No codes yet.</div>';
+                    return;
+                }
+                cl.innerHTML = '';
+                snap.forEach(d => {
+                    const v = d.data();
+                    const isActive = v.active !== false;
+                    const exp = v.expiresAt ? (v.expiresAt.toDate ? v.expiresAt.toDate().toLocaleDateString() : v.expiresAt) : '';
+                    cl.insertAdjacentHTML('beforeend', `<div class="mod-card">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;">
+            <div class="code-val">${escH(d.id)}</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+              <span class="code-status ${isActive?'active':'inactive'}">${isActive?'Active':'Inactive'}</span>
+              <span style="font-size:11px;color:var(--text-3);">+${v.points||1}pt${exp?' · expires '+escH(exp):''}</span>
+            </div>
+          </div>
+        </div>
+<div class="mod-actions" style="margin-top:8px;">
+          <button class="mini-btn ${isActive?'b-warn':'b-ok'}" onclick="adminToggleCode('${escH(d.id)}',${isActive})">${isActive?'Deactivate':'Activate'}</button>
+          <button class="mini-btn b-danger" onclick="adminDeleteCode('${escH(d.id)}')">Delete</button>
+        </div>
+      </div>`);
+                });
+            } catch (e) {
+                cl.innerHTML = '<div class="empty">Could not load codes.</div>';
+            }
+        }
+        window.adminCreateCode = async () => {
+            const code = $('vcCode').value.trim(),
+                pts = parseInt($('vcType').value) || 1;
+            const vid = $('vcVid').value.trim(),
+                expDate = $('vcExpiry').value;
+            if (!code) {
+                toast('Enter a code.');
+                return;
+            }
+            try {
+                const data = {
+                    points: pts,
+                    createdAt: serverTimestamp(),
+                    active: true
+                };
+                if (vid) data.videoId = vid;
+                if (expDate) data.expiresAt = new Date(expDate + 'T23:59:59');
+                const customPts = parseInt($('vcCustomPoints')?.value || '');
+                if (!isNaN(customPts) && customPts > 0) data.customPoints = customPts;
+                await setDoc(doc(db, 'codes', code), data);
+                toast('Code created!');
+                $('vcCode').value = '';
+                $('vcVid').value = '';
+                $('vcExpiry').value = '';
+                if ($('vcCustomPoints')) $('vcCustomPoints').value = '';
+                await refreshCodeList();
+            } catch (e) {
+                toast('Failed: ' + e.message);
+            }
+        };
+        window.adminToggleCode = async (codeId, currentActive) => {
+            try {
+                await updateDoc(doc(db, 'codes', codeId), {
+                    active: !currentActive
+                });
+                toast(currentActive ? 'Code deactivated' : 'Code activated');
+                await refreshCodeList();
+            } catch (e) {
+                toast('Failed.');
+            }
+        };
+        window.adminDeleteCode = async (codeId) => {
+            if (!confirm(`Delete code "${codeId}"?`)) return;
+            try {
+                await deleteDoc(doc(db, 'codes', codeId));
+                toast('Code deleted');
+                await refreshCodeList();
+            } catch (e) {
+                toast('Failed.');
+            }
+        };
+
+        let adminChartRef = null;
+        async function loadAdminAnalytics() {
+            const c = $('admin-analytics');
+            const currentRefUrl = state.baseReferralUrl || '';
+            c.innerHTML = `<div class="mod-card" id="adminSettingsCard">
+    <h3 style="margin-top:0;font-size:15px;font-family:var(--font-display);"><i class="fa-solid fa-globe"></i> Platform Settings</h3>
+    <div class="field">
+      <label>Custom Base Referral URL <span style="color:var(--text-3);font-weight:400;">(Optional)</span></label>
+      <input class="input" type="url" id="adminBaseRefUrl" placeholder="https://yourdomain.com/" value="${escH(currentRefUrl)}" />
+    </div>
+    <button class="btn btn-primary" onclick="savePlatformSettings()">Save Settings</button>
+  </div>
+  <div class="admin-chart-panel">
+    <h3 style="font-family:var(--font-display);margin:0 0 14px;font-size:16px;"><i class="fa-solid fa-chart-bar"></i> Platform Analytics</h3>
+    <div class="admin-stats-row" id="adminStatsRow">
+      <div class="admin-stat-box"><b id="totalPostsStat">—</b><span>Posts</span></div>
+      <div class="admin-stat-box"><b id="totalUsersStat">—</b><span>Users</span></div>
+      <div class="admin-stat-box"><b id="totalCodesStat">—</b><span>Codes</span></div>
+    </div>
+    <canvas id="adminChart" height="200"></canvas>
+  </div>`;
+            try {
+                const [postsSnap, usersSnap, codesSnap] = await Promise.all([
+                    getDocs(query(collection(db, 'posts'), limit(500))),
+                    getDocs(query(collection(db, 'users'), limit(500))),
+                    getDocs(query(collection(db, 'codes'), limit(200)))
+                ]);
+                let approved = 0,
+                    pending = 0,
+                    rejected = 0,
+                    totalLikes = 0,
+                    totalImpr = 0;
+                postsSnap.forEach(d => {
+                    const p = d.data();
+                    if (p.status === 'approved') approved++;
+                    else if (p.status === 'pending') pending++;
+                    else rejected++;
+                    totalLikes += p.likes || 0;
+                    totalImpr += p.impressions || 0;
+                });
+                $('totalPostsStat').textContent = postsSnap.size;
+                $('totalUsersStat').textContent = usersSnap.size;
+                $('totalCodesStat').textContent = codesSnap.size;
+                if (adminChartRef) adminChartRef.destroy();
+                const ctx = $('adminChart').getContext('2d');
+                adminChartRef = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Approved', 'Pending', 'Rejected', 'Total Likes', 'Impressions'],
+                        datasets: [{
+                            label: 'Platform Stats',
+                            data: [approved, pending, rejected, totalLikes, Math.min(totalImpr, 9999)],
+                            backgroundColor: ['#2fd07f', '#ffb020', '#ff5470', '#ff5ca8', '#7c5cff'],
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                c.innerHTML = '<div class="empty">Analytics unavailable. Check Firestore indexes.</div>';
+            }
+        }
+
+        function loadAdminLog() {
+            const c = $('admin-log');
+            c.innerHTML = `<div class="live-log">
+    <h4 style="font-family:var(--font-display);"><span class="log-dot"></span> System Operations Log</h4>
+    <div class="log-scroll" id="log-scroll-inner">
+      ${state.sysLog.map(e=>`<div class="log-entry ${e.type==='warn'?'warn':e.type==='err'?'err':''}">[${e.ts}] ${escH(e.msg)}</div>`).join('')||'<div style="color:var(--text-3);font-size:11px;padding:8px;">No log entries yet.</div>'}
+    </div>
+  </div>`;
+        }
+
+        window.savePlatformSettings = async () => {
+            const url = $('adminBaseRefUrl')?.value.trim() || '';
+            try {
+                await setDoc(doc(db, 'settings', 'platform'), {
+                    baseReferralUrl: url
+                }, {
+                    merge: true
+                });
+                toast('Platform settings saved!', 'fa-solid fa-check');
+                state.baseReferralUrl = url;
+            } catch (e) {
+                toast('Failed to save settings.');
+            }
+        };
+
+        window.copyUserUID = () => {
+            if (!state.user) return;
+            fallbackCopyTextToClipboard(state.user.uid);
+            toast('Promo Code copied!', 'fa-solid fa-copy');
+        };
+
+
+
+
+
+        /* ===================================================================
+           OVERLAY HELPERS
+           =================================================================== */
+        window.openOverlay = (id) => {
+            $(id).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
+        window.closeOverlay = (id) => {
+            $(id).classList.remove('active');
+            document.body.style.overflow = '';
+        };
+        document.querySelectorAll('.overlay').forEach(o => {
+            o.addEventListener('click', (e) => {
+                if (e.target === o) {
+                    if (o.id === 'adWall' && $('fullPromptReveal').classList.contains('hidden')) return;
+                    closeOverlay(o.id);
+                }
+            });
+        });
+
+        /* ===================================================================
+           IMPRESSION FLUSH
+           =================================================================== */
+        setInterval(async () => {
+            const batch = _imprBatch;
+            _imprBatch = {};
+            for (const pid in batch) {
+                updateDoc(doc(db, 'posts', pid), {
+                    impressions: increment(batch[pid])
+                }).catch(() => {});
+            }
+        }, 15000);
+
+        /* ===================================================================
+           ANTI-PIRACY GUARDS
+           =================================================================== */
+        document.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            return false;
+        });
+        document.addEventListener('dragstart', e => {
+            if (e.target.tagName === 'IMG') e.preventDefault();
+        });
+        document.addEventListener('keydown', e => {
+            const k = e.key.toLowerCase();
+            if (e.key === 'PrintScreen') {
+                navigator.clipboard && navigator.clipboard.writeText('');
+                toast('Screenshots are disabled.');
+                e.preventDefault();
+            }
+            if ((e.ctrlKey || e.metaKey) && ['s', 'p', 'u'].includes(k)) {
+                e.preventDefault();
+                toast('Action disabled.');
+            }
+            if ((e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(k)) || e.key === 'F12') {
+                e.preventDefault();
+                toast('Inspect disabled.');
+            }
+        });
+        let lpTimer;
+        document.addEventListener('touchstart', e => {
+            if (e.target.tagName === 'IMG') {
+                lpTimer = setTimeout(() => e.preventDefault(), 300);
+            }
+        }, {
+            passive: false
+        });
+        document.addEventListener('touchend', () => clearTimeout(lpTimer));
+
+        console.log('Prompt Arena v1.03 Peak initialized - All Bugs Fixed.');
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA Ready'))
+                    .catch(err => console.log('PWA Failed: ', err));
+            });
+        }
+    </script>
+
+    <!-- ================= SOCIAL BAR AD ================= -->
+    <script src="https://pl30161188.effectivecpmnetwork.com/15/e1/d4/15e1d4f1bbd0931b869ff530eb19fa64.js"></script>
+    <!-- ================================================= -->
+
+</body>
+</html>
