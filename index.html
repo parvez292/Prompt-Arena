@@ -4131,8 +4131,14 @@
                     const overlayHtml = isLocked ?
                         '<div class="grid-premium-overlay"><span class="grid-premium-badge"><i class="fa-solid fa-lock"></i> Premium</span></div>' :
                         '';
-                    grid.insertAdjacentHTML('beforeend', `<div class="g-item" style="position:relative; overflow:hidden;" onclick="seeFullPrompt('${escH(d.id)}')">${overlayHtml}<img src="${escH(p.imageUrl)}" loading="lazy" class="${imgClass}" style="width:100%; height:100%; object-fit:cover; transition:var(--transition);"></div>`);
+
+                    // শুধুমাত্র অ্যাডমিনদের জন্য ডিলিট বাটন
+                    const isAdmin = state.profile?.role === 'admin';
+                    const adminDeleteBtn = isAdmin ? `<button onclick="event.stopPropagation(); adminDeletePublicPost('${escH(d.id)}', '${escH(uid)}')" style="position:absolute;top:4px;right:4px;background:rgba(255, 84, 112, 0.9);border:none;border-radius:50%;width:24px;height:24px;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;box-shadow: 0 2px 6px rgba(0,0,0,0.4);"><i class="fa-solid fa-trash"></i></button>` : '';
+
+                    grid.insertAdjacentHTML('beforeend', `<div class="g-item" style="position:relative; overflow:hidden;" onclick="seeFullPrompt('${escH(d.id)}')">${overlayHtml}${adminDeleteBtn}<img src="${escH(p.imageUrl)}" loading="lazy" class="${imgClass}" style="width:100%; height:100%; object-fit:cover; transition:var(--transition);"></div>`);
                 });
+
             } catch (e) {
                 closeOverlay('publicProfileModal');
                 toast('Could not load profile.');
@@ -4679,16 +4685,29 @@
                 toast('Action failed.');
             }
         };
-        window.adminDeletePost = async (pid) => {
-            if (!confirm('Delete this post permanently?')) return;
+        window.adminDeletePublicPost = async (pid, targetUid) => {
+            if (!confirm('অ্যাডমিন: আপনি কি এই পোস্টটি স্থায়ীভাবে ডিলিট করতে চান?')) return;
             try {
+                // ১. ডেটাবেস থেকে পোস্টটি মুছে ফেলা
                 await deleteDoc(doc(db, 'posts', pid));
-                toast('Post deleted');
-                loadModeration();
+
+                // ২. ইউজারের পোস্ট কাউন্ট -১ করে দেওয়া
+                await updateDoc(doc(db, 'users', targetUid), {
+                    postsCount: increment(-1)
+                });
+
+                toast('Post deleted by Admin', 'fa-solid fa-trash');
+
+                // ৩. প্রোফাইল রিলোড করে আপডেট দেখানো
+                openPublicProfile(targetUid);
+
+                // ৪. হোম ফিড থেকে পোস্টটি সরিয়ে ফেলতে ফিড রিলোড করা
+                loadFeed(true);
             } catch (e) {
-                toast('Delete failed.');
+                toast('Could not delete post.');
             }
         };
+
 
         async function loadUsers() {
             const c = $('admin-users');
@@ -5080,7 +5099,7 @@
         }
     </script>
     <!-- ================= SOCIAL BAR AD ================= -->
-    <script src="https://pl30161188.effectivecpmnetwork.com/15/e1/d4/15e1d4f1bbd0931b869ff530eb19fa64.js"></script>
+    <script src="https://pl30161188.effectivecpmnetwork.com/15/e1/d4/15e1d4f1bbd0931b869ff530eb19fa64.js"> </script>
     <!-- ================================================= -->
 </body>
 
