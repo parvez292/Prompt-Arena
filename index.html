@@ -1,13 +1,11 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-
 <head>
-    <link rel="manifest" href="manifest.json" />
-    <link rel="apple-touch-icon" href="icon.png" />
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#f3f3fa" />
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=5.0,user-scalable=yes">
+    <meta name="theme-color" content="#f3f3fa">
 
+    <script src="https://apis.google.com/_/scs/abc-static/_/js/k=gapi.lb.en.9vdPKhB0RUg.O/m=gapi_iframes/rt=j/sv=1/d=1/ed=1/rs=AHpOoo97anj7zZ432JcN58tqJJp_A6WeOw/cb=gapi.loaded_0?le=scs" async=""></script>
     <script>
         if (!sessionStorage.getItem('app_refreshed')) {
             sessionStorage.setItem('app_refreshed', 'true');
@@ -18,15 +16,23 @@
     <title>Prompt Arena · v1.03 Peak</title>
 
     <!-- Google Fonts: Syne + Plus Jakarta Sans + Noto Sans Bengali -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Noto+Sans+Bengali:wght@400;500;600&amp;display=swap" rel="stylesheet">
 
     <!-- Font Awesome 6.5.1 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style id="sb_cln_style">
+        ins[class*="adsbygoogle"],
+        ins[class*="adsbyadop"],
+        [id*="div-gpt-ad"],
+        amp-ad {
+            display: none !important;
+        }
+    </style>
 
     <style>
         /* ===================================================================
@@ -2262,13 +2268,14 @@
             gap: 4px;
         }
     </style>
+    <script src="https://apis.google.com/js/api.js?onload=__iframefcb312565" type="text/javascript" charset="UTF-8" gapi_processed="true"></script>
 </head>
 
 <body>
     <div id="micro-popup-container" style="position:fixed;top:80px;right:16px;z-index:210;display:flex;flex-direction:column;gap:8px;max-width:280px;pointer-events:none;"></div>
 
     <!-- ================= AUTH SCREEN ================= -->
-    <div id="authScreen" class="active">
+    <div id="authScreen" class="">
         <div class="auth-card">
             <div class="auth-logo"><i class="fa-solid fa-wand-magic-sparkles"></i> Prompt Arena</div>
             <p class="auth-sub">Share prompts. Discover magic. Remix the future.</p>
@@ -2279,19 +2286,19 @@
             <div id="authAlert" class="alert err"></div>
 
             <form id="signinForm" onsubmit="handleSignIn(event)">
-                <div class="field"><label>Email</label><input class="input" type="email" id="siEmail" required placeholder="you@gmail.com" /></div>
-                <div class="field"><label>Password</label><input class="input" type="password" id="siPass" required placeholder="••••••••" /></div>
+                <div class="field"><label>Email</label><input class="input" type="email" id="siEmail" required="" placeholder="you@gmail.com"></div>
+                <div class="field"><label>Password</label><input class="input" type="password" id="siPass" required="" placeholder="••••••••"></div>
                 <button class="btn btn-primary btn-block" type="submit">Sign In</button>
                 <p style="text-align:center;margin-top:14px;"><span class="link" onclick="handleReset()">Forgot password?</span></p>
             </form>
 
             <form id="signupForm" class="hidden" onsubmit="handleSignUp(event)">
-                <div class="field"><label>Display Name</label><input class="input" type="text" id="suName" required placeholder="creator_name" /></div>
-                <div class="field"><label>Email</label><input class="input" type="email" id="suEmail" required placeholder="you@gmail.com" /></div>
-                <div class="field"><label>Password</label><input class="input" type="password" id="suPass" required minlength="6" placeholder="min 6 chars" /></div>
+                <div class="field"><label>Display Name</label><input class="input" type="text" id="suName" required="" placeholder="creator_name"></div>
+                <div class="field"><label>Email</label><input class="input" type="email" id="suEmail" required="" placeholder="you@gmail.com"></div>
+                <div class="field"><label>Password</label><input class="input" type="password" id="suPass" required="" minlength="6" placeholder="min 6 chars"></div>
                 <div class="field">
                     <label>Promo Code <span style="color:var(--text-3);font-weight:400;">(optional · gives you +3 pts)</span></label>
-                    <input class="input" type="text" id="suPromo" placeholder="Enter referral code" />
+                    <input class="input" type="text" id="suPromo" placeholder="Enter referral code">
                 </div>
                 <button class="btn btn-primary btn-block" type="submit"><i class="fa-solid fa-shield-halved"></i> Create Account</button>
                 <p class="adwall-note" style="text-align:center;margin-top:10px;font-size:11px;color:var(--text-3);">Device fingerprint guard active · one account per device.</p>
@@ -2300,7 +2307,7 @@
     </div>
 
     <!-- ================= MAIN APP ================= -->
-    <div id="app" class="hidden">
+    <div id="app" class="">
         <header class="topbar">
             <span class="brand" onclick="window.location.replace(window.location.href.split('?')[0] + '?update=' + Date.now() + window.location.hash)" style="cursor:pointer;"><i class="fa-solid fa-wand-magic-sparkles"></i> Arena</span>
             <span class="spacer"></span>
@@ -2317,18 +2324,45 @@
 
                 <!-- Hero Carousel -->
                 <div id="hero-carousel">
-                    <div class="carousel-skeleton" id="carouselSkeleton"></div>
-                    <div class="carousel-overlay" id="carouselOverlay" style="display:none;">
+                    <div class="carousel-bg" style="background-image: url(&quot;https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&amp;amp;fit=crop&amp;amp;q=80&amp;amp;w=800&quot;);"></div>
+                    <div class="carousel-bg" style="background-image: url(&quot;https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&amp;amp;fit=crop&amp;amp;q=80&amp;amp;w=800&quot;);"></div>
+                    <div class="carousel-bg" style="background-image: url(&quot;https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&amp;amp;fit=crop&amp;amp;q=80&amp;amp;w=800&quot;);"></div>
+                    <div class="carousel-bg" style="background-image: url(&quot;https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&amp;amp;fit=crop&amp;amp;q=80&amp;amp;w=800&quot;);"></div>
+                    <div class="carousel-bg" style="background-image: url(&quot;https://images.unsplash.com/photo-1480429370139-e0132c086e2a?auto=format&amp;amp;fit=crop&amp;amp;q=80&amp;amp;w=800&quot;);"></div>
+                    <div class="carousel-bg active" style="background-image: url(&quot;https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&amp;amp;fit=crop&amp;amp;q=80&amp;amp;w=800&quot;);"></div>
+                    <div class="carousel-bg" style="background-image: url(&quot;https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?auto=format&amp;amp;fit=crop&amp;amp;q=80&amp;amp;w=800&quot;);"></div>
+                    <div class="carousel-bg" style="background-image: url(&quot;https://images.unsplash.com/photo-1522307837370-cc113a36b784?auto=format&amp;amp;fit=crop&amp;amp;q=80&amp;amp;w=800&quot;);"></div>
+
+                    <div class="carousel-overlay" id="carouselOverlay" style="display: flex;">
                         <div class="carousel-left">
                             <div class="carousel-eyebrow"><i class="fa-solid fa-sparkles"></i> Featured Prompt</div>
-                            <div class="carousel-prompt" id="carouselPromptText">Loading prompt...</div>
-                            <button class="carousel-see-more" id="carouselSeeMore" onclick="carouselSeeMore()">
+                            <div class="carousel-prompt" id="carouselPromptText">Free Fire Viper Esports Banner. A young South Asian pro-gamer in a black and neon-cyan Phoenix Esports jersey, holding a…</div>
+                            <button class="carousel-see-more" id="carouselSeeMore" onclick="carouselSeeMore()" data-pid="ckuMQKweqjmwG3DfmT6o">
                                 See Full Prompt <i class="fa-solid fa-arrow-right"></i>
                             </button>
                         </div>
-                        <div class="carousel-right" id="carouselThumbs"></div>
+                        <div class="carousel-right" id="carouselThumbs">
+                            <div class="thumb-card active-thumb" onclick="goCarousel(3)">
+                                <img src="https://images.unsplash.com/photo-1480429370139-e0132c086e2a?auto=format&amp;fit=crop&amp;q=80&amp;w=800" loading="lazy">
+                            </div>
+                            <div class="thumb-card" onclick="goCarousel(4)">
+                                <img src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&amp;fit=crop&amp;q=80&amp;w=800" loading="lazy">
+                            </div>
+                            <div class="thumb-card" onclick="goCarousel(5)">
+                                <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&amp;fit=crop&amp;q=80&amp;w=800" loading="lazy">
+                            </div>
+                        </div>
                     </div>
-                    <div class="carousel-dots" id="carouselDots"></div>
+                    <div class="carousel-dots" id="carouselDots">
+                        <div class="c-dot" onclick="goCarousel(0)"></div>
+                        <div class="c-dot" onclick="goCarousel(1)"></div>
+                        <div class="c-dot active" onclick="goCarousel(2)"></div>
+                        <div class="c-dot" onclick="goCarousel(3)"></div>
+                        <div class="c-dot" onclick="goCarousel(4)"></div>
+                        <div class="c-dot" onclick="goCarousel(5)"></div>
+                        <div class="c-dot" onclick="goCarousel(6)"></div>
+                        <div class="c-dot" onclick="goCarousel(7)"></div>
+                    </div>
                 </div>
 
                 <!-- Category tabs -->
@@ -2337,20 +2371,28 @@
                     <button class="cat-tab" data-cat="premium" onclick="switchCat('premium')">⭐ Premium <i class="fa-solid fa-lock lock-icon"></i></button>
                 </div>
 
-                <!-- ================= NATIVE BANNER AD ================= -->
-                <div style="margin: 10px 14px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius-sm); text-align: center; overflow: hidden; padding: 10px;">
-                    <div style="font-size: 9px; color: var(--text-3); text-transform: uppercase; margin-bottom: 8px;">Sponsored</div>
-
-                    <script async="async" data-cfasync="false" src="https://pl30161099.effectivecpmnetwork.com/6993077ce0e264e9648523f41cadd114/invoke.js"></script>
-                    <div id="container-6993077ce0e264e9648523f41cadd114"></div>
-                </div>
-                <!-- ==================================================== -->
-
 
                 <!-- Trending ticker -->
                 <div class="ticker-wrap">
                     <div class="ticker-label"><i class="fa-solid fa-fire tk-fire"></i> Trending Now</div>
-                    <div class="ticker-track" id="tickerTrack"></div>
+                    <div class="ticker-track" id="tickerTrack">
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 348❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 244❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 341❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 242❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 224❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 424❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 381❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 455❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 348❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 244❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 341❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 242❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 224❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 424❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 381❤</div>
+                        <div class="ticker-card"><i class="fa-solid fa-fire tk-fire"></i> #faceswap · 455❤</div>
+                    </div>
                 </div>
 
                 <a class="dev-banner" href="https://t.me/annonymous707" target="_blank" rel="noopener">
@@ -2360,7 +2402,7 @@
                 </a>
 
                 <!-- Skeleton loaders (shown initially) -->
-                <div class="skeleton-feed" id="feedSkeleton">
+                <div class="skeleton-feed hidden" id="feedSkeleton">
                     <div class="skeleton-card">
                         <div class="sk-row">
                             <div class="sk-circle"></div>
@@ -2385,7 +2427,475 @@
                     </div>
                 </div>
 
-                <div class="feed" id="feedList"></div>
+                <div class="feed" id="feedList">
+                    <article class="card card-neon" data-pid="RTEnuw3r1jcOhWJmgjeX" style="position:relative;">
+                        <div class="card-head">
+                            <div class="avatar" style="width:38px;height:38px;font-size:17px;" onclick="openPublicProfile('OHq3aldxi0RVYbcczwC3zqt1CeP2')">S</div>
+                            <div class="meta">
+                                <div class="uname">Sayan Pal <i class="fa-solid fa-circle-check verified" style="color:var(--accent);font-size:12px;opacity:.6;"></i></div>
+                                <div class="time">Gemini · 8d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/4ZVjqvtD/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('RTEnuw3r1jcOhWJmgjeX',this)"><i class="fa-regular fa-heart"></i><small>6</small></button>
+                            <button class="act" onclick="openComments('RTEnuw3r1jcOhWJmgjeX')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('RTEnuw3r1jcOhWJmgjeX')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('RTEnuw3r1jcOhWJmgjeX',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('RTEnuw3r1jcOhWJmgjeX')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="9NW9hkrLsBx1DnCSrGKy" style="position:relative;">
+                        <div class="card-head">
+                            <div class="avatar" style="width:38px;height:38px;font-size:17px;" onclick="openPublicProfile('OHq3aldxi0RVYbcczwC3zqt1CeP2')">S</div>
+                            <div class="meta">
+                                <div class="uname">Sayan Pal <i class="fa-solid fa-circle-check verified" style="color:var(--accent);font-size:12px;opacity:.6;"></i></div>
+                                <div class="time">Gemini · 8d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/Dg1VwDJt/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('9NW9hkrLsBx1DnCSrGKy',this)"><i class="fa-regular fa-heart"></i><small>9</small></button>
+                            <button class="act" onclick="openComments('9NW9hkrLsBx1DnCSrGKy')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('9NW9hkrLsBx1DnCSrGKy')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('9NW9hkrLsBx1DnCSrGKy',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('9NW9hkrLsBx1DnCSrGKy')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="xOfOTawT20ymTFil9XNu" style="position:relative;">
+                        <div class="card-head">
+                            <div class="avatar" style="width:38px;height:38px;font-size:17px;" onclick="openPublicProfile('OHq3aldxi0RVYbcczwC3zqt1CeP2')">S</div>
+                            <div class="meta">
+                                <div class="uname">Sayan Pal <i class="fa-solid fa-circle-check verified" style="color:var(--accent);font-size:12px;opacity:.6;"></i></div>
+                                <div class="time">Gemini · 8d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/C5zbJNjp/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('xOfOTawT20ymTFil9XNu',this)"><i class="fa-regular fa-heart"></i><small>3</small></button>
+                            <button class="act" onclick="openComments('xOfOTawT20ymTFil9XNu')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('xOfOTawT20ymTFil9XNu')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('xOfOTawT20ymTFil9XNu',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('xOfOTawT20ymTFil9XNu')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="A3ggx5lyAiPJTIkVFtn1" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Gemini · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/0j2vGCYt/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('A3ggx5lyAiPJTIkVFtn1',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('A3ggx5lyAiPJTIkVFtn1')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('A3ggx5lyAiPJTIkVFtn1')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('A3ggx5lyAiPJTIkVFtn1',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#vintage</span><span class="tag">#minimal</span><span class="tag">#cinematic</span><span class="tag">#surreal</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('A3ggx5lyAiPJTIkVFtn1')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="I2gAPAur2ri0sidM58cz" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Gemini · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/gZVCCmhN/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('I2gAPAur2ri0sidM58cz',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('I2gAPAur2ri0sidM58cz')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('I2gAPAur2ri0sidM58cz')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('I2gAPAur2ri0sidM58cz',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#portrait</span><span class="tag">#realistic</span><span class="tag">#cinematic</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('I2gAPAur2ri0sidM58cz')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="FxpGxw7fjYV6yEl8sws3" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Gemini · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/pjWWYhJD/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('FxpGxw7fjYV6yEl8sws3',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('FxpGxw7fjYV6yEl8sws3')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('FxpGxw7fjYV6yEl8sws3')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('FxpGxw7fjYV6yEl8sws3',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#portrait</span><span class="tag">#realistic</span><span class="tag">#minimal</span><span class="tag">#cinematic</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('FxpGxw7fjYV6yEl8sws3')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="c4gduRam9eiNeBXrHBxq" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Midjourney · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Midjourney</span>
+                            <img src="https://i.ibb.co/1Yr7RH2z/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('c4gduRam9eiNeBXrHBxq',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('c4gduRam9eiNeBXrHBxq')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('c4gduRam9eiNeBXrHBxq')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('c4gduRam9eiNeBXrHBxq',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#portrait</span><span class="tag">#realistic</span><span class="tag">#dark</span><span class="tag">#cinematic</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('c4gduRam9eiNeBXrHBxq')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="uHOjKiZBbMi6uglj8BEd" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Gemini · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/35v0Rr62/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('uHOjKiZBbMi6uglj8BEd',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('uHOjKiZBbMi6uglj8BEd')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('uHOjKiZBbMi6uglj8BEd')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('uHOjKiZBbMi6uglj8BEd',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#portrait</span><span class="tag">#realistic</span><span class="tag">#minimal</span><span class="tag">#cinematic</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('uHOjKiZBbMi6uglj8BEd')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="YNVCVP7HABIVh78yj5qP" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Gemini · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/N65wkpzg/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('YNVCVP7HABIVh78yj5qP',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('YNVCVP7HABIVh78yj5qP')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('YNVCVP7HABIVh78yj5qP')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('YNVCVP7HABIVh78yj5qP',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#portrait</span><span class="tag">#realistic</span><span class="tag">#vintage</span><span class="tag">#cinematic</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('YNVCVP7HABIVh78yj5qP')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+
+                    <article class="card card-neon" data-pid="UmFI8xF5kBzf3C3b21y1" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Leonardo AI · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Leonardo AI</span>
+                            <img src="https://i.ibb.co/Z6Pr8S9d/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('UmFI8xF5kBzf3C3b21y1',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('UmFI8xF5kBzf3C3b21y1')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('UmFI8xF5kBzf3C3b21y1')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('UmFI8xF5kBzf3C3b21y1',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#neon</span><span class="tag">#realistic</span><span class="tag">#minimal</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('UmFI8xF5kBzf3C3b21y1')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="nKTnOtmqRT7oWC545SaD" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Gemini · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/TMzJTJms/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('nKTnOtmqRT7oWC545SaD',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('nKTnOtmqRT7oWC545SaD')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('nKTnOtmqRT7oWC545SaD')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('nKTnOtmqRT7oWC545SaD',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#portrait</span><span class="tag">#realistic</span><span class="tag">#dark</span><span class="tag">#cinematic</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('nKTnOtmqRT7oWC545SaD')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="hMpnuBSdShDH8YvlFvSR" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Gemini · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/VYW63P86/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('hMpnuBSdShDH8YvlFvSR',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('hMpnuBSdShDH8YvlFvSR')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('hMpnuBSdShDH8YvlFvSR')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('hMpnuBSdShDH8YvlFvSR',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#3d</span><span class="tag">#abstract</span><span class="tag">#minimal</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('hMpnuBSdShDH8YvlFvSR')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+
+                    <article class="card card-neon" data-pid="rCyv8EErhvSnLFJ9yMlV" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Gemini · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/XZqPDbCT/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('rCyv8EErhvSnLFJ9yMlV',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('rCyv8EErhvSnLFJ9yMlV')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('rCyv8EErhvSnLFJ9yMlV')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('rCyv8EErhvSnLFJ9yMlV',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#realistic</span><span class="tag">#nature</span><span class="tag">#dark</span><span class="tag">#minimal</span><span class="tag">#cinematic</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('rCyv8EErhvSnLFJ9yMlV')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="JHmwJ1o2KeI16I0Z89mK" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Gemini · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/HTm685p7/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('JHmwJ1o2KeI16I0Z89mK',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('JHmwJ1o2KeI16I0Z89mK')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('JHmwJ1o2KeI16I0Z89mK')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('JHmwJ1o2KeI16I0Z89mK',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#cyberpunk</span><span class="tag">#3d</span><span class="tag">#realistic</span><span class="tag">#minimal</span><span class="tag">#futuristic</span><span class="tag">#cinematic</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('JHmwJ1o2KeI16I0Z89mK')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                    <article class="card card-neon" data-pid="jGIOv0APwU9crglsvMAF" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Gemini · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/TqY6ptFG/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('jGIOv0APwU9crglsvMAF',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('jGIOv0APwU9crglsvMAF')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('jGIOv0APwU9crglsvMAF')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('jGIOv0APwU9crglsvMAF',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#vintage</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('jGIOv0APwU9crglsvMAF')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+
+                    <article class="card card-neon" data-pid="TVujt6apiz4UpoAJmqug" style="position:relative;">
+                        <div class="card-head">
+                            <img src="https://i.ibb.co/JRtFj1hJ/blob.webp" class="avatar" style="width:38px;height:38px;" onclick="openPublicProfile('wPXJHb87q1a6ECtXtGPWxyMnCBD2')">
+                            <div class="meta">
+                                <div class="uname">Prompt Arena Official <span class="badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span></div>
+                                <div class="time">Gemini · 9d</div>
+                            </div>
+
+                        </div>
+                        <div class="card-media" style="position:relative;">
+                            <span class="media-tag">Gemini</span>
+                            <img src="https://i.ibb.co/MDK6xpRV/blob.webp" alt="" loading="lazy">
+
+                        </div>
+                        <div class="card-actions">
+                            <button class="act " onclick="toggleLike('TVujt6apiz4UpoAJmqug',this)"><i class="fa-regular fa-heart"></i><small>0</small></button>
+                            <button class="act" onclick="openComments('TVujt6apiz4UpoAJmqug')"><i class="fa-regular fa-comment"></i><small>0</small></button>
+                            <button class="act" onclick="remixPrompt('TVujt6apiz4UpoAJmqug')"><i class="fa-solid fa-shuffle"></i><small>Remix</small></button>
+                            <span style="flex:1"></span>
+                            <button class="act " onclick="toggleSave('TVujt6apiz4UpoAJmqug',this)"><i class="fa-regular fa-bookmark"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tags"><span class="tag">#portrait</span><span class="tag">#dark</span><span class="tag">#cinematic</span></div>
+                            <button class="btn btn-primary btn-block" onclick="seeFullPrompt('TVujt6apiz4UpoAJmqug')">
+                                <i class="fa-solid fa-eye"></i>
+                                See Full Prompt
+                            </button>
+                        </div>
+                    </article>
+                </div>
                 <div id="feedSentinel" style="height:40px;"></div>
                 <div id="feedLoader" class="empty hidden"><i class="fa-solid fa-spinner fa-spin"></i> Loading more...</div>
             </section>
@@ -2393,7 +2903,7 @@
             <!-- ===== EXPLORE ===== -->
             <section class="view" id="view-explore">
                 <div class="section-title">Explore Prompts</div>
-                <div style="padding:0 14px 12px;"><input class="input" id="searchInput" placeholder="Search #tags or prompts..." oninput="renderExplore()" /></div>
+                <div style="padding:0 14px 12px;"><input class="input" id="searchInput" placeholder="Search #tags or prompts..." oninput="renderExplore()"></div>
                 <div class="grid3" id="exploreGrid"></div>
             </section>
 
@@ -2406,15 +2916,15 @@
             <!-- ===== PROFILE ===== -->
             <section class="view" id="view-profile">
                 <div id="profileBannerWrap">
-                    <div class="profile-banner" id="profileBannerImg" style="background:var(--accent-grad);"></div>
+                    <div class="profile-banner" id="profileBannerImg" style="background: var(--accent-grad);"></div>
                 </div>
                 <div class="profile-head">
-                    <div class="profile-avatar" id="pfAvatar" onclick="changeAvatar()">U</div>
-                    <div class="profile-name" id="pfName">User</div>
+                    <div class="profile-avatar" id="pfAvatar" onclick="changeAvatar()">T</div>
+                    <div class="profile-name" id="pfName">Test Mail</div>
                     <div class="profile-bio" id="pfBio">No bio yet.</div>
                     <div class="profile-location" id="pfLocation" style="display:none;"><i class="fa-solid fa-location-dot"></i><span id="pfLocationText"></span></div>
                     <div class="profile-uid" style="font-size:12px; font-weight:700; color:var(--accent); margin-bottom:12px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; background:color-mix(in srgb, var(--accent) 12%, transparent); padding:8px 16px; border-radius:999px; border: 1px dashed var(--accent);" onclick="copyUserUID()">
-                        <i class="fa-solid fa-gift"></i> Promo Code: <span id="pfUID">Loading...</span> <i class="fa-regular fa-copy"></i>
+                        <i class="fa-solid fa-gift"></i> Promo Code: <span id="pfUID">bzDBlRbzE3gp4Ig0L0QoFB7eWXg2</span> <i class="fa-regular fa-copy"></i>
                     </div>
 
                     <div class="profile-socials" id="pfSocials"></div>
@@ -2423,7 +2933,7 @@
                         <div class="stat" onclick="viewFollowers()"><b id="pfFollowers">0</b><span>Followers</span></div>
                         <div class="stat" onclick="viewFollowing()"><b id="pfFollowing">0</b><span>Following</span></div>
                     </div>
-                    <div class="points-chip"><i class="fa-solid fa-coins"></i> <span id="pfPoints">0</span> points</div>
+                    <div class="points-chip"><i class="fa-solid fa-coins"></i> <span id="pfPoints">6</span> points</div>
                     <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
                         <button class="btn btn-ghost" onclick="openEditProfile()"><i class="fa-solid fa-pen"></i> Edit</button>
                         <button class="btn btn-ghost" onclick="openAnalytics()"><i class="fa-solid fa-chart-line"></i> Analytics</button>
@@ -2433,14 +2943,16 @@
                 <div class="referral-banner" id="referralBanner">
                     <div class="ref-icon"><i class="fa-solid fa-user-plus"></i></div>
                     <div class="ref-text">
-                        <b>Invite Friends & Earn</b>
+                        <b>Invite Friends &amp; Earn</b>
                         <small>You get +5 pts, they get +3 pts</small>
                     </div>
                     <button class="ref-copy" onclick="copyReferralLink()">Copy Link</button>
                 </div>
                 <div class="divider"></div>
                 <div class="section-title">My Creations</div>
-                <div class="grid3" id="myGrid"></div>
+                <div class="grid3" id="myGrid">
+                    <div class="empty" style="grid-column:1/-1;"><i class="fa-solid fa-image"></i>No posts yet.</div>
+                </div>
             </section>
 
             <!-- ===== ADMIN ===== -->
@@ -2479,7 +2991,7 @@
             <div class="sheet-handle"></div>
             <h3 id="postModalTitle"><i class="fa-solid fa-cloud-arrow-up"></i> New Prompt</h3>
             <div id="postAlert" class="alert err"></div>
-            <div class="field"><label>Image</label><input class="input" type="file" id="postImage" accept="image/*" onchange="previewImg(event)" /></div>
+            <div class="field"><label>Image</label><input class="input" type="file" id="postImage" accept="image/*" onchange="previewImg(event)"></div>
             <div id="imgPreview" style="margin-bottom:12px;"></div>
             <div class="field"><label>AI Model</label>
                 <select class="input" id="postModel">
@@ -2493,10 +3005,10 @@
                 </select>
             </div>
             <div class="field"><label>Prompt Text</label><textarea class="textarea" id="postPrompt" placeholder="A neon cyberpunk samurai..."></textarea></div>
-            <div class="field"><label>Parameters (optional)</label><input class="input" id="postParams" placeholder="--ar 16:9 --v 6 --style raw" /></div>
+            <div class="field"><label>Parameters (optional)</label><input class="input" id="postParams" placeholder="--ar 16:9 --v 6 --style raw"></div>
             <div class="field"><label>Tags (comma separated)</label>
                 <div style="display:flex;gap:8px;">
-                    <input class="input" id="postTags" placeholder="neon, portrait, fantasy" />
+                    <input class="input" id="postTags" placeholder="neon, portrait, fantasy">
                     <button class="btn btn-ghost" type="button" onclick="autoTag()"><i class="fa-solid fa-robot"></i></button>
                 </div>
             </div>
@@ -2536,7 +3048,7 @@
             <h3><i class="fa-solid fa-comments"></i> Comments</h3>
             <div id="commentList"></div>
             <div style="display:flex;gap:8px;margin-top:12px;">
-                <input class="input" id="commentInput" placeholder="Add a comment..." />
+                <input class="input" id="commentInput" placeholder="Add a comment...">
                 <button class="btn btn-primary" onclick="postComment()"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
@@ -2563,7 +3075,7 @@
             <div style="margin-top:18px;">
                 <div class="recovery-label">Manual Recovery (optional)</div>
                 <div style="display:flex;gap:8px;">
-                    <input class="input" id="redeemInput" placeholder="Backup code if auto-redeem fails" />
+                    <input class="input" id="redeemInput" placeholder="Backup code if auto-redeem fails">
                     <button class="btn btn-ghost" style="white-space:nowrap;" onclick="redeemCode()">Claim</button>
                 </div>
             </div>
@@ -2607,17 +3119,17 @@
         <div class="sheet">
             <div class="sheet-handle"></div>
             <h3><i class="fa-solid fa-pen"></i> Edit Profile</h3>
-            <div class="field"><label>Display Name</label><input class="input" id="edName" /></div>
+            <div class="field"><label>Display Name</label><input class="input" id="edName"></div>
             <div class="field"><label>Bio</label><textarea class="textarea" id="edBio"></textarea></div>
-            <div class="field"><label>Location</label><input class="input" id="edLocation" placeholder="e.g. Dhaka, Bangladesh" /></div>
+            <div class="field"><label>Location</label><input class="input" id="edLocation" placeholder="e.g. Dhaka, Bangladesh"></div>
             <div class="field">
                 <label>Cover Photo</label>
-                <input class="input" type="file" id="edBannerFile" accept="image/*" onchange="previewBanner(event)" />
+                <input class="input" type="file" id="edBannerFile" accept="image/*" onchange="previewBanner(event)">
                 <div id="edBannerPreview" style="margin-top:8px;"></div>
-                <input type="hidden" id="edBanner" />
+                <input type="hidden" id="edBanner">
             </div>
-            <div class="field"><label>Telegram Handle</label><input class="input" id="edTelegram" placeholder="@username" /></div>
-            <div class="field"><label>Twitter / X Handle</label><input class="input" id="edTwitter" placeholder="@username" /></div>
+            <div class="field"><label>Telegram Handle</label><input class="input" id="edTelegram" placeholder="@username"></div>
+            <div class="field"><label>Twitter / X Handle</label><input class="input" id="edTwitter" placeholder="@username"></div>
             <button class="btn btn-primary btn-block" onclick="saveProfile()">Save Changes</button>
         </div>
     </div>
@@ -3432,22 +3944,7 @@
         }
 
         function injectFeedAd(cont) {
-            const wrap = document.createElement('div');
-            wrap.className = 'ad-slot';
-
-            // আপনার নেটিভ অ্যাড কন্টেইনার ID এখানে দেওয়া হলো
-            wrap.innerHTML = '<div class="ad-label">Sponsored</div><div id="container-6993077ce0e264e9648523f41cadd114"></div>';
-            cont.appendChild(wrap);
-
-            try {
-                const s = document.createElement('script');
-                s.async = true;
-                s.dataset.cfasync = "false";
-                // আপনার নেটিভ অ্যাডের স্ক্রিপ্ট লিংক 
-                s.src = "https://pl30161099.effectivecpmnetwork.com/6993077ce0e264e9648523f41cadd114/invoke.js";
-
-                wrap.appendChild(s);
-            } catch (e) {}
+            // Adsterra ads removed
         }
 
 
@@ -5098,9 +5595,17 @@
             });
         }
     </script>
-    <!-- ================= SOCIAL BAR AD ================= -->
-    <script src="https://pl30161188.effectivecpmnetwork.com/15/e1/d4/15e1d4f1bbd0931b869ff530eb19fa64.js"> </script>
-    <!-- ================================================= -->
-</body>
+  
+    <iframe ng-non-bindable="" frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" tabindex="-1" vspace="0" width="100%" aria-hidden="true" id="I0_1784836709596" name="I0_1784836709596" src="https://prompt-fb290.firebaseapp.com/__/auth/iframe?apiKey=AIzaSyCyREfgzkwzIb7RPJKjvJtf4ydSbJF5hXg&amp;appName=%5BDEFAULT%5D&amp;v=10.12.2&amp;eid=p&amp;usegapi=1&amp;jsh=m%3B%2F_%2Fscs%2Fabc-static%2F_%2Fjs%2Fk%3Dgapi.lb.en.9vdPKhB0RUg.O%2Fd%3D1%2Frs%3DAHpOoo97anj7zZ432JcN58tqJJp_A6WeOw%2Fm%3D__features__#id=I0_1784836709596&amp;_gfid=I0_1784836709596&amp;parent=https%3A%2F%2Fparvez292.github.io&amp;pfname=&amp;rpctoken=16418276" style="position: absolute; top: -100px; width: 1px; height: 1px;"></iframe>
+  
 
+    <!-- ================= MONEYTAG ADS ================= -->
+    
+    <!-- Moneytag In-Page Push Ad -->
+    <script>(function(s){s.dataset.zone='11379803',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
+    <!-- Moneytag Popunder Ad -->
+    <script src="https://quge5.com/88/tag.min.js" data-zone="263047" async data-cfasync="false"></script>
+
+</body>
 </html>
