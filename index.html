@@ -187,6 +187,15 @@
             position: relative;
         }
 
+        /* Force Third-party Push Ads to Bottom */
+        body>div[style*="position: fixed"][style*="z-index"] {
+            top: auto !important;
+            bottom: 75px !important;
+            /* নিচের ট্যাববার-এর ঠিক উপরে বসবে */
+            margin-bottom: env(safe-area-inset-bottom);
+        }
+
+
         .icon-btn:hover {
             background: var(--surface-2);
             transform: translateY(-2px) scale(1.06);
@@ -817,10 +826,13 @@
             width: 100%;
         }
 
-        .btn:hover {
-            transform: scale(1.035);
-            box-shadow: 0 6px 20px rgba(124, 92, 255, .28);
+                @media (hover: hover) {
+            .btn:hover {
+                transform: scale(1.035);
+                box-shadow: 0 6px 20px rgba(124, 92, 255, .28);
+            }
         }
+
 
         .btn:active {
             transform: scale(.97);
@@ -1071,6 +1083,11 @@
             border: 1px solid var(--border);
             padding: 18px 18px calc(28px + env(safe-area-inset-bottom));
             animation: slideup .3s cubic-bezier(.4, 0, .2, 1);
+
+            /* টেক্সট ব্লারি হওয়া বন্ধ করতে নিচের ৩ লাইন যুক্ত করা হলো */
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            will-change: transform;
         }
 
         @keyframes slideup {
@@ -2267,6 +2284,58 @@
             align-items: center;
             gap: 4px;
         }
+
+        /* Floating Reward Button Animation */
+        .float-reward-btn {
+            position: fixed;
+            bottom: 85px;
+            /* নিচের মেনুর ঠিক উপরে বসবে */
+            right: 16px;
+            z-index: 50;
+            background: var(--warn);
+            /* এটি আপনার থিমের হলুদ রঙ (#ffb020) */
+            color: #000;
+            /* হলুদ ব্যাকগ্রাউন্ডে কালো লেখা বেশি ফুটবে */
+            border: none;
+            border-radius: 999px;
+            padding: 12px 20px;
+            font-family: var(--font-body);
+            font-size: 14px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(255, 176, 32, 0.5);
+            /* সুন্দর হলুদ গ্লো/শ্যাডো */
+            animation: rewardPump 2s infinite;
+        }
+
+        @keyframes rewardPump {
+            0% {
+                transform: scale(1);
+            }
+
+            10% {
+                transform: scale(1.1) rotate(-3deg);
+            }
+
+            20% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            30% {
+                transform: scale(1.1) rotate(3deg);
+            }
+
+            40% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
     </style>
     <script src="https://apis.google.com/js/api.js?onload=__iframefcb312565" type="text/javascript" charset="UTF-8" gapi_processed="true"></script>
 </head>
@@ -2308,14 +2377,18 @@
 
     <!-- ================= MAIN APP ================= -->
     <div id="app" class="">
+        <!-- ================= MAIN APP ================= -->
         <header class="topbar">
             <span class="brand" onclick="window.location.replace(window.location.href.split('?')[0] + '?update=' + Date.now() + window.location.hash)" style="cursor:pointer;"><i class="fa-solid fa-wand-magic-sparkles"></i> Arena</span>
             <span class="spacer"></span>
-            <button class="icon-btn" id="adminBridgeBtn" onclick="toggleAdminPortal()" title="Admin Portal" style="display:none;"><i class="fa-solid fa-shield-halved"></i></button>
-            <button class="icon-btn" onclick="openRewards()" title="Earn Points"><i class="fa-solid fa-clapperboard"></i></button>
             <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Theme"><i class="fa-solid fa-sun"></i></button>
-            <button class="icon-btn" onclick="doSignOut()" title="Sign Out"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
         </header>
+
+        <!-- Floating Reward Button -->
+        <button class="float-reward-btn" onclick="openRewards()">
+            <i class="fa-solid fa-clapperboard"></i> Earn Pts
+        </button>
+
 
         <main id="viewport">
 
@@ -2937,7 +3010,15 @@
                     <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
                         <button class="btn btn-ghost" onclick="openEditProfile()"><i class="fa-solid fa-pen"></i> Edit</button>
                         <button class="btn btn-ghost" onclick="openAnalytics()"><i class="fa-solid fa-chart-line"></i> Analytics</button>
+                        <!-- Logout Button -->
+                        <button class="btn btn-ghost" onclick="doSignOut()" style="color:var(--danger); border-color:color-mix(in srgb, var(--danger) 35%, transparent); background:color-mix(in srgb, var(--danger) 10%, transparent);"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
                     </div>
+
+                    <!-- Admin Button (Hidden by default) -->
+                    <div id="profileAdminWrap" style="margin-top:12px;display:none;justify-content:center;">
+                        <button class="btn btn-primary" onclick="toggleAdminPortal()" style="background:var(--warn); color:#000; box-shadow: 0 6px 20px rgba(255, 176, 32, 0.4);"><i class="fa-solid fa-shield-halved"></i> Open Admin Portal</button>
+                    </div>
+
                 </div>
                 <!-- Referral banner -->
                 <div class="referral-banner" id="referralBanner">
@@ -3032,8 +3113,8 @@
             <p class="adwall-note">Please wait — the full prompt unlocks automatically.</p>
             <div id="fullPromptReveal" class="hidden">
                 <div class="divider"></div>
-                <div class="selectable" id="fullPromptText" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:14px;text-align:left;white-space:pre-wrap;word-break:break-word;"></div>
-                <div style="display:flex;gap:8px;margin-top:12px;">
+              <div class="selectable" id="fullPromptText" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:14px;text-align:left;white-space:pre-wrap;word-break:break-word; max-height: 35vh; overflow-y: auto;"></div>
+  <div style="display:flex;gap:8px;margin-top:12px;">
                     <button class="btn btn-primary btn-block" onclick="copyFullPrompt()"><i class="fa-solid fa-copy"></i> Copy Prompt</button>
                     <button class="btn btn-ghost" onclick="closeOverlay('adWall')">Close</button>
                 </div>
@@ -3593,7 +3674,11 @@
                         return;
                     }
 
-                    if (state.profile?.role === 'admin') $('adminBridgeBtn').style.display = 'grid';
+                    if (state.profile?.role === 'admin') {
+                        const adminWrap = $('profileAdminWrap');
+                        if (adminWrap) adminWrap.style.display = 'flex';
+                    }
+
 
                     const urlRef = new URLSearchParams(location.search).get('ref');
                     if (urlRef && urlRef !== u.uid && !(state.profile?.referralApplied)) {
@@ -4083,7 +4168,9 @@
             $('fullPromptText').textContent = '';
             $('adTimer').textContent = '10';
             openOverlay('adWall');
-            injectInterstitial();
+            setTimeout(() => {
+                injectInterstitial();
+            }, 350);
             let t = 10;
             if (window.currentAdTimer) {
                 clearInterval(window.currentAdTimer);
@@ -4108,27 +4195,51 @@
                 engagement: increment(1)
             }).catch(() => {});
         }
-
-        let _interstitialDone = false;
+          let _interstitialDone = false;
 
         function injectInterstitial() {
             const host = $('interstitialAd');
-            if (_interstitialDone) {
-                return;
-            }
-            try {
-                host.innerHTML = '';
-                const s1 = document.createElement('script');
-                s1.text = "atOptions={'key':'1cecefe53ed2c0dfefe6cb150c0982f2','format':'iframe','height':250,'width':300,'params':{}};";
-                const s2 = document.createElement('script');
-                s2.src = "https://www.highperformanceformat.com/1cecefe53ed2c0dfefe6cb150c0982f2/invoke.js";
+            
+            host.style.display = 'grid';
+            host.style.position = 'relative';
 
-                host.appendChild(s1);
-                host.appendChild(s2);
-                _interstitialDone = true;
-            } catch (e) {
-                host.innerHTML = '<span style="color:var(--text-3);font-size:12px;">Sponsored · 300×250</span>';
+            if (!_interstitialDone) {
+                try {
+                    host.innerHTML = `
+                        <button id="adCloseBtn" style="position:absolute; top:-12px; right:-12px; width:26px; height:26px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); cursor:pointer; z-index:20; box-shadow:0 4px 10px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; font-size:14px;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <div id="adInnerContainer"></div>
+                    `;
+                    
+                    // ক্রস বাটনে ক্লিক করলে সাথে সাথে প্রম্পট রিভিল হবে!
+                    document.getElementById('adCloseBtn').onclick = () => {
+                        host.style.display = 'none';
+                        if (window.currentAdTimer) {
+                            clearInterval(window.currentAdTimer);
+                            window.currentAdTimer = null;
+                        }
+                        revealPrompt(); // জাদুর মতো প্রম্পট খুলে যাবে
+                    };
+
+                    const adInner = document.getElementById('adInnerContainer');
+                    const s1 = document.createElement('script');
+                    s1.text = "atOptions={'key':'1cecefe53ed2c0dfefe6cb150c0982f2','format':'iframe','height':250,'width':300,'params':{}};";
+                    const s2 = document.createElement('script');
+                    s2.src = "https://www.highperformanceformat.com/1cecefe53ed2c0dfefe6cb150c0982f2/invoke.js";
+
+                    adInner.appendChild(s1);
+                    adInner.appendChild(s2);
+                    
+                    _interstitialDone = true;
+                } catch (e) {
+                    host.innerHTML = '<span style="color:var(--text-3);font-size:12px;">Sponsored · 300×250</span>';
+                }
             }
+
+            setTimeout(() => {
+                if (host) host.style.display = 'none';
+            }, 10000);
         }
 
         window.copyFullPrompt = () => {
@@ -5530,9 +5641,9 @@
                 }
             });
         });
-   /* ===================================================================
-           IMPRESSION FLUSH
-           =================================================================== */
+        /* ===================================================================
+                IMPRESSION FLUSH
+                =================================================================== */
         setInterval(async () => {
             const batch = _imprBatch;
             _imprBatch = {};
@@ -5590,16 +5701,22 @@
             });
         }
     </script>
-  
+
     <iframe ng-non-bindable="" frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" tabindex="-1" vspace="0" width="100%" aria-hidden="true" id="I0_1784836709596" name="I0_1784836709596" src="https://prompt-fb290.firebaseapp.com/__/auth/iframe?apiKey=AIzaSyCyREfgzkwzIb7RPJKjvJtf4ydSbJF5hXg&amp;appName=%5BDEFAULT%5D&amp;v=10.12.2&amp;eid=p&amp;usegapi=1&amp;jsh=m%3B%2F_%2Fscs%2Fabc-static%2F_%2Fjs%2Fk%3Dgapi.lb.en.9vdPKhB0RUg.O%2Fd%3D1%2Frs%3DAHpOoo97anj7zZ432JcN58tqJJp_A6WeOw%2Fm%3D__features__#id=I0_1784836709596&amp;_gfid=I0_1784836709596&amp;parent=https%3A%2F%2Fparvez292.github.io&amp;pfname=&amp;rpctoken=16418276" style="position: absolute; top: -100px; width: 1px; height: 1px;"></iframe>
-  
+
 
     <!-- ================= MONEYTAG ADS ================= -->
-    
+
     <!-- Moneytag In-Page Push Ad -->
-    <script>(function(s){s.dataset.zone='11379803',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    <script>
+        (function(s) {
+            s.dataset.zone = '11379803', s.src = 'https://nap5k.com/tag.min.js'
+        })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))
+    </script>
 
     <!-- Moneytag Popunder Ad -->
     <script src="https://quge5.com/88/tag.min.js" data-zone="263047" async data-cfasync="false"></script>
 
-</body> </html>
+</body>
+
+</html>
