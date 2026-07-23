@@ -1056,18 +1056,25 @@
             letter-spacing: 1px;
         }
 
-             /* ---- Overlays / Sheets ---- */
+               /* ---- Overlays / Sheets ---- */
         .overlay {
             position: fixed;
             inset: 0;
             z-index: 80;
-            background: rgba(8, 8, 16, .72);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px); /* Safari/iOS সাপোর্ট */
             display: none;
             align-items: flex-end;
             justify-content: center;
-            transform: translateZ(0); /* হার্ডওয়্যার অ্যাকসেলারেশন */
+        }
+
+        /* ব্লার এবং ব্যাকগ্রাউন্ড কালারকে আলাদা ফেক লেয়ারে (::before) নেওয়া হলো */
+        .overlay::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(8, 8, 16, .72);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: -1;
         }
 
         .overlay.active {
@@ -1080,17 +1087,27 @@
             max-width: var(--max-w);
             max-height: 92vh;
             overflow-y: auto;
-            background: var(--bg) !important; /* কালার যেন ওভাররাইড না হয় */
+            background: var(--bg);
             border-radius: 22px 22px 0 0;
             border: 1px solid var(--border);
             padding: 18px 18px calc(28px + env(safe-area-inset-bottom));
-            animation: slideup .3s cubic-bezier(.4, 0, .2, 1);
+            animation: slideup .3s cubic-bezier(.4, 0, .2, 1) forwards;
             
-            /* Chrome PWA Transparent Bug Fix */
+            /* ব্রাউজারকে বাধ্য করা হলো একে সলিড 3D লেয়ার হিসেবে রেন্ডার করতে */
             position: relative;
-            z-index: 2;
-            isolation: isolate;
+            z-index: 1;
+            transform: translate3d(0, 0, 0); 
         }
+
+        @keyframes slideup {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0); /* 'none' এর বদলে নির্দিষ্ট পজিশন দেওয়া হলো */
+            }
+        }
+
 
 
         .sheet-handle {
