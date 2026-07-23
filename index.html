@@ -3178,6 +3178,7 @@
     <div id="toast"></div>
 
     <!-- ================= FIREBASE + APP LOGIC ================= -->
+    <!-- ================= FIREBASE + APP LOGIC ================= -->
     <script type="module">
         import {
             initializeApp
@@ -3375,13 +3376,6 @@
         /* ===================================================================
            REFERRAL HELPERS
            =================================================================== */
-        /* ===================================================================
-           BULLETPROOF COPY FUNCTION (Works on WebView, HTTP, & Mobile)
-           =================================================================== */
-
-        /* ===================================================================
-   BULLETPROOF SYNC COPY FUNCTION (WebView/HopWeb Fixed)
-   =================================================================== */
         function fallbackCopyTextToClipboard(text) {
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(text).catch(e => console.error(e));
@@ -3764,7 +3758,11 @@
             $('carouselDots').innerHTML = posts.map((_, i) => `<div class="c-dot${i===0?' active':''}" onclick="goCarousel(${i})"></div>`).join('');
             buildCarouselThumbs(0);
             updateCarouselText(0);
-            $('carouselSkeleton').remove();
+
+            // Bug Fix 1: Optional chaining / null check for carousel skeleton
+            const skeleton = $('carouselSkeleton');
+            if (skeleton) skeleton.remove();
+
             $('carouselOverlay').style.display = 'flex';
             if (state.carouselTimer) clearInterval(state.carouselTimer);
             state.carouselTimer = setInterval(() => goCarousel((state.carouselIdx + 1) % posts.length), 5000);
@@ -3805,10 +3803,9 @@
             const pid = $('carouselSeeMore').dataset.pid;
             if (pid) seeFullPrompt(pid);
         };
-
         /* ===================================================================
-           FEED + INFINITE SCROLL
-           =================================================================== */
+                  FEED + INFINITE SCROLL
+                  =================================================================== */
         async function loadFeed(reset = false) {
             if (state.isFetchingPosts || (state.feedExhausted && !reset)) return;
             state.isFetchingPosts = true;
@@ -3950,10 +3947,13 @@
 
 
         /* ===================================================================
-           LIKES + SAVE
-           =================================================================== */
+         LIKES + SAVE
+         =================================================================== */
         window.toggleLike = async (pid, btn) => {
-            if (banned()) return;
+            // Bug Fix 4: Like Button Spam Protection
+            if (banned() || btn.disabled) return;
+            btn.disabled = true;
+
             const liked = state.liked.has(pid);
             try {
                 const likeRef = doc(db, 'posts', pid, 'likes', state.user.uid);
@@ -3983,10 +3983,16 @@
                 s.textContent = parseInt(s.textContent || 0) + (!liked ? 1 : -1);
             } catch (e) {
                 toast('Could not like.');
+            } finally {
+                btn.disabled = false; // Bug Fix 4
             }
         };
 
         window.toggleSave = async (pid, btn) => {
+            // Bug Fix 4: Save Button Spam Protection
+            if (btn.disabled) return;
+            btn.disabled = true;
+
             const saved = state.saved.has(pid);
             try {
                 const sRef = doc(db, 'users', state.user.uid, 'savedPosts', pid);
@@ -4005,6 +4011,8 @@
                 btn.querySelector('i').className = !saved ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
             } catch (e) {
                 toast('Could not save.');
+            } finally {
+                btn.disabled = false; // Bug Fix 4
             }
         };
 
@@ -4111,7 +4119,6 @@
             try {
                 host.innerHTML = '';
                 const s1 = document.createElement('script');
-                // নতুন ৩০০x২৫০ অ্যাড কোড আপডেট করা হয়েছে
                 s1.text = "atOptions={'key':'1cecefe53ed2c0dfefe6cb150c0982f2','format':'iframe','height':250,'width':300,'params':{}};";
                 const s2 = document.createElement('script');
                 s2.src = "https://www.highperformanceformat.com/1cecefe53ed2c0dfefe6cb150c0982f2/invoke.js";
@@ -4134,14 +4141,11 @@
                 }).catch(() => {});
             }
         };
-
-
-
         /* ===================================================================
-           POST SUBMISSION
-           =================================================================== */
+                POST SUBMISSION
+                =================================================================== */
         window.openPostModal = () => {
-            _pendingFile = null; // ✅ মেমোরি ক্লিয়ার করার ফিক্স
+            _pendingFile = null;
 
             $('postModalTitle').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> New Prompt';
             $('postImage').value = '';
@@ -4150,7 +4154,6 @@
             $('postParams').value = '';
             $('postTags').value = '';
 
-            // ✅ এক্সপার্টদেরও প্রিমিয়াম পোস্ট করার পারমিশন দেওয়া হলো
             if (state.profile?.role === 'admin' || state.profile?.role === 'expert') {
                 const catField = $('adminCategoryField');
                 if (catField) catField.style.display = 'block';
@@ -4204,7 +4207,8 @@
             for (let i = 0; i < 8; i++) {
                 blob = await new Promise(r => canvas.toBlob(r, 'image/webp', quality));
                 if (blob && blob.size <= maxBytes) break;
-                quality -= 0.12;
+                // Bug Fix 3: Image compression loop quality limit
+                quality = Math.max(0.1, quality - 0.12);
             }
             return blob;
         }
@@ -4270,15 +4274,19 @@
                 sysLog(`Post submitted by ${state.profile?.name} (${autoApprove?'auto-approved':'pending'})`);
                 showAlert('postAlert', autoApprove ? 'Post published instantly! ✨' : 'Submitted for review.', true);
                 _pendingFile = null;
+
+                // Bug Fix 2: Prevent double submission spam
                 setTimeout(() => {
                     closeOverlay('postModal');
                     if (autoApprove) loadFeed(true);
+                    btn.disabled = false;
                 }, 1400);
             } catch (err) {
                 showAlert('postAlert', err.message || 'Upload failed.');
+                btn.disabled = false;
             }
-            btn.disabled = false;
         };
+
         window.autoTag = () => {
             const p = $('postPrompt').value.toLowerCase();
             const dict = ['neon', 'portrait', 'fantasy', 'cyberpunk', 'landscape', 'anime', '3d', 'realistic', 'abstract', 'sci-fi', 'nature', 'dark', 'vintage', 'minimal', 'futuristic', 'cinematic', 'surreal', 'glitch'];
@@ -4410,10 +4418,9 @@
                 list.innerHTML = '<div class="empty">Could not load saved.</div>';
             }
         }
-
         /* ===================================================================
-           PROFILE
-           =================================================================== */
+                PROFILE
+                =================================================================== */
         async function renderProfile() {
             const p = state.profile;
             if (!p) return;
@@ -4629,7 +4636,6 @@
                         '<div class="grid-premium-overlay"><span class="grid-premium-badge"><i class="fa-solid fa-lock"></i> Premium</span></div>' :
                         '';
 
-                    // শুধুমাত্র অ্যাডমিনদের জন্য ডিলিট বাটন
                     const isAdmin = state.profile?.role === 'admin';
                     const adminDeleteBtn = isAdmin ? `<button onclick="event.stopPropagation(); adminDeletePublicPost('${escH(d.id)}', '${escH(uid)}')" style="position:absolute;top:4px;right:4px;background:rgba(255, 84, 112, 0.9);border:none;border-radius:50%;width:24px;height:24px;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;box-shadow: 0 2px 6px rgba(0,0,0,0.4);"><i class="fa-solid fa-trash"></i></button>` : '';
 
@@ -4732,10 +4738,9 @@
                 }
             });
         };
-
         /* ===================================================================
-           VIDEO REWARDS
-           =================================================================== */
+                  VIDEO REWARDS
+                  =================================================================== */
         let _ytApiLoaded = false;
 
         function ensureYTApi() {
@@ -5112,10 +5117,9 @@
             }
             return false;
         }
-
         /* ===================================================================
-           ADMIN DASHBOARD
-           =================================================================== */
+                  ADMIN DASHBOARD
+                  =================================================================== */
         window.switchAdminTab = (tab) => {
             document.querySelectorAll('.admin-tabs button').forEach(b => b.classList.toggle('active', b.dataset.atab === tab));
             ['moderation', 'users', 'vouchers', 'analytics', 'log'].forEach(t => $('admin-' + t).classList.toggle('hidden', t !== tab));
@@ -5185,20 +5189,16 @@
         window.adminDeletePublicPost = async (pid, targetUid) => {
             if (!confirm('অ্যাডমিন: আপনি কি এই পোস্টটি স্থায়ীভাবে ডিলিট করতে চান?')) return;
             try {
-                // ১. ডেটাবেস থেকে পোস্টটি মুছে ফেলা
                 await deleteDoc(doc(db, 'posts', pid));
 
-                // ২. ইউজারের পোস্ট কাউন্ট -১ করে দেওয়া
                 await updateDoc(doc(db, 'users', targetUid), {
                     postsCount: increment(-1)
                 });
 
                 toast('Post deleted by Admin', 'fa-solid fa-trash');
 
-                // ৩. প্রোফাইল রিলোড করে আপডেট দেখানো
                 openPublicProfile(targetUid);
 
-                // ৪. হোম ফিড থেকে পোস্টটি সরিয়ে ফেলতে ফিড রিলোড করা
                 loadFeed(true);
             } catch (e) {
                 toast('Could not delete post.');
@@ -5511,10 +5511,6 @@
             toast('Promo Code copied!', 'fa-solid fa-copy');
         };
 
-
-
-
-
         /* ===================================================================
            OVERLAY HELPERS
            =================================================================== */
@@ -5534,8 +5530,7 @@
                 }
             });
         });
-
-        /* ===================================================================
+   /* ===================================================================
            IMPRESSION FLUSH
            =================================================================== */
         setInterval(async () => {
@@ -5607,5 +5602,4 @@
     <!-- Moneytag Popunder Ad -->
     <script src="https://quge5.com/88/tag.min.js" data-zone="263047" async data-cfasync="false"></script>
 
-</body>
-</html>
+</body> </html>
