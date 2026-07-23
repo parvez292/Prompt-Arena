@@ -1056,16 +1056,16 @@
             letter-spacing: 1px;
         }
 
-               /* ---- Overlays / Sheets ---- */
+            /* ---- Overlays / Sheets ---- */
         .overlay {
             position: fixed;
             inset: 0;
             z-index: 80;
+            background: rgba(0, 0, 0, 0.85); /* ব্লার বাদ দিয়ে সলিড ডার্ক কালার দেওয়া হলো */
             display: none;
             align-items: flex-end;
             justify-content: center;
         }
-
         /* ব্লার এবং ব্যাকগ্রাউন্ড কালারকে আলাদা ফেক লেয়ারে (::before) নেওয়া হলো */
         .overlay::before {
             content: "";
@@ -1091,24 +1091,10 @@
             border-radius: 22px 22px 0 0;
             border: 1px solid var(--border);
             padding: 18px 18px calc(28px + env(safe-area-inset-bottom));
-            animation: slideup .3s cubic-bezier(.4, 0, .2, 1) forwards;
-            
-            /* ব্রাউজারকে বাধ্য করা হলো একে সলিড 3D লেয়ার হিসেবে রেন্ডার করতে */
+            animation: slideup .3s cubic-bezier(.4, 0, .2, 1);
             position: relative;
-            z-index: 1;
-            transform: translate3d(0, 0, 0); 
+            z-index: 5;
         }
-
-        @keyframes slideup {
-            from {
-                transform: translateY(100%);
-            }
-            to {
-                transform: translateY(0); /* 'none' এর বদলে নির্দিষ্ট পজিশন দেওয়া হলো */
-            }
-        }
-
-
 
         .sheet-handle {
             width: 42px;
