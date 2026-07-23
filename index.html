@@ -1056,16 +1056,18 @@
             letter-spacing: 1px;
         }
 
-        /* ---- Overlays / Sheets ---- */
+             /* ---- Overlays / Sheets ---- */
         .overlay {
             position: fixed;
             inset: 0;
             z-index: 80;
             background: rgba(8, 8, 16, .72);
             backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px); /* Safari/iOS সাপোর্ট */
             display: none;
             align-items: flex-end;
             justify-content: center;
+            transform: translateZ(0); /* হার্ডওয়্যার অ্যাকসেলারেশন */
         }
 
         .overlay.active {
@@ -1073,17 +1075,23 @@
             animation: fade .25s ease;
         }
 
-          .sheet {
+        .sheet {
             width: 100%;
             max-width: var(--max-w);
             max-height: 92vh;
             overflow-y: auto;
-            background: var(--bg);
+            background: var(--bg) !important; /* কালার যেন ওভাররাইড না হয় */
             border-radius: 22px 22px 0 0;
             border: 1px solid var(--border);
             padding: 18px 18px calc(28px + env(safe-area-inset-bottom));
             animation: slideup .3s cubic-bezier(.4, 0, .2, 1);
+            
+            /* Chrome PWA Transparent Bug Fix */
+            position: relative;
+            z-index: 2;
+            isolation: isolate;
         }
+
 
         .sheet-handle {
             width: 42px;
