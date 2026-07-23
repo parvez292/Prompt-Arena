@@ -1073,7 +1073,7 @@
             animation: fade .25s ease;
         }
 
-        .sheet {
+          .sheet {
             width: 100%;
             max-width: var(--max-w);
             max-height: 92vh;
@@ -1083,21 +1083,6 @@
             border: 1px solid var(--border);
             padding: 18px 18px calc(28px + env(safe-area-inset-bottom));
             animation: slideup .3s cubic-bezier(.4, 0, .2, 1);
-
-            /* টেক্সট ব্লারি হওয়া বন্ধ করতে নিচের ৩ লাইন যুক্ত করা হলো */
-            transform: translateZ(0);
-            backface-visibility: hidden;
-            will-change: transform;
-        }
-
-        @keyframes slideup {
-            from {
-                transform: translateY(100%);
-            }
-
-            to {
-                transform: none;
-            }
         }
 
         .sheet-handle {
