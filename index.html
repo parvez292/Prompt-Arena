@@ -3761,9 +3761,8 @@
             navigate(state.inAdmin ? 'admin' : 'home');
             toast(state.inAdmin ? 'Admin Portal activated' : 'User Portal');
         };
-
         /* ===================================================================
-           THEME (default: light)
+           THEME (default: dark)
            =================================================================== */
         window.toggleTheme = () => {
             const cur = document.documentElement.getAttribute('data-theme');
@@ -3773,14 +3772,19 @@
             localStorage.setItem('pa_theme', next);
         };
         (function() {
-            const t = localStorage.getItem('pa_theme');
-            if (t) {
-                document.documentElement.setAttribute('data-theme', t);
+            // ইউজারের সেভ করা থিম চেক করবে, না পেলে ডিফল্ট হিসেবে 'dark' সেট করবে
+            let t = localStorage.getItem('pa_theme');
+            if (!t) {
+                t = 'dark';
+                localStorage.setItem('pa_theme', 'dark');
             }
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            
+            const isDark = t === 'dark';
             const btn = document.getElementById('themeBtn');
             if (btn) btn.innerHTML = isDark ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         })();
+
 
         /* ===================================================================
            CATEGORY FILTER
